@@ -47,7 +47,15 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   web: {
     favicon: './assets/favicon.png',
   },
-  plugins: ['expo-font'],
+  plugins: [
+    'expo-font',
+    [
+      "@react-native-google-signin/google-signin",
+      {
+        "iosUrlScheme": "com.googleusercontent.apps.729042460039-94o2afcsqiosc4nuddq3b067pt9upda4"
+      }
+    ]
+  ],
   extra: {
     eas: {
       // projectId: 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx',
