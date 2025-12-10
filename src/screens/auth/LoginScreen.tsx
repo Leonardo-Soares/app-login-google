@@ -22,6 +22,9 @@ import Logo from '../../../assets/icon.png';
 import { useLogin } from '@hooks/useLogin';
 import { GoogleSignin, User, isSuccessResponse } from '@react-native-google-signin/google-signin';
 
+GoogleSignin.configure({
+  iosClientId: '#'
+});
 
 export function LoginScreen() {
   const [auth, setAuth] = useState<User | null>();
