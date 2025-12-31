@@ -7,7 +7,6 @@ import {
   Inter_800ExtraBold,
 } from '@expo-google-fonts/inter';
 import Loading from './src/components/Loading';
-import { QueryClient, QueryClientProvider } from 'react-query';
 import { Routes } from './src/routes';
 import { colors } from '@theme/colors';
 
@@ -15,7 +14,6 @@ import { colors } from '@theme/colors';
 // OneSignal.setAppId("api-key");
 // OneSignal.promptForPushNotificationsWithUserResponse()
 
-const queryClient = new QueryClient();
 
 export default function App() {
   const [fontsLoaded] = useFonts({
@@ -30,9 +28,9 @@ export default function App() {
   }
 
   return (
-    <QueryClientProvider client={queryClient}>
+    <>
       <Routes />
       <StatusBar style="light" backgroundColor={colors.primary} translucent />
-    </QueryClientProvider>
+    </>
   );
 }
