@@ -23,7 +23,7 @@ import { useLogin } from '@hooks/useLogin';
 import { GoogleSignin, User, isSuccessResponse } from '@react-native-google-signin/google-signin';
 
 GoogleSignin.configure({
-  iosClientId: '#'
+  iosClientId: '729042460039-94o2afcsqiosc4nuddq3b067pt9upda4.apps.googleusercontent.com'
 });
 
 export function LoginScreen() {
@@ -31,7 +31,6 @@ export function LoginScreen() {
 
   const [email, onChangeEmail] = useState('');
   const [password, onChangePassword] = useState('');
-  const { mutate, isLoading } = useLogin();
 
   async function handleGoogleSignIn() {
     try {
@@ -117,7 +116,6 @@ export function LoginScreen() {
                   </View>
                 </View>
 
-                {/* Botão de Login Tradicional */}
                 <TouchableOpacity
                   style={{
                     height: 48,
@@ -128,20 +126,18 @@ export function LoginScreen() {
                     marginBottom: 24,
                   }}
                   onPress={() => {
-                    // Adicionar lógica de login tradicional aqui se necessário
                     console.log('Login tradicional');
                   }}
                 >
-                  {isLoading ? (
+                  {/* {isLoading ? (
                     <ActivityIndicator color={colors.primary} />
                   ) : (
                     <Text style={{ color: colors.primary, fontWeight: '700', fontSize: 16 }}>
                       Entrar
                     </Text>
-                  )}
+                  )} */}
                 </TouchableOpacity>
 
-                {/* Divisor */}
                 <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 24 }}>
                   <View style={{ flex: 1, height: 1, backgroundColor: 'rgba(255, 255, 255, 0.3)' }} />
                   <Text style={{ color: '#ffffff', marginHorizontal: 16, fontSize: 14 }}>
@@ -150,7 +146,6 @@ export function LoginScreen() {
                   <View style={{ flex: 1, height: 1, backgroundColor: 'rgba(255, 255, 255, 0.3)' }} />
                 </View>
 
-                {/* Botão de Login com Google */}
                 <TouchableOpacity
                   style={{
                     height: 48,
@@ -177,7 +172,6 @@ export function LoginScreen() {
             }
             {auth?.user &&
               <View style={{ paddingHorizontal: 40, alignItems: 'center', width: '100%' }}>
-                {/* Card do Usuário */}
                 <View
                   style={{
                     backgroundColor: '#ffffff',
@@ -192,7 +186,6 @@ export function LoginScreen() {
                     elevation: 5,
                   }}
                 >
-                  {/* Foto do Usuário */}
                   {auth.user.photo ? (
                     <Image
                       source={{ uri: auth.user.photo }}
@@ -223,7 +216,6 @@ export function LoginScreen() {
                     </View>
                   )}
 
-                  {/* Nome do Usuário */}
                   <Text
                     style={{
                       fontSize: 24,
@@ -236,7 +228,6 @@ export function LoginScreen() {
                     Bem-vindo, {auth.user.name}
                   </Text>
 
-                  {/* Email */}
                   <View
                     style={{
                       flexDirection: 'row',
@@ -262,7 +253,6 @@ export function LoginScreen() {
                     </Text>
                   </View>
 
-                  {/* ID do Usuário */}
                   <View
                     style={{
                       flexDirection: 'row',
@@ -288,7 +278,6 @@ export function LoginScreen() {
                     </Text>
                   </View>
 
-                  {/* ID Token */}
                   <View
                     style={{
                       marginBottom: 24,
@@ -333,7 +322,6 @@ export function LoginScreen() {
                     </ScrollView>
                   </View>
 
-                  {/* Botão de Logout */}
                   <TouchableOpacity
                     style={{
                       height: 48,

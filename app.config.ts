@@ -6,7 +6,7 @@ dotenv.config();
 
 export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
-  slug: 'yourapp',
+  slug: 'br-bredi-discountapp',
   name: 'yourapp',
   version: '0.0.1',
   orientation: 'portrait',
@@ -23,7 +23,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   assetBundlePatterns: ['**/*'],
   ios: {
     supportsTablet: true,
-    bundleIdentifier: 'com.company.yourapp',
+    bundleIdentifier: 'br.bredi.discountapp',
     // config: {
     //   googleMapsApiKey: process.env.GCP_IOS_KEY,
     // },
@@ -37,7 +37,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       'android.permission.ACCESS_COARSE_LOCATION',
       'android.permission.ACCESS_FINE_LOCATION',
     ],
-    package: 'com.company.yourapp',
+    package: 'br.bredi.discountapp',
     // config: {
     //   googleMaps: {
     //     apiKey: process.env.GOOGLE_CLOUD_API_KEY,
@@ -58,7 +58,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   ],
   extra: {
     eas: {
-      // projectId: 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx',
+      projectId: '27b767cc-a1b5-428f-b4e8-a5e7d35be0c3',
     },
   },
 });
