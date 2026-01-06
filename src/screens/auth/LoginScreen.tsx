@@ -9,7 +9,6 @@ import {
   Platform,
   TouchableOpacity,
   Alert,
-  ActivityIndicator,
   ScrollView,
 } from 'react-native';
 
@@ -18,8 +17,6 @@ import { FontAwesome, MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { colors } from '@theme/colors';
 import { formStyles, typography } from '@theme/globalStyles';
-import Logo from '../../../assets/icon.png';
-import { useLogin } from '@hooks/useLogin';
 import { GoogleSignin, User, isSuccessResponse } from '@react-native-google-signin/google-signin';
 
 GoogleSignin.configure({
@@ -68,17 +65,6 @@ export function LoginScreen() {
           >
             {!auth?.user &&
               <View style={{ paddingHorizontal: 40 }}>
-                <View>
-                  <Image
-                    style={{
-                      width: 90,
-                      height: 60,
-                      alignSelf: 'center',
-                    }}
-                    source={Logo}
-                    resizeMode="contain"
-                  />
-                </View>
                 <View style={{ marginBottom: 32 }}>
                   <Text style={typography.titleClean}>Bem-vindo de volta</Text>
                   <Text style={typography.subTitleClean}>Logar na sua conta</Text>
