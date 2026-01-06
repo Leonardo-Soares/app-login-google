@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import 'react-native-gesture-handler';
 import 'react-native-reanimated';
+import './src/utils/reanimatedPolyfill'; // Polyfill para useAnimatedGestureHandler
 import {
   Platform,
   StatusBar,
