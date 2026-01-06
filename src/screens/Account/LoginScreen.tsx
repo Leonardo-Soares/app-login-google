@@ -240,7 +240,7 @@ export default function LoginScreen() {
 
                   <View className="mb-2">
                     <FilledButton
-                      title="Fazer login"
+                      title="Fazer Login"
                       backgroundColor={colors.secondary50}
                       onPress={() => setModalVisible(true)}
                     />
