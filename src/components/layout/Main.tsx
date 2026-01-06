@@ -11,7 +11,8 @@ import ImagePicker from 'react-native-image-crop-picker'
 import IcoAlertaSecondary from '../../svg/IcoAlertaSecondary'
 import { useGlobal } from '../../context/GlobalContextProvider'
 import AsyncStorage from '@react-native-async-storage/async-storage'
-import { Alert, Image, SafeAreaView, ScrollView, TouchableOpacity, View } from 'react-native'
+import { Alert, Image, ScrollView, TouchableOpacity, View } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
 
 export default function Main({ children }: { children: any }) {
   const [token, setToken] = useState('')

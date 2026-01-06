@@ -9,8 +9,9 @@ import CardNotFound from '../../../components/cards/CardNotFound'
 import CardCategoria from '../../../components/cards/CardCategoria'
 import ModalTemplateLogin from '../../../components/Modals/ModalTemplateLogin'
 import MainLayoutAutenticado from '../../../components/layout/MainLayoutAutenticado'
-import { FlatList, RefreshControl, SafeAreaView, ScrollView, Text, TouchableOpacity, View, } from 'react-native'
+import { FlatList, RefreshControl, ScrollView, Text, TouchableOpacity, View, } from 'react-native'
 import ButtonOutline from '../../../components/buttons/ButtonOutline'
+import { SafeAreaView } from 'react-native-safe-area-context'
 
 export default function HomeSemAuthFiltradaScreen(route: any) {
   const { navigate } = useNavigate()

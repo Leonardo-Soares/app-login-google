@@ -1,7 +1,7 @@
 import { colors } from '../../styles/colors';
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from '../../hooks/useNavigate';
-import { View, Text, TouchableOpacity, Image, SafeAreaView } from 'react-native';
+import { View, Text, TouchableOpacity, Image } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { api } from 'src/service/api';
 import IconNotify from 'src/svg/IconNotify';

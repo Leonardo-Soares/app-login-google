@@ -5,9 +5,10 @@ import CardProduto from '../../components/cards/CardProduto'
 import CardNotFound from '../../components/cards/CardNotFound'
 import CardCategoria from '../../components/cards/CardCategoria'
 import AsyncStorage from '@react-native-async-storage/async-storage'
-import { FlatList, RefreshControl, SafeAreaView, ScrollView, View, } from 'react-native'
+import { FlatList, RefreshControl, ScrollView, View, } from 'react-native'
 import MainLayoutAutenticado from '../../components/layout/MainLayoutAutenticado'
 import CardAnuncio from '../../components/cards/CardAnuncio'
+import { SafeAreaView } from 'react-native-safe-area-context'
 
 export default function HomeFiltradaScreen(route: any) {
   const { navigate } = useNavigate()
