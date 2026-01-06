@@ -24,25 +24,13 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   ios: {
     supportsTablet: true,
     bundleIdentifier: 'br.bredi.discountapp',
-    // config: {
-    //   googleMapsApiKey: process.env.GCP_IOS_KEY,
-    // },
   },
   android: {
     adaptiveIcon: {
       foregroundImage: './assets/adaptive-icon.png',
       backgroundColor: '#FFFFFF',
     },
-    permissions: [
-      'android.permission.ACCESS_COARSE_LOCATION',
-      'android.permission.ACCESS_FINE_LOCATION',
-    ],
     package: 'br.bredi.discountapp',
-    // config: {
-    //   googleMaps: {
-    //     apiKey: process.env.GOOGLE_CLOUD_API_KEY,
-    //   },
-    // },
   },
   web: {
     favicon: './assets/favicon.png',
