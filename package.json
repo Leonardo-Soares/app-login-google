@@ -61,7 +61,7 @@
     "react-native-modal-datetime-picker": "^17.1.0",
     "react-native-notifier": "^2.0.0",
     "react-native-onboard": "^2.6.0",
-    "react-native-onesignal": "^4.5.1",
+    "react-native-onesignal": "^5.2.16",
     "react-native-paper": "^5.8.0",
     "react-native-permissions": "^3.10.1",
     "react-native-qrcode-svg": "^6.2.0",
