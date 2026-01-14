@@ -18,7 +18,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage'
 import * as Linking from 'expo-linking'
 import { useRoute } from '@react-navigation/native'
 
-export default function LoginAnuncianteScreen() {
+export default function LoadLoginGoogleAnunciante() {
   const route = useRoute()
   const { navigate } = useNavigate()
   const [email, setEmail] = useState('')
@@ -51,57 +51,21 @@ export default function LoginAnuncianteScreen() {
   }
 
   async function onSubmit() {
-    setLoading(true)
-    const formdata = {
-      email: email,
-      password: password,
-      role: "Anunciante",
-      player_id: playerId,
-    }
-    OneSignal.User.addEmail(email)
-    try {
-      const response = await api.post(`/login`, formdata)
-
-      if (!response.data.error) {
-        const storageEmail = await AsyncStorage.setItem('user-email', email)
-        const storagePassword = await AsyncStorage.setItem('user-senha', password)
-        const storageTipoUser = await AsyncStorage.setItem('tipo-user', 'Anunciante')
-        submitStorageLogin(response.data.results)
-        setTipoUser('Anunciante')
-        Toast.show({
-          type: 'success',
-          text1: 'Login realizado com sucesso!',
-        })
-        setUsuarioLogado(true)
-        tutorialCheck()
-      } else {
-        Toast.show({
-          type: 'error',
-          text1: response.data.message ?? 'Ocorreu um erro, tente novamente!',
-        })
-      }
-    } catch (error: any) {
-      Toast.show({
-        type: 'error',
-        text1: error?.response?.data?.message ?? 'Ocorreu um erro, tente novamente!',
-      })
-      console.log('ERROR Login: ', error)
-    }
-    setLoading(false)
+    // const storageEmail = await AsyncStorage.setItem('user-email', email)
+    // const storagePassword = await AsyncStorage.setItem('user-senha', password)
+    // const storageTipoUser = await AsyncStorage.setItem('tipo-user', 'Anunciante')
+    await setTimeout(() => {
+      setLoading(false)
+    }, 5000)
+    setTipoUser('Anunciante')
+    Toast.show({
+      type: 'success',
+      text1: 'Login realizado com sucesso!',
+    })
+    setUsuarioLogado(true)
+    tutorialCheck()
   }
 
-  async function getEmail() {
-    setLoading(true)
-    try {
-      const storageEmail = await AsyncStorage.getItem('user-email')
-      if (storageEmail != null) {
-        setEmail(storageEmail)
-      }
-    } catch (error: any) {
-      console.log(error)
-    }
-    setLoading(false)
-  }
 
   // Captura o token do deep link quando o app é aberto via URL
   useEffect(() => {
@@ -133,7 +97,6 @@ export default function LoginAnuncianteScreen() {
     // Escuta deep links quando o app já está aberto
     const subscription = Linking.addEventListener('url', handleDeepLink)
 
-    getEmail()
     OneSignal.User.getOnesignalId().then((id) => {
       setPlayerId(id ?? '')
     })

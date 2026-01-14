@@ -18,13 +18,13 @@ import AsyncStorage from '@react-native-async-storage/async-storage'
 import * as Linking from 'expo-linking'
 import { useRoute } from '@react-navigation/native'
 
-export default function LoginAnuncianteScreen() {
+export default function LoadLoginGoogleCliente() {
   const route = useRoute()
   const { navigate } = useNavigate()
   const [email, setEmail] = useState('')
   const versionName = DeviceInfo.getVersion()
   const [playerId, setPlayerId] = useState('')
-  const [loadign, setLoading] = useState(false)
+  const [loadign, setLoading] = useState(true)
   const [password, onChangePassword] = useState('')
   const { setTipoUser, setUsuarioLogado } = useGlobal()
 
@@ -51,64 +51,27 @@ export default function LoginAnuncianteScreen() {
   }
 
   async function onSubmit() {
-    setLoading(true)
-    const formdata = {
-      email: email,
-      password: password,
-      role: "Anunciante",
-      player_id: playerId,
-    }
-    OneSignal.User.addEmail(email)
-    try {
-      const response = await api.post(`/login`, formdata)
+    // const storageEmail = await AsyncStorage.setItem('user-email', email)
+    // const storagePassword = await AsyncStorage.setItem('user-senha', password)
+    const storageTipoUser = await AsyncStorage.setItem('tipo-user', 'Cliente')
 
-      if (!response.data.error) {
-        const storageEmail = await AsyncStorage.setItem('user-email', email)
-        const storagePassword = await AsyncStorage.setItem('user-senha', password)
-        const storageTipoUser = await AsyncStorage.setItem('tipo-user', 'Anunciante')
-        submitStorageLogin(response.data.results)
-        setTipoUser('Anunciante')
-        Toast.show({
-          type: 'success',
-          text1: 'Login realizado com sucesso!',
-        })
-        setUsuarioLogado(true)
-        tutorialCheck()
-      } else {
-        Toast.show({
-          type: 'error',
-          text1: response.data.message ?? 'Ocorreu um erro, tente novamente!',
-        })
-      }
-    } catch (error: any) {
-      Toast.show({
-        type: 'error',
-        text1: error?.response?.data?.message ?? 'Ocorreu um erro, tente novamente!',
-      })
-      console.log('ERROR Login: ', error)
-    }
-    setLoading(false)
+    setTipoUser('Cliente')
+    Toast.show({
+      type: 'success',
+      text1: 'Login realizado com sucesso!',
+    })
+    setUsuarioLogado(true)
+    tutorialCheck()
   }
 
-  async function getEmail() {
-    setLoading(true)
-    try {
-      const storageEmail = await AsyncStorage.getItem('user-email')
-      if (storageEmail != null) {
-        setEmail(storageEmail)
-      }
-    } catch (error: any) {
-      console.log(error)
-    }
-    setLoading(false)
-  }
 
   // Captura o token do deep link quando o app é aberto via URL
   useEffect(() => {
     // Método 1: Via parâmetros da rota (React Navigation)
     const routeParams = route.params as { token?: string } | undefined
     if (routeParams?.token) {
-      console.log('token', routeParams.token)
+      console.log('token 1', routeParams.token)
+      onSubmit()
       return
     }
 
@@ -116,7 +79,7 @@ export default function LoginAnuncianteScreen() {
     const handleDeepLink = async (event: { url: string }) => {
       const { queryParams } = Linking.parse(event.url)
       if (queryParams?.token) {
-        console.log('token', queryParams.token)
+        console.log('token 2', queryParams.token)
       }
     }
 
@@ -125,7 +88,7 @@ export default function LoginAnuncianteScreen() {
       if (url) {
         const { queryParams } = Linking.parse(url)
         if (queryParams?.token) {
-          console.log('token', queryParams.token)
+          console.log('token 3', queryParams.token)
         }
       }
     })
@@ -133,13 +96,13 @@ export default function LoginAnuncianteScreen() {
     // Escuta deep links quando o app já está aberto
     const subscription = Linking.addEventListener('url', handleDeepLink)
 
-    getEmail()
     OneSignal.User.getOnesignalId().then((id) => {
       setPlayerId(id ?? '')
     })
 
     return () => {
       subscription.remove()
+      onSubmit()
     }
   }, [route.params])
 
@@ -147,20 +110,8 @@ export default function LoginAnuncianteScreen() {
     <MainLayout carregando={loadign} scroll={true}>
       <ScrollView contentContainerStyle={{ marginHorizontal: 20, paddingBottom: 500 }}>
         <IcoCelularLogin />
-        <H2 title='Login (Anunciante)' />
+        <H2 title='Carregando...' />
         <View className='mb-5 mt-3'>
-          <InputOutlined
-            onChange={setEmail}
-            label='Email'
-            value={email}
-            keyboardType={'email-address'}
-          />
-          <InputOutlined
-            onChange={onChangePassword}
-            label='Senha'
-            secureTextEntry={true}
-            keyboardType={'default'}
-          />
           <View className='flex-row justify-between mt-2 mb-8'>
             <TouchableOpacity onPress={() => navigate('FormPessoaJuridicaScreen')}>
               <Paragrafo title='Criar conta' />

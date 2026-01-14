@@ -20,12 +20,27 @@ import FormPessoaJuridicaScreen from '../../screens/Account/Registro/PessoaJurid
 import CadastroSucessoAnuncianteScreen from '../../screens/Account/Registro/PessoaJuridica/CadastroSucessoAnuncianteScreen'
 import OnBoardingScreen from '../../screens/Account/OnBoardingScreen'
 import FormDefinirHorarioScreen from '@screens/Account/Registro/PessoaJuridica/FormDefinirHorarioScreen'
+import LoadLoginGoogleCliente from '../../screens/Account/LoadLoginGoogleCliente'
+import LoadLoginGoogleAnunciante from '../../screens/Account/LoadLoginGoogleAnunciante'
+
 
 const Stack = createNativeStackNavigator();
 
+const linking = {
+  prefixes: ['br.bredi.discountapp://', 'discountapp://'],
+  config: {
+    screens: {
+      LoadLoginGoogleCliente: 'logincliente',
+      LoadLoginGoogleAnunciante: 'loginanunciante',
+      FormPessoaFisicaScreen: 'registrarpessoafisica',
+      FormPessoaJuridicaScreen: 'registrarpessoajuridica',
+    },
+  },
+};
+
 export default function MainStack() {
   return (
-    <NavigationContainer>
+    <NavigationContainer linking={linking}>
       <Stack.Navigator
         screenOptions={{
           headerShown: false,
@@ -50,6 +65,8 @@ export default function MainStack() {
         <Stack.Screen name="RecuperaSenhaScreen" component={RecuperaSenhaScreen} />
         <Stack.Screen name="HomeDrawerNavigation" component={HomeDrawerNavigation} />
         <Stack.Screen name="OnBoardingScreen" component={OnBoardingScreen} />
+        <Stack.Screen name="LoadLoginGoogleCliente" component={LoadLoginGoogleCliente} />
+        <Stack.Screen name="LoadLoginGoogleAnunciante" component={LoadLoginGoogleAnunciante} />
         <Stack.Screen options={{ headerTitle: 'SemAuthDrawerNavigation' }} name="SemAuthDrawerNavigation" component={SemAuthDrawerNavigation} />
 
       </Stack.Navigator>

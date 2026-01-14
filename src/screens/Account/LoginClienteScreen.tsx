@@ -6,7 +6,7 @@ import DeviceInfo from 'react-native-device-info'
 import React, { useEffect, useState } from 'react'
 import { OneSignal } from 'react-native-onesignal'
 import { useNavigate } from '../../hooks/useNavigate'
-import { TouchableOpacity, View } from 'react-native'
+import { Linking, TouchableOpacity, View } from 'react-native'
 import IcoCelularLogin from '../../svg/IcoCelularLogin'
 import Caption from '../../components/typography/Caption'
 import MainLayout from '../../components/layout/MainLayout'
@@ -140,6 +140,12 @@ export default function LoginClienteScreen() {
               onPress={onSubmit}
               title='Entrar'
               disabled={email.length <= 0 || password.length <= 0 ? true : false}
+            />
+            <View className="mt-2"></View>
+            <FilledButton
+              onPress={() => Linking.openURL('https://www.backend.discontapp.com.br/api/auth/google?tipo=cliente')}
+              title='Login Google'
+              backgroundColor={colors.primary10}
             />
             <View className="mt-2"></View>
             <FilledButton
