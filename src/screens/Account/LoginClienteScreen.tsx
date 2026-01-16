@@ -6,7 +6,7 @@ import DeviceInfo from 'react-native-device-info'
 import React, { useEffect, useState } from 'react'
 import { OneSignal } from 'react-native-onesignal'
 import { useNavigate } from '../../hooks/useNavigate'
-import { Linking, TouchableOpacity, View } from 'react-native'
+import { Linking, Text, TouchableOpacity, View } from 'react-native'
 import IcoCelularLogin from '../../svg/IcoCelularLogin'
 import Caption from '../../components/typography/Caption'
 import MainLayout from '../../components/layout/MainLayout'
@@ -16,6 +16,7 @@ import InputOutlined from '../../components/forms/InputOutlined'
 import FilledButton from '../../components/buttons/FilledButton'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { ScrollView, Platform } from 'react-native'
+import GoogleLoginButton from '@components/buttons/GoogleLoginButton'
 
 export default function LoginClienteScreen() {
   const { navigate } = useNavigate()
@@ -143,15 +144,19 @@ export default function LoginClienteScreen() {
             />
             <View className="mt-2"></View>
             <FilledButton
-              onPress={() => Linking.openURL('https://www.backend.discontapp.com.br/api/auth/google?tipo=cliente')}
-              title='Login Google'
-              backgroundColor={colors.primary10}
-            />
-            <View className="mt-2"></View>
-            <FilledButton
               onPress={() => navigate('LoginScreen')}
               title='Trocar perfil'
               backgroundColor={colors.secondary60}
+            />
+            <View className="mt-2"></View>
+            <View className="flex-row items-center justify-center my-2">
+              <View className="flex-1 h-px bg-gray-300"></View>
+              <Text className="mx-3 text-gray-600" style={{ fontSize: 14 }}>ou</Text>
+              <View className="flex-1 h-px bg-gray-300"></View>
+            </View>
+            <GoogleLoginButton
+              onPress={() => Linking.openURL('https://www.backend.discontapp.com.br/api/auth/google?tipo=cliente')}
+              title='Continuar com Google'
             />
           </View>
           <View className='absolute bottom-0 right-0'>

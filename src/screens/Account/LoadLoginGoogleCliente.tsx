@@ -1,31 +1,28 @@
 import { api } from '../../service/api'
+import * as Linking from 'expo-linking'
 import { colors } from '../../styles/colors'
 import Toast from 'react-native-toast-message'
 import H2 from '../../components/typography/H2'
 import DeviceInfo from 'react-native-device-info'
 import React, { useEffect, useState } from 'react'
 import { OneSignal } from 'react-native-onesignal'
+import { useRoute } from '@react-navigation/native'
 import { useNavigate } from '../../hooks/useNavigate'
 import IcoCelularLogin from '../../svg/IcoCelularLogin'
 import Caption from '../../components/typography/Caption'
 import MainLayout from '../../components/layout/MainLayout'
-import { ScrollView, TouchableOpacity, View } from 'react-native'
 import Paragrafo from '../../components/typography/Paragrafo'
 import { useGlobal } from '../../context/GlobalContextProvider'
-import InputOutlined from '../../components/forms/InputOutlined'
 import FilledButton from '../../components/buttons/FilledButton'
+import { ScrollView, TouchableOpacity, View } from 'react-native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
-import * as Linking from 'expo-linking'
-import { useRoute } from '@react-navigation/native'
 
 export default function LoadLoginGoogleCliente() {
   const route = useRoute()
   const { navigate } = useNavigate()
-  const [email, setEmail] = useState('')
   const versionName = DeviceInfo.getVersion()
   const [playerId, setPlayerId] = useState('')
   const [loadign, setLoading] = useState(true)
-  const [password, onChangePassword] = useState('')
   const { setTipoUser, setUsuarioLogado } = useGlobal()
 
   const submitStorageLogin = async (value: any) => {
@@ -37,6 +34,32 @@ export default function LoadLoginGoogleCliente() {
     }
   }
 
+  async function getInfosUser(token: string) {
+    const response = await api.get(`/user-info `,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      }
+    )
+    submitStorageLogin(
+      {
+        nome: response.data.results.nome,
+        sobrenome: response.data.results.sobrenome,
+        tipo_usuario: response.data.results.tipo_usuario,
+        email: response.data.results.email,
+        id: response.data.results.id,
+        token: token,
+        cod_status: response.data.results.cod_status,
+        mensagem: response.data.results.mensagem,
+        associacao_id: response.data.results.associacao_id,
+        cep: response.data.results.cep,
+        discotoken: response.data.results.discotoken
+      }
+    )
+    tutorialCheck()
+  }
+
   const tutorialCheck = async () => {
     try {
       const response = await AsyncStorage.getItem('tutorial')
@@ -46,13 +69,14 @@ export default function LoadLoginGoogleCliente() {
       }
       navigate('HomeDrawerNavigation')
     } catch (error) {
-      console.log(error)
+      console.error(error)
     }
+    setLoading(false)
   }
 
-  async function onSubmit() {
-    // const storageEmail = await AsyncStorage.setItem('user-email', email)
-    // const storagePassword = await AsyncStorage.setItem('user-senha', password)
+  async function onSubmit(token: string) {
+    const storageEmail = await AsyncStorage.setItem('user-email', '')
+    const storagePassword = await AsyncStorage.setItem('user-senha', '')
     const storageTipoUser = await AsyncStorage.setItem('tipo-user', 'Cliente')
 
     setTipoUser('Cliente')
@@ -61,7 +85,8 @@ export default function LoadLoginGoogleCliente() {
       text1: 'Login realizado com sucesso!',
     })
     setUsuarioLogado(true)
-    tutorialCheck()
+    // tutorialCheck()
+    getInfosUser(token)
   }
 
 
@@ -70,8 +95,7 @@ export default function LoadLoginGoogleCliente() {
     // Método 1: Via parâmetros da rota (React Navigation)
     const routeParams = route.params as { token?: string } | undefined
     if (routeParams?.token) {
-      console.log('token 1', routeParams.token)
-      onSubmit()
+      onSubmit(routeParams.token)
       return
     }
 
@@ -79,7 +103,7 @@ export default function LoadLoginGoogleCliente() {
     const handleDeepLink = async (event: { url: string }) => {
       const { queryParams } = Linking.parse(event.url)
       if (queryParams?.token) {
-        console.log('token 2', queryParams.token)
+        onSubmit(queryParams?.token as string)
       }
     }
 
@@ -88,7 +112,7 @@ export default function LoadLoginGoogleCliente() {
       if (url) {
         const { queryParams } = Linking.parse(url)
         if (queryParams?.token) {
-          console.log('token 3', queryParams.token)
+          onSubmit(queryParams.token as string)
         }
       }
     })
@@ -102,7 +126,6 @@ export default function LoadLoginGoogleCliente() {
 
     return () => {
       subscription.remove()
-      onSubmit()
     }
   }, [route.params])
 
@@ -121,9 +144,8 @@ export default function LoadLoginGoogleCliente() {
             </TouchableOpacity>
           </View>
           <FilledButton
-            onPress={onSubmit}
+            onPress={() => { }}
             title='Entrar'
-            disabled={email.length <= 0 || password.length <= 0 ? true : false}
           />
           <View className="mt-2"></View>
           <FilledButton

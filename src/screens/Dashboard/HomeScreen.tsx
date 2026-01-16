@@ -27,7 +27,7 @@ export default function HomeScreen() {
     setProdutos([])
     setIsRefreshing(true)
     const jsonValue = await AsyncStorage.getItem('infos-user')
-
+    console.log(jsonValue)
     if (jsonValue) {
       const newJson = JSON.parse(jsonValue)
       try {

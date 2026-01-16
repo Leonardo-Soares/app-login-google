@@ -9,11 +9,12 @@ import { useNavigate } from '../../hooks/useNavigate'
 import IcoCelularLogin from '../../svg/IcoCelularLogin'
 import Caption from '../../components/typography/Caption'
 import MainLayout from '../../components/layout/MainLayout'
-import { ScrollView, TouchableOpacity, View } from 'react-native'
+import { ScrollView, TouchableOpacity, View, Text } from 'react-native'
 import Paragrafo from '../../components/typography/Paragrafo'
 import { useGlobal } from '../../context/GlobalContextProvider'
 import InputOutlined from '../../components/forms/InputOutlined'
 import FilledButton from '../../components/buttons/FilledButton'
+import GoogleLoginButton from '../../components/buttons/GoogleLoginButton'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import * as Linking from 'expo-linking'
 import { useRoute } from '@react-navigation/native'
@@ -181,10 +182,14 @@ export default function LoginAnuncianteScreen() {
             backgroundColor={colors.secondary60}
           />
           <View className="mt-2"></View>
-          <FilledButton
+          <View className="flex-row items-center justify-center my-2">
+            <View className="flex-1 h-px bg-gray-300"></View>
+            <Text className="mx-3 text-gray-600" style={{ fontSize: 14 }}>ou</Text>
+            <View className="flex-1 h-px bg-gray-300"></View>
+          </View>
+          <GoogleLoginButton
             onPress={() => Linking.openURL('https://www.backend.discontapp.com.br/api/auth/google?tipo=anunciante')}
-            title='Login Google'
-            backgroundColor={colors.primary10}
+            title='Continuar com Google'
           />
         </View>
         <View className='absolute bottom-0 right-0'>
