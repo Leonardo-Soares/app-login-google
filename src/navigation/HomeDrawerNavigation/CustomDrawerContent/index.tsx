@@ -123,6 +123,11 @@ export function CustomDrawerContent(props: any) {
                 icon={require('../../../../assets/img/icons/estabelecimento.png')}
               />
               <MenuItem
+                onPress={() => navigate('CadastroAfiliadoScreen')}
+                titulo='Porgrama de Filiados'
+                icon={require('../../../../assets/img/icons/estabelecimento.png')}
+              />
+              <MenuItem
                 onPress={() => navigate('ConfiguracoesScreen')}
                 titulo='Configurações'
                 icon={require('../../../../assets/img/icons/settings.png')}

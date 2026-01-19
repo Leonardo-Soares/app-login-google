@@ -3,11 +3,11 @@ import H5 from '../../../components/typography/H5';
 import { View, TouchableOpacity, Image, Text, Alert } from 'react-native';
 import ButtonPerfil from '../../../components/buttons/ButtonPerfil';
 import MainLayoutAutenticado from '../../../components/layout/MainLayoutAutenticado';
-import { AnuncianteAtualizaPerfil } from '../../../@types/Anunciate';
+// import { AnuncianteAtualizaPerfil } from '../../../@types/Anunciate';
 import { useNavigate } from '../../../hooks/useNavigate';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { api } from '../../../service/api';
-import ImagePicker from 'react-native-image-crop-picker';
+// import ImagePicker from 'react-native-image-crop-picker';
 import Toast from 'react-native-toast-message';
 
 export default function ClientePerfilTrocarFotoScreen() {
@@ -29,7 +29,7 @@ export default function ClientePerfilTrocarFotoScreen() {
   const [categoriaPerfil, setCategoriaPerfil] = useState([]);
   const [nomeEmpresarial, setNomeEmpresarial] = useState('');
   const [imagemSelecionada, setImagemSelecionada] =
-    useState<AnuncianteAtualizaPerfil>();
+    useState<any>();
 
   async function getPerfil() {
     const jsonValue = await AsyncStorage.getItem('infos-user');
@@ -57,15 +57,15 @@ export default function ClientePerfilTrocarFotoScreen() {
           'Content-Type': 'multipart/form-data',
         };
         const formdata = new FormData();
-        formdata.append(
-          'logomarca',
-          {
-            uri: logo.path,
-            type: logo.mime,
-            name: 'logomarca.jpg',
-          },
-          logo.path
-        );
+        // formdata.append(
+        //   'logomarca',
+        //   {
+        //     uri: logo.path,
+        //     type: logo.mime,
+        //     name: 'logomarca.jpg',
+        //   },
+        //   logo.path
+        // );
         const response = await api.post('/atualiza-logomarca', formdata, {
           headers,
         });
@@ -73,7 +73,7 @@ export default function ClientePerfilTrocarFotoScreen() {
           type: 'success',
           text1: response.data.message ?? 'Logomarca Atualizada!',
         });
-      } catch (error) {
+      } catch (error: any) {
         console.log(error.request);
         Toast.show({
           type: 'error',
@@ -85,34 +85,34 @@ export default function ClientePerfilTrocarFotoScreen() {
   }
 
   function pickSingle({ cropit, circular = false, mediaType }: any) {
-    ImagePicker.openPicker({
-      width: 500,
-      height: 500,
-      cropping: cropit,
-      cropperCircleOverlay: circular,
-      sortOrder: 'none',
-      compressImageMaxWidth: 1000,
-      compressImageMaxHeight: 1000,
-      compressImageQuality: 1,
-      compressVideoPreset: 'MediumQuality',
-      includeExif: false,
-      cropperStatusBarColor: '#fff',
-      cropperToolbarColor: '#fff',
-      cropperActiveWidgetColor: '#fff',
-      cropperToolbarWidgetColor: '#3498DB',
-      mediaType: 'photo',
-    })
-      .then((image: any) => {
-        const lastSlashIndex = image.path.lastIndexOf('/');
-        const imageName = image.path.substring(lastSlashIndex + 1);
-        setImagemSelecionada(image.path);
-        setImagemEnvio(image);
-        handleAtualizaLogoPerfil(image);
-      })
-      .catch((error) => {
-        console.log(error);
-        Alert.alert(error.message ? error.message : error);
-      });
+    // ImagePicker.openPicker({
+    //   width: 500,
+    //   height: 500,
+    //   cropping: cropit,
+    //   cropperCircleOverlay: circular,
+    //   sortOrder: 'none',
+    //   compressImageMaxWidth: 1000,
+    //   compressImageMaxHeight: 1000,
+    //   compressImageQuality: 1,
+    //   compressVideoPreset: 'MediumQuality',
+    //   includeExif: false,
+    //   cropperStatusBarColor: '#fff',
+    //   cropperToolbarColor: '#fff',
+    //   cropperActiveWidgetColor: '#fff',
+    //   cropperToolbarWidgetColor: '#3498DB',
+    //   mediaType: 'photo',
+    // })
+    //   .then((image: any) => {
+    //     const lastSlashIndex = image.path.lastIndexOf('/');
+    //     const imageName = image.path.substring(lastSlashIndex + 1);
+    //     setImagemSelecionada(image.path);
+    //     setImagemEnvio(image);
+    //     handleAtualizaLogoPerfil(image);
+    //   })
+    //   .catch((error) => {
+    //     console.log(error);
+    //     Alert.alert(error.message ? error.message : error);
+    //   });
   }
 
   useEffect(() => {

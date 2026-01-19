@@ -8,7 +8,7 @@ import IcoAlerta from '../../../svg/IcoAlerta';
 import H3 from '../../../components/typography/H3';
 import H5 from '../../../components/typography/H5';
 import { useNavigate } from '../../../hooks/useNavigate';
-import ImagePicker from 'react-native-image-crop-picker';
+// import ImagePicker from 'react-native-image-crop-picker';
 import { createNumberMask } from 'react-native-mask-input';
 import InputArea from '../../../components/forms/InputArea';
 import Caption from '../../../components/typography/Caption';
@@ -218,17 +218,17 @@ export default function ClienteCriaCuponScreen() {
     if (hasPermissions) {
       // Se as permissões foram concedidas, abre o ImagePicker
       try {
-        const image = await ImagePicker.openPicker({
-          width: 300,
-          height: 200,
-          multiple: false,
-          maxFiles: 1,
-          minFiles: 1,
-          compressImageQuality: 1,
-          cropping: true,
-        });
-        setImagemSelecionada(image.path);
-        setImagemEnvio(image);
+        // const image = await ImagePicker.openPicker({
+        //   width: 300,
+        //   height: 200,
+        //   multiple: false,
+        //   maxFiles: 1,
+        //   minFiles: 1,
+        //   compressImageQuality: 1,
+        //   cropping: true,
+        // });
+        // setImagemSelecionada(image.path);
+        // setImagemEnvio(image);
       } catch (imageError) {
         console.error('Erro ao abrir o ImagePicker:', imageError); // Se houver erro ao abrir o picker
       }

@@ -7,7 +7,7 @@ import FilledButton from '../buttons/FilledButton'
 import React, { useEffect, useState } from 'react'
 import InputOutlined from '../forms/InputOutlined'
 import ModalTemplate from '../Modals/ModalTemplate'
-import ImagePicker from 'react-native-image-crop-picker'
+// import ImagePicker from 'react-native-image-crop-picker'
 import IcoAlertaSecondary from '../../svg/IcoAlertaSecondary'
 import { useGlobal } from '../../context/GlobalContextProvider'
 import AsyncStorage from '@react-native-async-storage/async-storage'
@@ -86,31 +86,31 @@ export default function Main({ children }: { children: any }) {
 
 
   function pickSingle({ cropit, circular = false, mediaType }: any) {
-    ImagePicker.openPicker({
-      cropping: cropit,
-      cropperCircleOverlay: circular,
-      sortOrder: 'none',
-      compressImageMaxWidth: 1000,
-      compressImageMaxHeight: 1000,
-      compressImageQuality: 1,
-      compressVideoPreset: 'MediumQuality',
-      includeExif: false,
-      cropperStatusBarColor: '#fff',
-      cropperToolbarColor: '#fff',
-      cropperActiveWidgetColor: '#fff',
-      cropperToolbarWidgetColor: '#3498DB',
-      mediaType: 'photo',
-    })
-      .then((image: any) => {
-        const lastSlashIndex = image.path.lastIndexOf('/')
-        const imageName = image.path.substring(lastSlashIndex + 1)
-        setImagemSelecionada(image.path)
-        setImagemEnvio(image)
-      })
-      .catch((error: any) => {
-        console.log(error)
-        Alert.alert(error.message ? error.message : error)
-      })
+    // ImagePicker.openPicker({
+    //   cropping: cropit,
+    //   cropperCircleOverlay: circular,
+    //   sortOrder: 'none',
+    //   compressImageMaxWidth: 1000,
+    //   compressImageMaxHeight: 1000,
+    //   compressImageQuality: 1,
+    //   compressVideoPreset: 'MediumQuality',
+    //   includeExif: false,
+    //   cropperStatusBarColor: '#fff',
+    //   cropperToolbarColor: '#fff',
+    //   cropperActiveWidgetColor: '#fff',
+    //   cropperToolbarWidgetColor: '#3498DB',
+    //   mediaType: 'photo',
+    // })
+    //   .then((image: any) => {
+    //     const lastSlashIndex = image.path.lastIndexOf('/')
+    //     const imageName = image.path.substring(lastSlashIndex + 1)
+    //     setImagemSelecionada(image.path)
+    //     setImagemEnvio(image)
+    //   })
+    //   .catch((error: any) => {
+    //     console.log(error)
+    //     Alert.alert(error.message ? error.message : error)
+    //   })
   }
 
   useEffect(() => {

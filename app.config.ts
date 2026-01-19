@@ -12,11 +12,11 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   orientation: 'portrait',
   icon: './assets/icon.png',
   scheme: "discountapp",
-  userInterfaceStyle: 'dark',
+  userInterfaceStyle: 'light',
   splash: {
     image: './assets/splash.png',
     resizeMode: 'contain',
-    backgroundColor: '#000',
+    backgroundColor: '#fff',
   },
   updates: {
     fallbackToCacheTimeout: 0,

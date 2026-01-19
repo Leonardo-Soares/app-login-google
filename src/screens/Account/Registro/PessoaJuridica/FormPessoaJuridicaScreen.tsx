@@ -2,7 +2,7 @@ import axios from 'axios';
 import Toast from 'react-native-toast-message';
 import { colors } from '../../../../styles/colors';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
-import ImagePicker from 'react-native-image-crop-picker';
+// import ImagePicker from 'react-native-image-crop-picker';
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from '../../../../hooks/useNavigate';
 import { api, api_cnpj, api_ibge } from '../../../../service/api';
@@ -431,33 +431,33 @@ export default function FormPessoaJuridicaScreen({
   };
 
   function pickSingle({ cropit, circular = false, mediaType }: any) {
-    ImagePicker.openPicker({
-      width: 500,
-      height: 500,
-      cropping: cropit,
-      cropperCircleOverlay: circular,
-      sortOrder: 'none',
-      compressImageMaxWidth: 1000,
-      compressImageMaxHeight: 1000,
-      compressImageQuality: 1,
-      compressVideoPreset: 'MediumQuality',
-      includeExif: false,
-      cropperStatusBarColor: '#fff',
-      cropperToolbarColor: '#fff',
-      cropperActiveWidgetColor: '#fff',
-      cropperToolbarWidgetColor: '#3498DB',
-      mediaType: 'photo',
-    })
-      .then((image: any) => {
-        const lastSlashIndex = image.path.lastIndexOf('/');
-        const imageName = image.path.substring(lastSlashIndex + 1);
-        setImagemSelecionada(image.path);
-        setImagemEnvio(image);
-      })
-      .catch((error) => {
-        console.error(error);
-        Alert.alert(error.message ? error.message : error);
-      });
+    // ImagePicker.openPicker({
+    //   width: 500,
+    //   height: 500,
+    //   cropping: cropit,
+    //   cropperCircleOverlay: circular,
+    //   sortOrder: 'none',
+    //   compressImageMaxWidth: 1000,
+    //   compressImageMaxHeight: 1000,
+    //   compressImageQuality: 1,
+    //   compressVideoPreset: 'MediumQuality',
+    //   includeExif: false,
+    //   cropperStatusBarColor: '#fff',
+    //   cropperToolbarColor: '#fff',
+    //   cropperActiveWidgetColor: '#fff',
+    //   cropperToolbarWidgetColor: '#3498DB',
+    //   mediaType: 'photo',
+    // })
+    //   .then((image: any) => {
+    //     const lastSlashIndex = image.path.lastIndexOf('/');
+    //     const imageName = image.path.substring(lastSlashIndex + 1);
+    //     setImagemSelecionada(image.path);
+    //     setImagemEnvio(image);
+    //   })
+    //   .catch((error) => {
+    //     console.error(error);
+    //     Alert.alert(error.message ? error.message : error);
+    //   });
   }
 
   function getLocalizacao() {
