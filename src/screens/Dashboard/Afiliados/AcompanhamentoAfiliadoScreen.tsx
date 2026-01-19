@@ -14,10 +14,8 @@ import { colors } from '../../../styles/colors'
 import Toast from 'react-native-toast-message'
 import { api } from '../../../service/api'
 import AsyncStorage from '@react-native-async-storage/async-storage'
-import LottieView from 'lottie-react-native'
-import Clipboard from '@react-native-clipboard/clipboard'
 
-export default function CadastroAfiliadoScreen() {
+export default function AcompanhamentoAfiliadoScreen() {
   const isFocused = useIsFocused()
   const { navigate } = useNavigate()
 
@@ -49,8 +47,6 @@ export default function CadastroAfiliadoScreen() {
 
   // Estados auxiliares
   const [loading, setLoading] = useState(false)
-  const [showSuccess, setShowSuccess] = useState(false)
-  const [dadosSucesso, setDadosSucesso] = useState<any>(null)
 
   // Refs para navegação entre campos
   const input1Ref = useRef(null)
@@ -284,22 +280,26 @@ export default function CadastroAfiliadoScreen() {
           return
         }
 
-        // Salvar dados de sucesso e mostrar view de sucesso
-        setDadosSucesso(response.data.data)
-        setShowSuccess(true)
+        Toast.show({
+          type: 'success',
+          text1: response.data.message || 'Cadastro realizado com sucesso!',
+        })
 
         // Limpar formulário
-        // setName('')
-        // setEmail('')
-        // setTelefone('')
-        // setPassword('')
-        // setCpf('')
-        // setBanco('')
-        // setAgencia('')
-        // setContaCorrente('')
-        // setTipoChavePix('')
-        // setChavePix('')
-        // setAceiteTermos(false)
+        setName('')
+        setEmail('')
+        setTelefone('')
+        setPassword('')
+        setCpf('')
+        setBanco('')
+        setAgencia('')
+        setContaCorrente('')
+        setTipoChavePix('')
+        setChavePix('')
+        setAceiteTermos(false)
+
+        // Navegar de volta após sucesso
+        // navigate('HomeScreen')
       } else {
         Toast.show({
           type: 'error',
@@ -357,97 +357,6 @@ export default function CadastroAfiliadoScreen() {
     if (chavePix) setErrorChavePix(false)
     if (aceiteTermos) setErrorAceiteTermos(false)
   }, [name, email, telefone, password, cpf, banco, agencia, contaCorrente, tipoChavePix, chavePix, aceiteTermos])
-
-  // Função para copiar código do afiliado
-  const copyCodigoAfiliado = () => {
-    if (dadosSucesso?.codigo_afiliado) {
-      Clipboard.setString(dadosSucesso.codigo_afiliado)
-      Toast.show({
-        type: 'success',
-        text1: 'Código copiado para a área de transferência!',
-      })
-    }
-  }
-
-  // Se mostrar sucesso, exibir view de sucesso
-  if (showSuccess && dadosSucesso) {
-    return (
-      <MainLayoutAutenticado notScroll={false} loading={false} marginTop={24} marginHorizontal={16}>
-        <View className='flex-1 justify-between'>
-          <View></View>
-          <View className='items-center'>
-            <View className='mb-4 mt-4'>
-              <LottieView
-                style={{ width: 200, height: 200 }}
-                source={require('../../../animations/cupom-validado.json')}
-                autoPlay
-                loop={false}
-              />
-            </View>
-            <View className='my-4 mt-2 items-center'>
-              <H3 align={'center'}>
-                Cadastro realizado com sucesso!
-              </H3>
-              <Caption fontSize={14} color={colors.gray} margintop={8} align={'center'}>
-                Aguarde a aprovação do seu cadastro
-              </Caption>
-            </View>
-
-            <View className='w-full mt-6 px-4'>
-              <View className='bg-[#F5F5F5] rounded-lg p-4 mb-4'>
-                <Caption fontSize={12} color={colors.gray} margintop={0}>
-                  ID do Afiliado
-                </Caption>
-                <H5>{dadosSucesso.afiliado_id}</H5>
-              </View>
-
-              <View className='bg-[#F5F5F5] rounded-lg p-4 mb-4'>
-                <Caption fontSize={12} color={colors.gray} margintop={0}>
-                  Código do Afiliado
-                </Caption>
-                <View className='flex-row items-center justify-between'>
-                  <H5>{dadosSucesso.codigo_afiliado}</H5>
-                  <TouchableOpacity
-                    onPress={copyCodigoAfiliado}
-                    className='bg-[#E5DEFF] px-3 py-2 rounded-lg'
-                  >
-                    <Caption fontSize={12} color={colors.primary40} fontWeight={'bold'}>
-                      Copiar
-                    </Caption>
-                  </TouchableOpacity>
-                </View>
-              </View>
-
-              <View className='bg-[#F5F5F5] rounded-lg p-4 mb-4'>
-                <Caption fontSize={12} color={colors.gray} margintop={0}>
-                  Status
-                </Caption>
-                <View className='flex-row items-center mt-1'>
-                  <View
-                    className='w-3 h-3 rounded-full mr-2'
-                    style={{ backgroundColor: colors.warning }}
-                  />
-                  <Text style={{ textTransform: 'capitalize', fontSize: 18, fontWeight: 'bold', color: colors.dark }}>
-                    {dadosSucesso.status}
-                  </Text>
-                </View>
-              </View>
-            </View>
-          </View>
-
-          {/* <View className='mb-8 w-full px-4'>
-            <FilledButton
-              title="Voltar"
-              onPress={() => {
-                setShowSuccess(false)
-                setDadosSucesso(null)
-              }}
-            />
-          </View> */}
-        </View>
-      </MainLayoutAutenticado>
-    )
-  }
 
   return (
     <MainLayoutAutenticado notScroll={false} loading={loading} marginTop={24} marginHorizontal={16}>
