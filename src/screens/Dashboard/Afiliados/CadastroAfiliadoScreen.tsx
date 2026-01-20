@@ -33,6 +33,7 @@ export default function CadastroAfiliadoScreen() {
   const [tipoChavePix, setTipoChavePix] = useState('')
   const [chavePix, setChavePix] = useState('')
   const [aceiteTermos, setAceiteTermos] = useState(false)
+  const [cpfPreenchido, setCpfPreenchido] = useState('')
 
   // Estados de erro
   const [errorName, setErrorName] = useState(false)
@@ -64,22 +65,24 @@ export default function CadastroAfiliadoScreen() {
   const input9Ref = useRef(null)
   const input10Ref = useRef(null)
 
-  // Lista de bancos (exemplo - pode ser buscada de uma API)
-  const listaBancos = [
-    'Banco do Brasil',
-    'Bradesco',
-    'Itaú',
-    'Santander',
-    'Caixa Econômica Federal',
-    'Banco Inter',
-    'Nubank',
-    'Banco Original',
-    'Banco Neon',
-    'Outro'
-  ]
+  // Opções de tipo de chave PIX para exibição
+  const tiposChavePixDisplay = ['CPF', 'E-mail', 'Telefone', 'Aleatória']
 
-  // Opções de tipo de chave PIX
-  const tiposChavePix = ['cpf', 'email', 'telefone', 'aleatoria']
+  // Mapeamento entre valores exibidos e valores da API
+  const tiposChavePixMap: { [key: string]: string } = {
+    'CPF': 'cpf',
+    'E-mail': 'email',
+    'Telefone': 'telefone',
+    'Aleatória': 'aleatoria'
+  }
+
+  // Mapeamento reverso (da API para exibição)
+  const tiposChavePixReverseMap: { [key: string]: string } = {
+    'cpf': 'CPF',
+    'email': 'E-mail',
+    'telefone': 'Telefone',
+    'aleatoria': 'Aleatória'
+  }
 
   // Função para navegar entre inputs
   const focusNextInput = (ref: any) => {
@@ -240,7 +243,7 @@ export default function CadastroAfiliadoScreen() {
         banco: banco.trim(),
         agencia: agencia.trim(),
         conta_corrente: contaCorrente.trim(),
-        tipo_chave_pix: tipoChavePix,
+        tipo_chave_pix: tiposChavePixMap[tipoChavePix] || tipoChavePix.toLowerCase(),
         chave_pix: chavePix.trim(),
         aceite_termos: aceiteTermos,
       }
@@ -289,17 +292,17 @@ export default function CadastroAfiliadoScreen() {
         setShowSuccess(true)
 
         // Limpar formulário
-        // setName('')
-        // setEmail('')
-        // setTelefone('')
-        // setPassword('')
-        // setCpf('')
-        // setBanco('')
-        // setAgencia('')
-        // setContaCorrente('')
-        // setTipoChavePix('')
-        // setChavePix('')
-        // setAceiteTermos(false)
+        setName('')
+        setEmail('')
+        setTelefone('')
+        setPassword('')
+        setCpf('')
+        setBanco('')
+        setAgencia('')
+        setContaCorrente('')
+        setTipoChavePix('')
+        setChavePix('')
+        setAceiteTermos(false)
       } else {
         Toast.show({
           type: 'error',
@@ -342,6 +345,64 @@ export default function CadastroAfiliadoScreen() {
       setLoading(false)
     }
   }
+
+  async function getDadosAfiliado() {
+    const jsonValue = await AsyncStorage.getItem('infos-user')
+
+    if (jsonValue) {
+      const userData = JSON.parse(jsonValue)
+
+      // Preencher nome completo e email dos dados básicos
+      const nomeCompleto = userData.nome && userData.sobrenome && userData.sobrenome !== '-'
+        ? `${userData.nome} ${userData.sobrenome}`
+        : userData.nome || ''
+
+      if (nomeCompleto) {
+        setName(nomeCompleto)
+      }
+
+      if (userData.email) {
+        setEmail(userData.email)
+      }
+
+      // Buscar dados completos do perfil (CPF e telefone)
+      try {
+        const response = await api.get(`/perfil/pessoa-fisica/${userData.id}`)
+
+        if (response.data.results) {
+          // Preencher nome completo se não foi preenchido antes
+          if (!nomeCompleto && response.data.results.nome_completo) {
+            setName(response.data.results.nome_completo)
+          }
+
+          // Preencher email se não foi preenchido antes
+          if (!userData.email && response.data.results.email) {
+            setEmail(response.data.results.email)
+          }
+
+          // Preencher telefone
+          if (response.data.results.telefone) {
+            handlePhoneMask(response.data.results.telefone)
+          }
+
+          // Preencher CPF
+          if (response.data.results.cpf) {
+            setCpfPreenchido(response.data.results.cpf)
+            handleCPFMask(response.data.results.cpf)
+          }
+        }
+      } catch (error: any) {
+        console.error('Erro ao buscar dados do perfil:', error)
+        // Se não conseguir buscar do perfil, tenta usar apenas os dados básicos
+      }
+    }
+  }
+
+  useEffect(() => {
+    if (isFocused) {
+      getDadosAfiliado()
+    }
+  }, [isFocused])
 
   useEffect(() => {
     // Limpar erros quando o campo for preenchido
@@ -458,7 +519,7 @@ export default function CadastroAfiliadoScreen() {
       </View>
 
       {/* Campos do formulário */}
-      <InputOutlined
+      {/* <InputOutlined
         mt={8}
         required
         label="Nome completo"
@@ -493,20 +554,23 @@ export default function CadastroAfiliadoScreen() {
         maxLength={15}
         onChangeText={handlePhoneMask}
         onSubmitEditing={() => focusNextInput(input4Ref)}
-      />
+      /> */}
 
-      <InputMascaraPaper
-        mt={8}
-        required
-        label="CPF"
-        value={cpf}
-        error={errorCpf}
-        refInput={input5Ref}
-        keyboardType={'number-pad'}
-        maxLength={14}
-        onChangeText={handleCPFMask}
-        onSubmitEditing={() => focusNextInput(input6Ref)}
-      />
+
+      {cpfPreenchido.length <= 2 &&
+        <InputMascaraPaper
+          mt={8}
+          required
+          label="CPF"
+          value={cpf}
+          error={errorCpf}
+          refInput={input5Ref}
+          keyboardType={'number-pad'}
+          maxLength={14}
+          onChangeText={handleCPFMask}
+          onSubmitEditing={() => focusNextInput(input6Ref)}
+        />
+      }
 
       <InputOutlined
         mt={8}
@@ -552,10 +616,11 @@ export default function CadastroAfiliadoScreen() {
           </Caption>
         )}
         <RadioButton
-          options={tiposChavePix}
-          selectedOption={tipoChavePix}
+          options={tiposChavePixDisplay}
+          selectedOption={tiposChavePixReverseMap[tipoChavePix] || tipoChavePix}
           onSelectOption={(option: string) => {
-            setTipoChavePix(option)
+            // Armazenar o valor da API (minúsculo, sem acentuação)
+            setTipoChavePix(tiposChavePixMap[option] || option.toLowerCase())
             setErrorTipoChavePix(false)
           }}
         />
@@ -568,9 +633,9 @@ export default function CadastroAfiliadoScreen() {
         value={chavePix}
         error={errorChavePix}
         refInput={input9Ref}
-        keyboardType={tipoChavePix === 'Email' ? 'email-address' : tipoChavePix === 'Telefone' ? 'phone-pad' : 'default'}
+        keyboardType={tipoChavePix === 'email' ? 'email-address' : tipoChavePix === 'telefone' ? 'phone-pad' : 'default'}
         onChange={(text: string) => setChavePix(text)}
-        placeholder={tipoChavePix ? `Digite sua ${tipoChavePix}` : 'Digite sua chave PIX'}
+        placeholder={tipoChavePix ? `Digite sua ${tiposChavePixReverseMap[tipoChavePix] || tipoChavePix}` : 'Digite sua chave PIX'}
       />
 
       <InputOutlined

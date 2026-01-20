@@ -6,7 +6,6 @@ import { useIsFocused } from '@react-navigation/native'
 import React, { useEffect, useState, useRef } from 'react'
 import { Text, TouchableOpacity, View } from 'react-native'
 import MainLayoutAutenticado from '@components/layout/MainLayoutAutenticado'
-import { api } from '@services/axios'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { colors } from '../../../styles/colors'
 import Clipboard from '@react-native-clipboard/clipboard'
@@ -17,14 +16,6 @@ import axios from 'axios'
 export default function AcompanhamentoAfiliadoScreen() {
   const isFocused = useIsFocused()
   const { navigate } = useNavigate()
-
-  // Dados fictícios do afiliado
-  // const dadosAfiliado = {
-  //   afiliado_id: 123,
-  //   codigo_afiliado: 'AFL-2024-001',
-  //   status: 'aprovado', // 'pendente', 'aprovado', 'rejeitado'
-  // }
-
   const [dadosAfiliado, setDadosAfiliado] = useState<any>(null)
 
   async function getVerificaStatus() {
@@ -41,7 +32,6 @@ export default function AcompanhamentoAfiliadoScreen() {
 
       try {
         const response = await axios.post('https://www.backend.discontapp.com.br/api/afiliados/verificar-status', formData, { headers })
-        console.log('teste', response.data.data)
 
         // Se o status for aprovado, salva os dados no estado
         if (response.data.data && response.data.data.status_aprovacao === 'aprovado') {
@@ -50,6 +40,23 @@ export default function AcompanhamentoAfiliadoScreen() {
             data_aprovacao: response.data.data.data_aprovacao,
             data_cadastro: response.data.data.data_cadastro,
             status: response.data.data.status_aprovacao,
+          })
+        }
+        if (response.data.data && response.data.data.status_aprovacao === 'pendente') {
+          setDadosAfiliado({
+            codigo_afiliado: response.data.data.codigo_afiliado,
+            data_aprovacao: null,
+            data_cadastro: response.data.data.data_cadastro,
+            status: response.data.data.status_aprovacao,
+          })
+        }
+        if (response.data.data && response.data.data.status_aprovacao === 'reprovado') {
+          setDadosAfiliado({
+            codigo_afiliado: null,
+            data_aprovacao: null,
+            data_cadastro: response.data.data.data_cadastro,
+            status: response.data.data.status_aprovacao,
+            motivo_reprovacao: response.data.data.motivo_reprovacao,
           })
         }
 
@@ -75,7 +82,7 @@ export default function AcompanhamentoAfiliadoScreen() {
     switch (status) {
       case 'aprovado':
         return '#4CAF50'
-      case 'rejeitado':
+      case 'reprovado':
         return colors.error40
       case 'pendente':
       default:
@@ -102,22 +109,26 @@ export default function AcompanhamentoAfiliadoScreen() {
             </View>
 
             <View className='w-full mt-6'>
-              <View className='bg-[#F5F5F5] rounded-lg p-4 mb-4'>
-                <Caption fontSize={12} color={colors.gray} margintop={0}>
-                  Código do Afiliado
-                </Caption>
-                <View className='flex-row items-center justify-between'>
-                  <H5>{dadosAfiliado.codigo_afiliado}</H5>
-                  <TouchableOpacity
-                    onPress={copyCodigoAfiliado}
-                    className='bg-[#E5DEFF] px-3 py-2 rounded-lg'
-                  >
-                    <Caption fontSize={12} color={colors.primary40} fontWeight={'bold'}>
-                      Copiar
-                    </Caption>
-                  </TouchableOpacity>
+              {
+                dadosAfiliado.codigo_afiliado &&
+                <View className='bg-[#F5F5F5] rounded-lg p-4 mb-4'>
+                  <Caption fontSize={12} color={colors.gray} margintop={0}>
+                    Código do Afiliado
+                  </Caption>
+                  <View className='flex-row items-center justify-between'>
+                    <H5>{dadosAfiliado.codigo_afiliado}</H5>
+                    <TouchableOpacity
+                      onPress={copyCodigoAfiliado}
+                      className='bg-[#E5DEFF] px-3 py-2 rounded-lg'
+                    >
+                      <Caption fontSize={12} color={colors.primary40} fontWeight={'bold'}>
+                        Copiar
+                      </Caption>
+                    </TouchableOpacity>
+                  </View>
                 </View>
-              </View>
+              }
+
 
               <View className='bg-[#F5F5F5] rounded-lg p-4 mb-4'>
                 <Caption fontSize={12} color={colors.gray} margintop={0}>
@@ -141,12 +152,24 @@ export default function AcompanhamentoAfiliadoScreen() {
                 <H5>{dadosAfiliado.data_cadastro}</H5>
               </View>
 
-              <View className='bg-[#F5F5F5] rounded-lg p-4 mb-4'>
-                <Caption fontSize={12} color={colors.gray} margintop={0}>
-                  Data de Aprovação
-                </Caption>
-                <H5>{dadosAfiliado.data_aprovacao}</H5>
-              </View>
+              {dadosAfiliado.data_aprovacao &&
+                <View className='bg-[#F5F5F5] rounded-lg p-4 mb-4'>
+                  <Caption fontSize={12} color={colors.gray} margintop={0}>
+                    Data de Aprovação
+                  </Caption>
+                  <H5>{dadosAfiliado.data_aprovacao}</H5>
+                </View>
+              }
+
+              {dadosAfiliado.status === 'reprovado' && dadosAfiliado.motivo_reprovacao &&
+                <View className='bg-[#F5F5F5] rounded-lg p-4 mb-4'>
+                  <Caption fontSize={12} color={colors.gray} margintop={0}>
+                    Motivo de Reprovação
+                  </Caption>
+                  <H5>{dadosAfiliado.motivo_reprovacao}</H5>
+                </View>
+              }
+
             </View>
           </>
         ) : (
@@ -195,6 +218,13 @@ export default function AcompanhamentoAfiliadoScreen() {
                 <Caption fontSize={14} color={colors.dark} margintop={0}>
                   Para se cadastrar como afiliado, você precisa ter uma conta ativa e preencher seus dados bancários para receber as comissões.
                 </Caption>
+              </View>
+
+              <View className='mt-8 mb-8'>
+                <FilledButton
+                  title="Cadastrar-me como afiliado"
+                  onPress={() => navigate('CadastroAfiliadoScreen')}
+                />
               </View>
             </View>
           </>
