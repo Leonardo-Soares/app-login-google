@@ -7,8 +7,8 @@ dotenv.config();
 export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
   slug: 'br-bredi-discountapp',
-  name: 'yourapp',
-  version: '0.0.1',
+  name: 'Discontapp',
+  version: '1.3.0',
   orientation: 'portrait',
   icon: './assets/icon.png',
   scheme: "discountapp",
@@ -31,6 +31,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       foregroundImage: './assets/adaptive-icon.png',
       backgroundColor: '#FFFFFF',
     },
+    versionCode: 300,
     package: 'br.bredi.discountapp',
   },
   web: {
