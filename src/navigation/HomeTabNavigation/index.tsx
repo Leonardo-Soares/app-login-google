@@ -11,6 +11,7 @@ import HomeFiltradaScreen from '../../screens/Dashboard/HomeFiltradaScreen'
 import OfertaDetalhesScreen from '../../screens/Dashboard/OfertaDetalhesScreen'
 import ClienteOfertaDetalheHistoricoScreen from '../../screens/Dashboard/ClienteNavigation/ClienteOfertaDetalheHistoricoScreen'
 import DiscotokenListagemScreen from '../../screens/Dashboard/DiscotokenListagemScreen'
+import AcompanhamentoAfiliadoScreen from '@screens/Dashboard/Afiliados/AcompanhamentoAfiliadoScreen'
 import CadastroAfiliadoScreen from '@screens/Dashboard/Afiliados/CadastroAfiliadoScreen'
 
 const Tab = createBottomTabNavigator();
@@ -66,6 +67,7 @@ export default function HomeTabNavigation() {
       <Tab.Screen name="Meus Cupons" options={{ headerTitle: 'Home 1' }} component={UtilizadosScreen} />
       <Tab.Screen name="DetalhesHistorico" options={{ headerShown: false, tabBarItemStyle: { display: 'none' } }} component={ClienteOfertaDetalheHistoricoScreen} />
       <Tab.Screen name="Detalhes" options={{ headerShown: false, tabBarItemStyle: { display: 'none' } }} component={OfertaDetalhesScreen} />
+      <Tab.Screen name="AcompanhamentoAfiliadoScreen" options={{ tabBarItemStyle: { display: 'none' } }} component={AcompanhamentoAfiliadoScreen} />
       <Tab.Screen name="CadastroAfiliadoScreen" options={{ tabBarItemStyle: { display: 'none' } }} component={CadastroAfiliadoScreen} />
     </Tab.Navigator>
   );

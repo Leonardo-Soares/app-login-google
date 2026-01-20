@@ -372,9 +372,8 @@ export default function CadastroAfiliadoScreen() {
   // Se mostrar sucesso, exibir view de sucesso
   if (showSuccess && dadosSucesso) {
     return (
-      <MainLayoutAutenticado notScroll={false} loading={false} marginTop={24} marginHorizontal={16}>
+      <MainLayoutAutenticado notScroll={false} loading={false} marginTop={32} marginHorizontal={16}>
         <View className='flex-1 justify-between'>
-          <View></View>
           <View className='items-center'>
             <View className='mb-4 mt-4'>
               <LottieView
@@ -451,7 +450,7 @@ export default function CadastroAfiliadoScreen() {
 
   return (
     <MainLayoutAutenticado notScroll={false} loading={loading} marginTop={24} marginHorizontal={16}>
-      <View className='mb-6'>
+      <View className='mb-6 mt-12'>
         <H3>Cadastro de Afiliado</H3>
         <Caption fontSize={14} color={colors.gray} margintop={8}>
           Preencha todos os campos para cadastrar um novo afiliado
