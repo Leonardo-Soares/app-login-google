@@ -8,6 +8,7 @@ import { DrawerContentScrollView } from '@react-navigation/drawer'
 import { useGlobal } from '../../../context/GlobalContextProvider'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import ModalTemplateCateirinha from '../../../components/Modals/ModalTemplateCateirinha'
+import IcoAfiliado from '../../../svg/IcoAfiliado'
 
 export function CustomDrawerContent(props: any) {
   const { navigate, dispatch } = useNavigate()
@@ -124,8 +125,8 @@ export function CustomDrawerContent(props: any) {
               />
               <MenuItem
                 onPress={() => navigate('AcompanhamentoAfiliadoScreen')}
-                titulo='Porgrama de Filiados'
-                icon={require('../../../../assets/img/icons/estabelecimento.png')}
+                titulo='Programa de Filiados'
+                icon={IcoAfiliado}
               />
               <MenuItem
                 onPress={() => navigate('ConfiguracoesScreen')}
