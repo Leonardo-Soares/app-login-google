@@ -12,6 +12,7 @@ import Clipboard from '@react-native-clipboard/clipboard'
 import Toast from 'react-native-toast-message'
 import FilledButton from '@components/buttons/FilledButton'
 import axios from 'axios'
+import { Ionicons } from '@expo/vector-icons'
 
 export default function AcompanhamentoAfiliadoScreen() {
   const isFocused = useIsFocused()
@@ -90,6 +91,19 @@ export default function AcompanhamentoAfiliadoScreen() {
     }
   }
 
+  // Função para obter ícone do status
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case 'aprovado':
+        return 'checkmark-circle'
+      case 'reprovado':
+        return 'close-circle'
+      case 'pendente':
+      default:
+        return 'time'
+    }
+  }
+
   useEffect(() => {
     if (isFocused) {
       getVerificaStatus()
@@ -101,7 +115,13 @@ export default function AcompanhamentoAfiliadoScreen() {
       <View className='flex-1 mt-12'>
         {dadosAfiliado ? (
           <>
-            <View className='mb-6'>
+            <View className='mb-6 items-center'>
+              <Ionicons
+                name={getStatusIcon(dadosAfiliado.status) as any}
+                size={80}
+                color={getStatusColor(dadosAfiliado.status)}
+                style={{ marginBottom: 16 }}
+              />
               <H3 align={'center'}>Acompanhamento de Afiliado</H3>
               <Caption fontSize={14} color={colors.gray} margintop={8} align={'center'}>
                 Consulte o status e informações do seu cadastro
