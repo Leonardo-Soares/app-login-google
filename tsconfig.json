@@ -1,21 +1,46 @@
 {
   "extends": "expo/tsconfig.base",
   "compilerOptions": {
+    "jsx": "react",
     "strict": true,
     "baseUrl": "./",
     "paths": {
-      "@components/*": ["./src/components/*"],
-      "@screens/*": ["./src/screens/*"],
-      "@navigation/*": ["./src/navigation/*"],
-      "@utils/*": ["./src/utils/*"],
-      "@assets/*": ["./src/assets/*"],
-      "@constants/*": ["./src/constants/*"],
-      "@hooks/*": ["./src/hooks/*"],
-      "@types/*": ["./src/@types/*"],
-      "@stores/*": ["./src/stores/*"],
-      "@theme/*": ["./src/theme/*"],
-      "@storage/*": ["./src/storage/*"],
-      "@services/*": ["./src/services/*"],
+      "@components/*": [
+        "./src/components/*"
+      ],
+      "@screens/*": [
+        "./src/screens/*"
+      ],
+      "@navigation/*": [
+        "./src/navigation/*"
+      ],
+      "@utils/*": [
+        "./src/utils/*"
+      ],
+      "@assets/*": [
+        "./src/assets/*"
+      ],
+      "@constants/*": [
+        "./src/constants/*"
+      ],
+      "@hooks/*": [
+        "./src/hooks/*"
+      ],
+      "@types/*": [
+        "./src/@types/*"
+      ],
+      "@stores/*": [
+        "./src/stores/*"
+      ],
+      "@theme/*": [
+        "./src/theme/*"
+      ],
+      "@storage/*": [
+        "./src/storage/*"
+      ],
+      "@services/*": [
+        "./src/services/*"
+      ],
     }
   }
 }
