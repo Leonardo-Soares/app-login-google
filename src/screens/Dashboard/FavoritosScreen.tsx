@@ -36,7 +36,7 @@ export default function FavoritosScreen() {
         const response = await api.get(`/favorito/salvos`, { headers })
         setProdutos(response.data.favoritos)
       } catch (error: any) {
-        console.log('ERROR Lista Cupons: ', error.response.data)
+        console.error('ERROR Lista Cupons: ', error.response.data)
       }
     }
     setIsRefreshing(false)

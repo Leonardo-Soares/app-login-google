@@ -124,7 +124,7 @@ export function CustomDrawerContent(props: any) {
               </View>
               {/* } */}
               <MenuItem
-                onPress={() => navigate('SugerirEstabelecimentosScreen')}
+                onPress={() => { drawerNavigation.closeDrawer(); drawerNavigation.navigate('SugerirEstabelecimentosScreen') }}
                 titulo='Sugerir Estabelecimentos'
                 icon={require('../../../../assets/img/icons/estabelecimento.png')}
               />

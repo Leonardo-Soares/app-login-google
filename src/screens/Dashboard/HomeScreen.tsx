@@ -56,7 +56,7 @@ export default function HomeScreen() {
         }
 
       } catch (error: any) {
-        console.log('ERROR Lista Cupons: ', error.response.data)
+        console.error('ERROR Lista Cupons: ', error.response.data)
       }
     }
     setIsRefreshing(false)
