@@ -19,9 +19,12 @@ export default function FiltroLocalizacaoScreen() {
   const [permissaoLocal, setPermissaoLocal] = useState<boolean>(false)
   const [listaAnunciantes, setListaAnunciantes] = useState<any>([])
   const [localizacaoErro, setLocalizacaoErro] = useState<string | null>(null)
+  const [erroCarregarLocais, setErroCarregarLocais] = useState<string | null>(null)
+  const [anunciantesCarregados, setAnunciantesCarregados] = useState(false)
 
   async function getAnunciantes() {
     const jsonValue = await AsyncStorage.getItem('infos-user')
+    setErroCarregarLocais(null)
     if (jsonValue) {
       const newJson = JSON.parse(jsonValue)
       try {
@@ -29,12 +32,13 @@ export default function FiltroLocalizacaoScreen() {
           Authorization: `Bearer ${newJson.token}`,
         }
         const response = await api.get(`/listar/anunciantes`, { headers })
-        setListaAnunciantes(response.data.results)
+        setListaAnunciantes(response.data.results ?? [])
       } catch (error: any) {
         console.log('Erro Lista Anunciantes: ', error)
-
+        setErroCarregarLocais('Não foi possível carregar os estabelecimentos no mapa. Tente novamente.')
       }
     }
+    setAnunciantesCarregados(true)
   }
 
   async function getOfertas() {
@@ -49,7 +53,7 @@ export default function FiltroLocalizacaoScreen() {
         setListaOfertas(response.data.results)
 
       } catch (error: any) {
-        console.log('Erro Lista Locais', error)
+        console.error('Erro Lista Locais', error)
       }
     }
   }
@@ -60,7 +64,7 @@ export default function FiltroLocalizacaoScreen() {
         const { granted } = await requestForegroundPermissionsAsync()
         return granted
       } catch (error: any) {
-        console.log('Erro ao solicitar permissão iOS', error)
+        console.error('Erro ao solicitar permissão iOS', error)
         return false
       }
     }
@@ -105,8 +109,6 @@ export default function FiltroLocalizacaoScreen() {
         enableHighAccuracy: true,
         timeout: 20000,
         maximumAge: 10000,
-        forceRequestLocation: true,
-        showLocationDialog: true,
       }
     )
   }, [solicitarPermissao])
@@ -193,8 +195,21 @@ export default function FiltroLocalizacaoScreen() {
         </MapView>
       }
       {localizacaoErro &&
-        <View className='mx-4 mt-12'>
+        <View style={styles.mensagemContainer}>
           <H3 align={'center'} color={colors.error30}>{localizacaoErro}</H3>
+        </View>
+      }
+      {erroCarregarLocais &&
+        <View style={styles.mensagemContainer}>
+          <H3 align={'center'} color={colors.error30}>{erroCarregarLocais}</H3>
+        </View>
+      }
+      {regiao && anunciantesCarregados && !erroCarregarLocais &&
+        !listaAnunciantes.some((item: any) => item?.latitude && item?.longitude) &&
+        <View style={styles.mensagemContainer}>
+          <H3 align={'center'} color={colors.blackdark}>
+            Nenhum estabelecimento com localização disponível para exibir no mapa.
+          </H3>
         </View>
       }
     </View>
@@ -205,5 +220,10 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     marginTop: 64,
-  }
+  },
+  mensagemContainer: {
+    marginHorizontal: 16,
+    marginTop: 24,
+    paddingHorizontal: 8,
+  },
 });

@@ -12,17 +12,17 @@ export default function ContentBottomCliente(props: any) {
     <View className='absolute bottom-0 flex-row justify-around items-center z-50 w-full ' style={{ backgroundColor: colors.secondary50, height: 82 }}>
       <ItemDrawer
         titulo='Home'
-        onPress={() => navigate('HomeClienteScreen')}
+        onPress={() => navigate('ClienteTabNavigation', { screen: 'HomeClienteScreen' })}
         imagem={require('../../../assets/img/icons/house.png')}
       />
       <ItemDrawer
         titulo='Anúncio'
-        onPress={() => navigate('ClienteCriaCuponScreen')}
+        onPress={() => navigate('ClienteTabNavigation', { screen: 'ClienteCriaCuponScreen' })}
         imagem={require('../../../assets/img/icons/plus.png')}
       />
       <ItemDrawer
         titulo='Anúncios'
-        onPress={() => navigate('ClienteUtilizadosScreen')}
+        onPress={() => navigate('ClienteTabNavigation', { screen: 'ClienteUtilizadosScreen' })}
         imagem={require('../../../assets/img/icons/utilizados.png')}
       />
     </View>
