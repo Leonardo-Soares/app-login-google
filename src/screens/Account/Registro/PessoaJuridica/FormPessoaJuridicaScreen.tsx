@@ -115,14 +115,16 @@ export default function FormPessoaJuridicaScreen({
     setModalAviso(false);
     setModalLocalizacao(false);
 
-    if (novaLocalizacao?.latitude === 0 || novaLocalizacao?.longitude === 0) {
-      return setErrorLocalizacao(
-        'Selecione a localização do seu estabelecimento'
-      );
-    }
+    // if (novaLocalizacao?.latitude === 0 || novaLocalizacao?.longitude === 0) {
+    //   Toast.show({
+    //     type: 'error',
+    //     text1: 'Selecione a localização do seu estabelecimento',
+    //   });
+    //   return;
+    // }
 
     const cnpjValido = ValidarCNPJ({ cnpj: cnpj });
-    const emailValido = ValidarEmail({ email: email });
+    // const emailValido = ValidarEmail({ email: email });
     const cpfValido = ValidarCPF({ cpf: cpfRepresetante });
 
     setErrorCep(false);
@@ -275,40 +277,44 @@ export default function FormPessoaJuridicaScreen({
 
     setLoading(true);
     try {
-      const response = await api.post(`/cadastro/valida-campos`, formData)
-      if (response.status === 200) {
-        setModalLocalizacao(true);
-        setLoading(false);
-        return;
-      }
-    } catch (error: any) {
-      console.error('ERRO VALIDA CAMPOS:', error.response.data);
-      if (error?.response?.data?.results?.cnpjusado) {
-        Toast.show({
-          type: 'error',
-          text1: 'CNPJ já cadastrado !',
-        });
+      const response = await api.post(`/cadastro/valida-campos`, formData);
+      const data = response?.data ?? {};
+      const results = data?.results ?? {};
+
+      if (results?.cnpjusado) {
+        Toast.show({ type: 'error', text1: 'CNPJ já cadastrado!' });
         setErrorCnpj(true);
-        setLoading(false);
-
         return;
       }
-      if (error?.response?.data?.results?.emailusado) {
-        Toast.show({
-          type: 'error',
-          text1: 'E-mail já cadastrado !',
-        });
+      if (results?.emailusado) {
+        Toast.show({ type: 'error', text1: 'E-mail já cadastrado!' });
         setErrorEmail(true);
-        setLoading(false);
-
-        return;
-      } else {
-        setModalLocalizacao(true);
-        setLoading(false);
         return;
       }
+
+      // CPF já cadastrado é ignorado – permite seguir com o cadastro
+      setModalLocalizacao(true);
+
+    } catch (error: any) {
+      const data = error?.response?.data ?? {};
+      const results = data?.results ?? {};
+      const message = data?.message ?? 'Não foi possível validar os dados.';
+
+      if (results?.cnpjusado) {
+        Toast.show({ type: 'error', text1: 'CNPJ já cadastrado!' });
+        setErrorCnpj(true);
+        return;
+      }
+      if (results?.emailusado) {
+        Toast.show({ type: 'error', text1: 'E-mail já cadastrado!' });
+        setErrorEmail(true);
+        return;
+      }
+      // CPF já cadastrado é ignorado – permite seguir com o cadastro
+      setModalLocalizacao(true);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   }
 
   async function postPessoaJuridica() {
@@ -514,7 +520,6 @@ export default function FormPessoaJuridicaScreen({
         `/localidades/estados/${uf}/municipios`
       );
       setListaCidades(response.data);
-      // console.log('CIDADES', response.data);
     } catch (error: any) {
       console.error('ERRO Get Cidades:', error);
     }
@@ -583,7 +588,7 @@ export default function FormPessoaJuridicaScreen({
         onClose={() => setModalAviso(false)}
         visible={modalAviso}
       >
-        <View className="">
+        <View style={{ paddingTop: 36 }}>
           <Text className="text-xl text-red-600 font-bold">
             Atenção
           </Text>
