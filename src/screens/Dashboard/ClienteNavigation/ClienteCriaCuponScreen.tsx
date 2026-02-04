@@ -8,7 +8,8 @@ import IcoAlerta from '../../../svg/IcoAlerta';
 import H3 from '../../../components/typography/H3';
 import H5 from '../../../components/typography/H5';
 import { useNavigate } from '../../../hooks/useNavigate';
-// import ImagePicker from 'react-native-image-crop-picker';
+import ImagePicker from 'react-native-image-crop-picker';
+import { check, request, openSettings, PERMISSIONS, RESULTS } from 'react-native-permissions';
 import { createNumberMask } from 'react-native-mask-input';
 import InputArea from '../../../components/forms/InputArea';
 import Caption from '../../../components/typography/Caption';
@@ -33,7 +34,6 @@ import {
   TouchableOpacity,
   ScrollView,
   PermissionsAndroid,
-  Linking,
   Alert,
   Platform,
 } from 'react-native';
@@ -41,6 +41,7 @@ import { useGlobal } from '../../../context/GlobalContextProvider';
 import { useIsFocused } from '@react-navigation/native';
 import H2 from '@components/typography/H2';
 import H1 from '@components/typography/H1';
+import React from 'react';
 
 export default function ClienteCriaCuponScreen() {
   const { navigate } = useNavigate();
@@ -163,78 +164,157 @@ export default function ClienteCriaCuponScreen() {
     hideDatePicker();
   };
 
-  const openSettings = () => {
-    Linking.openSettings();
-  };
-
-  const showPermissionDeniedAlert = () => {
+  function showPermissionDeniedAlert() {
     Alert.alert(
-      'Permissões necessárias',
-      'Para usar esta funcionalidade, precisamos de permissões de armazenamento e câmera. Por favor, habilite-as nas configurações do aplicativo.',
+      'Permissão necessária',
+      'Para enviar a imagem do anúncio é necessário permitir acesso à galeria ou câmera. Deseja abrir as configurações do app?',
       [
-        {
-          text: 'Cancelar',
-          style: 'cancel',
-        },
-        {
-          text: 'Abrir configurações',
-          onPress: openSettings,
-        },
+        { text: 'Cancelar', style: 'cancel' },
+        { text: 'Abrir configurações', onPress: () => openSettings() },
       ],
       { cancelable: false }
     );
-  };
+  }
 
-  async function requestPermissions() {
+  async function requestGalleryPermissionAndOpen() {
     try {
-      const readStoragePermission = await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE);
-      if (readStoragePermission !== PermissionsAndroid.RESULTS.GRANTED) {
-        showPermissionDeniedAlert(); // Exibe o alerta se a permissão for negada
-        return false;
+      if (Platform.OS === 'ios') {
+        const status = await check(PERMISSIONS.IOS.PHOTO_LIBRARY);
+        if (status === RESULTS.GRANTED || status === RESULTS.LIMITED) {
+          openGallery();
+          return;
+        }
+        const requestStatus = await request(PERMISSIONS.IOS.PHOTO_LIBRARY);
+        if (requestStatus === RESULTS.GRANTED || requestStatus === RESULTS.LIMITED) {
+          openGallery();
+        } else {
+          showPermissionDeniedAlert();
+        }
+      } else {
+        const readStorage = await PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
+          {
+            title: 'Acesso à galeria',
+            message: 'O app precisa acessar suas fotos para enviar a imagem do anúncio.',
+            buttonPositive: 'Permitir',
+            buttonNegative: 'Negar',
+          }
+        );
+        if (readStorage === PermissionsAndroid.RESULTS.GRANTED) {
+          openGallery();
+        } else {
+          showPermissionDeniedAlert();
+        }
       }
-
-      const writeStoragePermission = await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE);
-      if (writeStoragePermission !== PermissionsAndroid.RESULTS.GRANTED) {
-        showPermissionDeniedAlert(); // Exibe o alerta se a permissão for negada
-        return false;
-      }
-
-      const cameraPermission = await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.CAMERA);
-      if (cameraPermission !== PermissionsAndroid.RESULTS.GRANTED) {
-        showPermissionDeniedAlert(); // Exibe o alerta se a permissão for negada
-        return false;
-      }
-      return true;
     } catch (err) {
-      console.warn('Erro ao solicitar permissões:', err);
-      return false;
+      console.warn('Erro permissão galeria:', err);
+      Toast.show({ type: 'error', text1: 'Não foi possível acessar a galeria.' });
     }
   }
 
-  // Função para verificar permissões e abrir o ImagePicker
-  async function pickSingle({ cropit, circular = false, mediaType }: any) {
-    const hasPermissions = await requestPermissions(); // Verifica permissões antes de abrir o picker
-
-    if (hasPermissions) {
-      // Se as permissões foram concedidas, abre o ImagePicker
-      try {
-        // const image = await ImagePicker.openPicker({
-        //   width: 300,
-        //   height: 200,
-        //   multiple: false,
-        //   maxFiles: 1,
-        //   minFiles: 1,
-        //   compressImageQuality: 1,
-        //   cropping: true,
-        // });
-        // setImagemSelecionada(image.path);
-        // setImagemEnvio(image);
-      } catch (imageError) {
-        console.error('Erro ao abrir o ImagePicker:', imageError); // Se houver erro ao abrir o picker
+  async function requestCameraPermissionAndOpen() {
+    try {
+      if (Platform.OS === 'ios') {
+        const status = await check(PERMISSIONS.IOS.CAMERA);
+        if (status === RESULTS.GRANTED) {
+          openCamera();
+          return;
+        }
+        const requestStatus = await request(PERMISSIONS.IOS.CAMERA);
+        if (requestStatus === RESULTS.GRANTED) {
+          openCamera();
+        } else if (requestStatus === RESULTS.BLOCKED) {
+          showPermissionDeniedAlert();
+        } else {
+          showPermissionDeniedAlert();
+        }
+      } else {
+        const hasPermission = await PermissionsAndroid.check(PermissionsAndroid.PERMISSIONS.CAMERA);
+        if (hasPermission) {
+          openCamera();
+          return;
+        }
+        const cameraPermission = await PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.CAMERA,
+          {
+            title: 'Acesso à câmera',
+            message: 'O app precisa usar a câmera para tirar a foto do anúncio.',
+            buttonPositive: 'Permitir',
+            buttonNegative: 'Negar',
+          }
+        );
+        if (cameraPermission === PermissionsAndroid.RESULTS.GRANTED) {
+          openCamera();
+        } else {
+          showPermissionDeniedAlert();
+        }
       }
-    } else {
-      console.error('Permissões não concedidas, não foi possível abrir o ImagePicker');
+    } catch (err) {
+      console.warn('Erro permissão câmera:', err);
+      Toast.show({ type: 'error', text1: 'Não foi possível acessar a câmera.' });
     }
+  }
+
+  function openGallery() {
+    ImagePicker.openPicker({
+      width: 500,
+      height: 500,
+      cropping: true,
+      cropperCircleOverlay: false,
+      compressImageMaxWidth: 1000,
+      compressImageMaxHeight: 1000,
+      compressImageQuality: 1,
+      mediaType: 'photo',
+      cropperToolbarTitle: 'Editar foto',
+      cropperChooseText: 'Usar',
+      cropperCancelText: 'Cancelar',
+    })
+      .then((image: any) => {
+        setImagemSelecionada(image.path);
+        setImagemEnvio(image);
+      })
+      .catch((error: any) => {
+        if (error?.code !== 'E_PICKER_CANCELLED') {
+          Toast.show({ type: 'error', text1: error?.message ?? 'Erro ao abrir a galeria.' });
+        }
+      });
+  }
+
+  function openCamera() {
+    ImagePicker.openCamera({
+      width: 500,
+      height: 500,
+      cropping: true,
+      compressImageMaxWidth: 1000,
+      compressImageMaxHeight: 1000,
+      compressImageQuality: 1,
+      mediaType: 'photo',
+      cropperToolbarTitle: 'Editar foto',
+      cropperChooseText: 'Usar',
+      cropperCancelText: 'Cancelar',
+    })
+      .then((image: any) => {
+        setImagemSelecionada(image.path);
+        setImagemEnvio(image);
+      })
+      .catch((error: any) => {
+        if (error?.code !== 'E_PICKER_CANCELLED') {
+          Toast.show({ type: 'error', text1: error?.message ?? 'Erro ao abrir a câmera.' });
+        }
+      });
+  }
+
+  function handlePickImage() {
+    Alert.alert(
+      'Upload da imagem',
+      'Escolha de onde enviar a imagem',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        { text: 'Galeria', onPress: requestGalleryPermissionAndOpen },
+        { text: 'Câmera', onPress: requestCameraPermissionAndOpen },
+      ],
+      { cancelable: true }
+    );
   }
 
   async function validar() {
@@ -1279,7 +1359,7 @@ export default function ClienteCriaCuponScreen() {
 
           {imagemSelecionada ? (
             <TouchableOpacity
-              onPress={() => pickSingle(false)}
+              onPress={handlePickImage}
               className="items-center mt-4 mb-4 w-full h-52 mx-auto"
               style={{
                 borderWidth: 2,
@@ -1296,7 +1376,7 @@ export default function ClienteCriaCuponScreen() {
             </TouchableOpacity>
           ) : (
             <TouchableOpacity
-              onPress={() => pickSingle(false)}
+              onPress={handlePickImage}
               className="items-center p-7 mt-4 mb-4"
               style={{
                 backgroundColor: colors.primary90,
