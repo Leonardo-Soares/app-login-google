@@ -272,8 +272,10 @@ export default function CardProduto(
   }
 
   async function getHorarios() {
+    const userId = dados_gerais?.user_id ?? id_anunciante;
+    if (!userId) return;
     try {
-      const response = await api.get(`/horarios-funcionamento?user_id=${dados_gerais.user_id}`);
+      const response = await api.get(`/horarios-funcionamento?user_id=${userId}`);
       // A API retorna horarios como um array, então pegamos o primeiro elemento     
       if (response.data.results?.horarios && Array.isArray(response.data.results.horarios) && response.data.results.horarios.length > 0) {
         setListaHorarios(response.data.results.horarios[0])
@@ -508,7 +510,7 @@ export default function CardProduto(
                     {formatarTelefone(dados_gerais?.telefone)}
                   </Caption>
                 </Caption>
-                {dados_gerais.endereco && dados_gerais.endereco.length > 5 &&
+                {dados_gerais?.endereco && dados_gerais.endereco.length > 5 &&
                   <>
                     <View className='w-full h-4' />
                     <Caption fontWeight={'bold'} color={colors.dark} fontSize={16} >
@@ -517,7 +519,7 @@ export default function CardProduto(
                         {dados_gerais?.endereco}
                       </Caption>
                     </Caption>
-                    <TouchableOpacity onPress={() => abrirNoMaps(dados_gerais.endereco)} className='w-full flex-row justify-between rounded-md bg-[#2F009C] flex items-center h-10 px-2 mt-2'>
+                    <TouchableOpacity onPress={() => abrirNoMaps(dados_gerais?.endereco)} className='w-full flex-row justify-between rounded-md bg-[#2F009C] flex items-center h-10 px-2 mt-2'>
                       <Text className='text-white font-bold text-base'>
                         Traçar rota
                       </Text>
@@ -555,18 +557,18 @@ export default function CardProduto(
                     </View>
                   </View>
                 }
-                {dados_gerais.latitude && dados_gerais.longitude &&
+                {dados_gerais?.latitude && dados_gerais?.longitude &&
                   <>
                     <View className='w-full h-4' />
                     <Caption fontWeight={'bold'} color={colors.dark} fontSize={16} >
                       Mapa:
                     </Caption>
-                    <MapView
-                      onPress={() => Linking.openURL(`https://www.google.com/maps/@${dados_gerais.latitude},${dados_gerais.longitude},25z`)}
+                    {/* <MapView
+                      onPress={() => Linking.openURL(`https://www.google.com/maps/@${dados_gerais?.latitude},${dados_gerais?.longitude},25z`)}
                       className='w-full h-40 mt-2'
                       initialRegion={{
-                        latitude: parseFloat(dados_gerais.latitude),
-                        longitude: parseFloat(dados_gerais.longitude),
+                        latitude: parseFloat(String(dados_gerais?.latitude)),
+                        longitude: parseFloat(String(dados_gerais?.longitude)),
                         latitudeDelta: 0.0922,
                         longitudeDelta: 0.0421,
                       }}
@@ -575,21 +577,18 @@ export default function CardProduto(
                       loadingEnabled={false}
                       toolbarEnabled={false}
                       onMapReady={() => { }}
-                      onError={(error) => {
-                        console.log('MapView Error:', error);
-                      }}
                     >
                       <Marker
                         coordinate={{
-                          latitude: parseFloat(dados_gerais.latitude),
-                          longitude: parseFloat(dados_gerais.longitude),
+                          latitude: parseFloat(String(dados_gerais?.latitude)),
+                          longitude: parseFloat(String(dados_gerais?.longitude)),
                         }}
                         draggable={false}
                         pinColor={'#5D35F1'}
                         anchor={{ x: 0.69, y: 1 }}
                         centerOffset={{ x: -18, y: -60 }}
                       />
-                    </MapView>
+                    </MapView> */}
                   </>
                 }
               </ScrollView>
