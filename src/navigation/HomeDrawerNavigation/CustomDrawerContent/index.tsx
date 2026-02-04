@@ -9,9 +9,11 @@ import { useGlobal } from '../../../context/GlobalContextProvider'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import ModalTemplateCateirinha from '../../../components/Modals/ModalTemplateCateirinha'
 import IcoAfiliado from '../../../svg/IcoAfiliado'
+import React from 'react'
 
 export function CustomDrawerContent(props: any) {
   const { navigate, dispatch } = useNavigate()
+  const drawerNavigation = props.navigation
   const [associado, setAssociado] = useState('')
   const { tipoUser, setUsuarioLogado } = useGlobal()
   const [modalCarteirinha, setModalCarteirinha] = useState(false)
@@ -57,17 +59,20 @@ export function CustomDrawerContent(props: any) {
           {tipoUser === 'Anunciante' ?
             <>
               <MenuItem
-                onPress={() => navigate('ClientePacotesScreen')}
+                onPress={() => { drawerNavigation.closeDrawer(); drawerNavigation.navigate('ClientePacotesScreen') }}
                 titulo='Tipos de Pacotes'
                 icon={require('../../../../assets/img/icons/cart.png')}
               />
               <MenuItem
-                onPress={() => navigate('ClienteConsumoScreen')}
+                onPress={() => { drawerNavigation.closeDrawer(); drawerNavigation.navigate('ClienteConsumoScreen') }}
                 titulo='Meu Consumo'
                 icon={require('../../../../assets/img/icons/money.png')}
               />
               <MenuItem
-                onPress={() => navigate('ClientePerfilScreen')}
+                onPress={() => {
+                  drawerNavigation.closeDrawer()
+                  drawerNavigation.navigate('ClienteTabNavigation', { screen: 'ClientePerfilScreen' })
+                }}
                 titulo='Perfil'
                 icon={require('../../../../assets/img/icons/perfil-menu.png')}
               />
@@ -77,27 +82,27 @@ export function CustomDrawerContent(props: any) {
                 icon={require('../../../../assets/img/icons/estabelecimento.png')}
               /> */}
               <MenuItem
-                onPress={() => navigate('DocumentosScreen')}
+                onPress={() => { drawerNavigation.closeDrawer(); drawerNavigation.navigate('DocumentosScreen') }}
                 titulo='Documentos'
                 icon={require('../../../../assets/img/icons/doc.png')}
               />
               <MenuItem
-                onPress={() => navigate('ContatosScreen')}
+                onPress={() => { drawerNavigation.closeDrawer(); drawerNavigation.navigate('ContatosScreen') }}
                 titulo='Contato'
                 icon={require('../../../../assets/img/icons/faq.png')}
               />
               <MenuItem
-                onPress={() => navigate('FaqScreen')}
+                onPress={() => { drawerNavigation.closeDrawer(); drawerNavigation.navigate('FaqScreen') }}
                 titulo='FAQ'
                 icon={require('../../../../assets/img/icons/question-out.png')}
               />
               <MenuItem
-                onPress={() => navigate('ConfiguracoesScreen')}
+                onPress={() => { drawerNavigation.closeDrawer(); drawerNavigation.navigate('ConfiguracoesScreen') }}
                 titulo='Configurações'
                 icon={require('../../../../assets/img/icons/settings.png')}
               />
               <MenuItem
-                onPress={() => navigate('OnBoardingScreen')}
+                onPress={() => { drawerNavigation.closeDrawer(); navigate('OnBoardingScreen') }}
                 titulo='Tutorial'
                 icon={require('../../../../assets/img/icons/tutorial-menu.png')}
               />
@@ -124,32 +129,38 @@ export function CustomDrawerContent(props: any) {
                 icon={require('../../../../assets/img/icons/estabelecimento.png')}
               />
               <MenuItem
-                onPress={() => navigate('AcompanhamentoAfiliadoScreen')}
+                onPress={() => {
+                  drawerNavigation.closeDrawer()
+                  drawerNavigation.navigate('HomeTabNavigation', { screen: 'AcompanhamentoAfiliadoScreen' })
+                }}
                 titulo='Programa de Filiados'
                 icon={IcoAfiliado}
               />
               <MenuItem
-                onPress={() => navigate('ConfiguracoesScreen')}
+                onPress={() => { drawerNavigation.closeDrawer(); drawerNavigation.navigate('ConfiguracoesScreen') }}
                 titulo='Configurações'
                 icon={require('../../../../assets/img/icons/settings.png')}
               />
               <MenuItem
-                onPress={() => navigate('DocumentosScreen')}
+                onPress={() => { drawerNavigation.closeDrawer(); drawerNavigation.navigate('DocumentosScreen') }}
                 titulo='Documentos'
                 icon={require('../../../../assets/img/icons/doc.png')}
               />
               <MenuItem
-                onPress={() => navigate('ContatosScreen')}
+                onPress={() => { drawerNavigation.closeDrawer(); drawerNavigation.navigate('ContatosScreen') }}
                 titulo='Contato'
                 icon={require('../../../../assets/img/icons/faq.png')}
               />
               <MenuItem
-                onPress={() => navigate('FaqScreen')}
+                onPress={() => { drawerNavigation.closeDrawer(); drawerNavigation.navigate('FaqScreen') }}
                 titulo='FAQ'
                 icon={require('../../../../assets/img/icons/question-out.png')}
               />
               <MenuItem
-                onPress={() => navigate('Perfil')}
+                onPress={() => {
+                  drawerNavigation.closeDrawer()
+                  drawerNavigation.navigate('HomeTabNavigation', { screen: 'Perfil' })
+                }}
                 titulo='Perfil'
                 icon={require('../../../../assets/img/icons/perfil-menu.png')}
               />
