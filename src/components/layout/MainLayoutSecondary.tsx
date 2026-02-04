@@ -18,7 +18,7 @@ export default function MainLayoutSecondary({ children, align, loading }: PropsL
       {loading &&
         <Loading />
       }
-      <ScrollView contentContainerStyle={{ justifyContent: align ?? 'center', marginTop: 24 }} showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={{ justifyContent: align ?? 'center' }} showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false}>
         {children}
         <View className='h-16'></View>
       </ScrollView>

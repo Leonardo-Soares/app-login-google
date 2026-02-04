@@ -1,8 +1,6 @@
-import { colors } from "../../../../styles/colors"
+import React from "react"
 import { Text, Image, View } from "react-native"
 import { useNavigate } from "../../../../hooks/useNavigate"
-import Caption from "../../../../components/typography/Caption"
-import IcoCupomDescontoPequeno from "../../../../svg/IcoCupomDescontoPequeno"
 import MainLayoutAutenticado from "../../../../components/layout/MainLayoutAutenticado"
 
 export default function HomeClienteScreen() {
