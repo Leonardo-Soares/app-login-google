@@ -19,22 +19,26 @@ export default function HeaderPrimary({ titulo, descricao, voltarScreen }: Props
 
   return (
     <View>
-      <View className='flex-row px-2 mt-4 items-center'>
-        {voltarScreen ?
-          <TouchableOpacity onPress={voltarScreen} className='flex-row px-2'>
+      <View className='flex-row px-2 mt-4 items-center' style={{ flexWrap: 'wrap' }}>
+        {voltarScreen ? (
+          <TouchableOpacity onPress={voltarScreen} className='flex-row px-2' style={{ flex: 1, flexDirection: 'row', alignItems: 'center' }}>
             <Image
               source={require('../../../assets/img/icons/seta-esquerda.png')}
             />
-            <H3>{titulo}</H3>
+            <View style={{ flex: 1, marginLeft: 4 }}>
+              <H3>{titulo}</H3>
+            </View>
           </TouchableOpacity>
-          :
-          <TouchableOpacity className='flex-row px-2' onPress={handleGoBack}>
+        ) : (
+          <TouchableOpacity className='flex-row px-2' onPress={handleGoBack} style={{ flex: 1, flexDirection: 'row', alignItems: 'center' }}>
             <Image
               source={require('../../../assets/img/icons/seta-esquerda.png')}
             />
-            <H3>{titulo}</H3>
+            <View style={{ flex: 1, marginLeft: 4 }}>
+              <H3>{titulo}</H3>
+            </View>
           </TouchableOpacity>
-        }
+        )}
       </View>
 
       {descricao &&

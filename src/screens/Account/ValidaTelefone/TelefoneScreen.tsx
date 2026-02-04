@@ -37,42 +37,38 @@ export default function TelefoneScreen({ navigation }: { navigation: any }) {
         <View className='w-full items-center px-4'>
           <H5>Digite o número do seu telefone</H5>
 
-          <View className='w-full max-w-xs border-spacing-1 border-[#79747E] border-2 rounded-md mt-4'>
+          <View className='w-full max-w-xs border-[#79747E] border-2 rounded-md mt-4' style={{ height: 46 }}>
             <Image
               className='absolute top-[8px] left-2'
               source={require('../../../../assets/img/icons/brasil.png')}
             />
-            {Platform.OS === 'android' ?
-              <View className='absolute left-14 top-[8px]'>
-                <H5 color={colors.blackbase}>+55</H5>
-              </View>
-              :
-              <View className='absolute left-14 top-[12px]'>
-                <H5 color={colors.blackbase}>+55</H5>
-              </View>
-            }
+            <View style={{ position: 'absolute', left: 56, top: Platform.OS === 'android' ? 8 : 12 }}>
+              <H5 color={colors.blackbase}>+55</H5>
+            </View>
 
-            {telefoneDigitado === '' ? (
-              <MaskedTextInput
-                mask={'(99) 99999-9999'}
-                maxLength={15}
-                keyboardType='numeric'
-                onChangeText={setTelefone}
-                style={{ color: colors.blackbase }}
-                className='h-[46px] pb-1 ml-24 text-xl font-medium'
-              />
-            ) : (
-              <MaskedTextInput
-                mask={'(99) 99999-9999'}
-                maxLength={15}
-                value={telefoneDigitado}
-                keyboardType='numeric'
-                onChangeText={setTelefone}
-                placeholder={telefoneDigitado}
-                style={{ color: colors.blackbase }}
-                className='h-[46px] pb-1 ml-24 text-xl font-medium'
-              />
-            )}
+            <MaskedTextInput
+              mask="(99) 99999-9999"
+              value={telefone}
+              maxLength={15}
+              keyboardType="numeric"
+              placeholder="(00) 00000-0000"
+              onChangeText={(text) => {
+                setTelefone(text);
+                setTelefoneDigitado(text);
+              }}
+              style={[
+                {
+                  color: colors.blackbase,
+                  fontSize: 18,
+                  fontWeight: '500',
+                  marginLeft: 96,
+                  height: 46,
+                  paddingVertical: 0,
+                  paddingHorizontal: 8,
+                  fontVariant: ['tabular-nums'],
+                },
+              ]}
+            />
           </View>
         </View>
 

@@ -58,7 +58,7 @@ export default function CadastroSucessoAnuncianteScreen({ navigation }: { naviga
         navigate('LoginScreen')
       }
     } catch (error: any) {
-      console.log('Error Login: ', error)
+      console.error('Error Login: ', error)
     }
     setLoading(false)
   }

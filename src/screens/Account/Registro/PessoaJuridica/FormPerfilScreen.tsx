@@ -59,6 +59,7 @@ export default function FormPerfilScreen({ route }: { route: any }) {
           const response = await api.post("/cadastro/pessoa-juridica", formdata,
             { headers: { 'Content-Type': 'multipart/form-data' } })
           if (!response.data.error) {
+            await AsyncStorage.setItem('dados-perfil', JSON.stringify(response.data.results))
             await AsyncStorage.setItem('user-email', infoForm?.email)
             await AsyncStorage.setItem('id-user', response.data.results.id.toString())
             setSenhaUser(infoForm?.senha)
@@ -93,6 +94,7 @@ export default function FormPerfilScreen({ route }: { route: any }) {
         if (!response.data.error) {
           await AsyncStorage.setItem('user-email', infoForm?.email)
           await AsyncStorage.setItem('id-user', response.data.results.id.toString())
+          await AsyncStorage.setItem('dados-perfil', JSON.stringify(response.data.results))
           setSenhaUser(infoForm?.senha)
           setTipoUser('Anunciante')
           Toast.show({

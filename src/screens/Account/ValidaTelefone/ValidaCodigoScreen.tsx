@@ -30,25 +30,21 @@ export default function ValidaCodigoScreen({ navigation }: { navigation: any }) 
   const [loading, setLoading] = useState(false)
   const { telefoneDigitado, tipoUser } = useGlobal()
 
-  const focusNextInput = (nextInput: React.RefObject<TextInput>) => {
-    nextInput.current?.focus()
-  }
-
-  const hideKeyboard = () => {
-    Keyboard.dismiss()
-  }
 
   async function reenviaCodigo() {
     setInput1('')
     setLoading(true)
+
     const jsonPerfil = await AsyncStorage.getItem('dados-perfil')
 
     if (jsonPerfil) {
       const jsonPefil = JSON.parse(jsonPerfil)
+
       try {
         const response = await api.post(`/valida-codigo/reenvia`, {
-          id: jsonPefil
+          id: jsonPefil.id
         })
+
         Toast.show({
           type: 'success',
           text1: response.data.message ?? 'Código reenviado com sucesso',
@@ -141,7 +137,7 @@ export default function ValidaCodigoScreen({ navigation }: { navigation: any }) 
       <HeaderPrimary titulo='Confirmação do código' />
       <View className='flex-1 justify-between items-center mb-8'>
 
-        <View></View>
+        <View />
 
         <View className='w-full items-center px-4'>
           <Paragrafo

@@ -19,7 +19,7 @@ export default function MainLayout({ children, carregando, scroll }: PropsMainLa
           {children}
         </View>
         :
-        <ScrollView contentContainerStyle={{ flex: 1, marginTop: 24 }}>
+        <ScrollView contentContainerStyle={{ flex: 1 }}>
           {children}
         </ScrollView>
       }
