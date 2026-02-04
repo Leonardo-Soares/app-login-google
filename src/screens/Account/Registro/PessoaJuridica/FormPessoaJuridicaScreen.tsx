@@ -2,8 +2,9 @@ import axios from 'axios';
 import Toast from 'react-native-toast-message';
 import { colors } from '../../../../styles/colors';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
-// import ImagePicker from 'react-native-image-crop-picker';
+import ImagePicker from 'react-native-image-crop-picker';
 import React, { useEffect, useRef, useState } from 'react';
+import { check, request, openSettings, PERMISSIONS, RESULTS } from 'react-native-permissions';
 import { useNavigate } from '../../../../hooks/useNavigate';
 import { api, api_cnpj, api_ibge } from '../../../../service/api';
 import Geolocation from '@react-native-community/geolocation';
@@ -436,34 +437,157 @@ export default function FormPessoaJuridicaScreen({
     }
   };
 
-  function pickSingle({ cropit, circular = false, mediaType }: any) {
-    // ImagePicker.openPicker({
-    //   width: 500,
-    //   height: 500,
-    //   cropping: cropit,
-    //   cropperCircleOverlay: circular,
-    //   sortOrder: 'none',
-    //   compressImageMaxWidth: 1000,
-    //   compressImageMaxHeight: 1000,
-    //   compressImageQuality: 1,
-    //   compressVideoPreset: 'MediumQuality',
-    //   includeExif: false,
-    //   cropperStatusBarColor: '#fff',
-    //   cropperToolbarColor: '#fff',
-    //   cropperActiveWidgetColor: '#fff',
-    //   cropperToolbarWidgetColor: '#3498DB',
-    //   mediaType: 'photo',
-    // })
-    //   .then((image: any) => {
-    //     const lastSlashIndex = image.path.lastIndexOf('/');
-    //     const imageName = image.path.substring(lastSlashIndex + 1);
-    //     setImagemSelecionada(image.path);
-    //     setImagemEnvio(image);
-    //   })
-    //   .catch((error) => {
-    //     console.error(error);
-    //     Alert.alert(error.message ? error.message : error);
-    //   });
+  function showPermissionDeniedAlert() {
+    Alert.alert(
+      'Permissão necessária',
+      'Para enviar a logomarca é necessário permitir acesso à galeria ou câmera. Deseja abrir as configurações do app?',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        { text: 'Abrir configurações', onPress: () => openSettings() },
+      ],
+      { cancelable: false }
+    );
+  }
+
+  async function requestGalleryPermissionAndOpen() {
+    try {
+      if (Platform.OS === 'ios') {
+        const status = await check(PERMISSIONS.IOS.PHOTO_LIBRARY);
+        if (status === RESULTS.GRANTED || status === RESULTS.LIMITED) {
+          openGallery();
+          return;
+        }
+        const requestStatus = await request(PERMISSIONS.IOS.PHOTO_LIBRARY);
+        if (requestStatus === RESULTS.GRANTED || requestStatus === RESULTS.LIMITED) {
+          openGallery();
+        } else {
+          showPermissionDeniedAlert();
+        }
+      } else {
+        const readStorage = await PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
+          {
+            title: 'Acesso à galeria',
+            message: 'O app precisa acessar suas fotos para enviar a logomarca.',
+            buttonPositive: 'Permitir',
+            buttonNegative: 'Negar',
+          }
+        );
+        if (readStorage === PermissionsAndroid.RESULTS.GRANTED) {
+          openGallery();
+        } else {
+          showPermissionDeniedAlert();
+        }
+      }
+    } catch (err) {
+      console.warn('Erro permissão galeria:', err);
+      Toast.show({ type: 'error', text1: 'Não foi possível acessar a galeria.' });
+    }
+  }
+
+  async function requestCameraPermissionAndOpen() {
+    try {
+      if (Platform.OS === 'ios') {
+        const status = await check(PERMISSIONS.IOS.CAMERA);
+        if (status === RESULTS.GRANTED) {
+          openCamera();
+          return;
+        }
+        const requestStatus = await request(PERMISSIONS.IOS.CAMERA);
+        if (requestStatus === RESULTS.GRANTED) {
+          openCamera();
+        } else if (requestStatus === RESULTS.BLOCKED) {
+          showPermissionDeniedAlert();
+        } else {
+          showPermissionDeniedAlert();
+        }
+      } else {
+        const hasPermission = await PermissionsAndroid.check(PermissionsAndroid.PERMISSIONS.CAMERA);
+        if (hasPermission) {
+          openCamera();
+          return;
+        }
+        const cameraPermission = await PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.CAMERA,
+          {
+            title: 'Acesso à câmera',
+            message: 'O app precisa usar a câmera para tirar a foto da logomarca.',
+            buttonPositive: 'Permitir',
+            buttonNegative: 'Negar',
+          }
+        );
+        if (cameraPermission === PermissionsAndroid.RESULTS.GRANTED) {
+          openCamera();
+        } else {
+          showPermissionDeniedAlert();
+        }
+      }
+    } catch (err) {
+      console.warn('Erro permissão câmera:', err);
+      Toast.show({ type: 'error', text1: 'Não foi possível acessar a câmera.' });
+    }
+  }
+
+  function openGallery() {
+    ImagePicker.openPicker({
+      width: 500,
+      height: 500,
+      cropping: true,
+      cropperCircleOverlay: false,
+      compressImageMaxWidth: 1000,
+      compressImageMaxHeight: 1000,
+      compressImageQuality: 1,
+      mediaType: 'photo',
+      cropperToolbarTitle: 'Editar foto',
+      cropperChooseText: 'Usar',
+      cropperCancelText: 'Cancelar',
+    })
+      .then((image: any) => {
+        setImagemSelecionada(image.path);
+        setImagemEnvio(image);
+      })
+      .catch((error: any) => {
+        if (error?.code !== 'E_PICKER_CANCELLED') {
+          Toast.show({ type: 'error', text1: error?.message ?? 'Erro ao abrir a galeria.' });
+        }
+      });
+  }
+
+  function openCamera() {
+    ImagePicker.openCamera({
+      width: 500,
+      height: 500,
+      cropping: true,
+      compressImageMaxWidth: 1000,
+      compressImageMaxHeight: 1000,
+      compressImageQuality: 1,
+      mediaType: 'photo',
+      cropperToolbarTitle: 'Editar foto',
+      cropperChooseText: 'Usar',
+      cropperCancelText: 'Cancelar',
+    })
+      .then((image: any) => {
+        setImagemSelecionada(image.path);
+        setImagemEnvio(image);
+      })
+      .catch((error: any) => {
+        if (error?.code !== 'E_PICKER_CANCELLED') {
+          Toast.show({ type: 'error', text1: error?.message ?? 'Erro ao abrir a câmera.' });
+        }
+      });
+  }
+
+  function handlePickImage() {
+    Alert.alert(
+      'Upload da logomarca',
+      'Escolha de onde enviar a imagem',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        { text: 'Galeria', onPress: requestGalleryPermissionAndOpen },
+        { text: 'Câmera', onPress: requestCameraPermissionAndOpen },
+      ],
+      { cancelable: true }
+    );
   }
 
   function getLocalizacao() {
@@ -676,7 +800,7 @@ export default function FormPessoaJuridicaScreen({
       <ScrollView contentContainerStyle={{ flexGrow: 1, paddingBottom: 320, marginHorizontal: 20 }}>
         {!imagemSelecionada && (
           <TouchableOpacity
-            onPress={() => pickSingle(false)}
+            onPress={handlePickImage}
             className="items-center p-4"
           >
             <View className="bg-[#F0F0F0] flex items-center justify-center rounded-full mb-2 p-3">
@@ -698,7 +822,7 @@ export default function FormPessoaJuridicaScreen({
 
         {imagemSelecionada && (
           <TouchableOpacity
-            onPress={() => pickSingle(false)}
+            onPress={handlePickImage}
             className="items-center  p-4"
           >
             <Image

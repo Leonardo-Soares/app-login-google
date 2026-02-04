@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import H5 from '../../../components/typography/H5';
-import { View, TouchableOpacity, Image, Text, Alert } from 'react-native';
+import { View, TouchableOpacity, Image, Text, Alert, Platform, PermissionsAndroid } from 'react-native';
 import ButtonPerfil from '../../../components/buttons/ButtonPerfil';
 import MainLayoutAutenticado from '../../../components/layout/MainLayoutAutenticado';
-// import { AnuncianteAtualizaPerfil } from '../../../@types/Anunciate';
 import { useNavigate } from '../../../hooks/useNavigate';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { api } from '../../../service/api';
-// import ImagePicker from 'react-native-image-crop-picker';
+import ImagePicker from 'react-native-image-crop-picker';
 import Toast from 'react-native-toast-message';
+import { check, request, openSettings, PERMISSIONS, RESULTS } from 'react-native-permissions';
 
 export default function ClientePerfilTrocarFotoScreen() {
   const [cpf, setCpf] = useState('');
@@ -46,10 +46,166 @@ export default function ClientePerfilTrocarFotoScreen() {
     }
   }
 
+  function showPermissionDeniedAlert() {
+    Alert.alert(
+      'Permissão necessária',
+      'Para alterar a logomarca é necessário permitir acesso à galeria ou câmera. Deseja abrir as configurações do app?',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        { text: 'Abrir configurações', onPress: () => openSettings() },
+      ],
+      { cancelable: false }
+    );
+  }
+
+  async function requestGalleryPermissionAndOpen() {
+    try {
+      if (Platform.OS === 'ios') {
+        const status = await check(PERMISSIONS.IOS.PHOTO_LIBRARY);
+        if (status === RESULTS.GRANTED || status === RESULTS.LIMITED) {
+          openGallery();
+          return;
+        }
+        const requestStatus = await request(PERMISSIONS.IOS.PHOTO_LIBRARY);
+        if (requestStatus === RESULTS.GRANTED || requestStatus === RESULTS.LIMITED) {
+          openGallery();
+        } else {
+          showPermissionDeniedAlert();
+        }
+      } else {
+        const readStorage = await PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
+          {
+            title: 'Acesso à galeria',
+            message: 'O app precisa acessar suas fotos para alterar a logomarca.',
+            buttonPositive: 'Permitir',
+            buttonNegative: 'Negar',
+          }
+        );
+        if (readStorage === PermissionsAndroid.RESULTS.GRANTED) {
+          openGallery();
+        } else {
+          showPermissionDeniedAlert();
+        }
+      }
+    } catch (err) {
+      console.warn('Erro permissão galeria:', err);
+      Toast.show({ type: 'error', text1: 'Não foi possível acessar a galeria.' });
+    }
+  }
+
+  async function requestCameraPermissionAndOpen() {
+    try {
+      if (Platform.OS === 'ios') {
+        const status = await check(PERMISSIONS.IOS.CAMERA);
+        if (status === RESULTS.GRANTED) {
+          openCamera();
+          return;
+        }
+        const requestStatus = await request(PERMISSIONS.IOS.CAMERA);
+        if (requestStatus === RESULTS.GRANTED) {
+          openCamera();
+        } else if (requestStatus === RESULTS.BLOCKED) {
+          showPermissionDeniedAlert();
+        } else {
+          showPermissionDeniedAlert();
+        }
+      } else {
+        const hasPermission = await PermissionsAndroid.check(PermissionsAndroid.PERMISSIONS.CAMERA);
+        if (hasPermission) {
+          openCamera();
+          return;
+        }
+        const cameraPermission = await PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.CAMERA,
+          {
+            title: 'Acesso à câmera',
+            message: 'O app precisa usar a câmera para tirar a foto da logomarca.',
+            buttonPositive: 'Permitir',
+            buttonNegative: 'Negar',
+          }
+        );
+        if (cameraPermission === PermissionsAndroid.RESULTS.GRANTED) {
+          openCamera();
+        } else {
+          showPermissionDeniedAlert();
+        }
+      }
+    } catch (err) {
+      console.warn('Erro permissão câmera:', err);
+      Toast.show({ type: 'error', text1: 'Não foi possível acessar a câmera.' });
+    }
+  }
+
+  function openGallery() {
+    ImagePicker.openPicker({
+      width: 500,
+      height: 500,
+      cropping: true,
+      cropperCircleOverlay: false,
+      compressImageMaxWidth: 1000,
+      compressImageMaxHeight: 1000,
+      compressImageQuality: 1,
+      mediaType: 'photo',
+      cropperToolbarTitle: 'Editar foto',
+      cropperChooseText: 'Usar',
+      cropperCancelText: 'Cancelar',
+    })
+      .then((image: any) => {
+        setImagemSelecionada(image.path);
+        setImagemEnvio(image.path);
+        handleAtualizaLogoPerfil(image);
+      })
+      .catch((error: any) => {
+        if (error?.code !== 'E_PICKER_CANCELLED') {
+          Toast.show({ type: 'error', text1: error?.message ?? 'Erro ao abrir a galeria.' });
+        }
+      });
+  }
+
+  function openCamera() {
+    ImagePicker.openCamera({
+      width: 500,
+      height: 500,
+      cropping: true,
+      compressImageMaxWidth: 1000,
+      compressImageMaxHeight: 1000,
+      compressImageQuality: 1,
+      mediaType: 'photo',
+      cropperToolbarTitle: 'Editar foto',
+      cropperChooseText: 'Usar',
+      cropperCancelText: 'Cancelar',
+    })
+      .then((image: any) => {
+        setImagemSelecionada(image.path);
+        setImagemEnvio(image.path);
+        handleAtualizaLogoPerfil(image);
+      })
+      .catch((error: any) => {
+        if (error?.code !== 'E_PICKER_CANCELLED') {
+          Toast.show({ type: 'error', text1: error?.message ?? 'Erro ao abrir a câmera.' });
+        }
+      });
+  }
+
+  function handlePickImage() {
+    Alert.alert(
+      'Alterar logomarca',
+      'Escolha de onde enviar a imagem',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        { text: 'Galeria', onPress: requestGalleryPermissionAndOpen },
+        { text: 'Câmera', onPress: requestCameraPermissionAndOpen },
+      ],
+      { cancelable: true }
+    );
+  }
+
   async function handleAtualizaLogoPerfil(logo: any) {
     const jsonValue = await AsyncStorage.getItem('infos-user');
     if (jsonValue) {
       const newJsonUsuario = JSON.parse(jsonValue);
+      setLoading(true);
       try {
         const headers = {
           Authorization: `Bearer ${newJsonUsuario.token}`,
@@ -57,62 +213,28 @@ export default function ClientePerfilTrocarFotoScreen() {
           'Content-Type': 'multipart/form-data',
         };
         const formdata = new FormData();
-        // formdata.append(
-        //   'logomarca',
-        //   {
-        //     uri: logo.path,
-        //     type: logo.mime,
-        //     name: 'logomarca.jpg',
-        //   },
-        //   logo.path
-        // );
+        formdata.append('logomarca', {
+          uri: logo.path,
+          type: logo.mime ?? 'image/jpeg',
+          name: 'logomarca.jpg',
+        } as any);
         const response = await api.post('/atualiza-logomarca', formdata, {
           headers,
         });
         Toast.show({
           type: 'success',
-          text1: response.data.message ?? 'Logomarca Atualizada!',
+          text1: response.data.message ?? 'Logomarca atualizada!',
         });
+        getPerfil();
       } catch (error: any) {
-        console.log(error.request);
+        console.log('Erro ao atualizar logomarca:', error?.response?.data);
         Toast.show({
           type: 'error',
-          text1:
-            error?.response?.data?.message ?? 'Erro ao atualizar logomarca!',
+          text1: error?.response?.data?.message ?? 'Erro ao atualizar logomarca!',
         });
       }
+      setLoading(false);
     }
-  }
-
-  function pickSingle({ cropit, circular = false, mediaType }: any) {
-    // ImagePicker.openPicker({
-    //   width: 500,
-    //   height: 500,
-    //   cropping: cropit,
-    //   cropperCircleOverlay: circular,
-    //   sortOrder: 'none',
-    //   compressImageMaxWidth: 1000,
-    //   compressImageMaxHeight: 1000,
-    //   compressImageQuality: 1,
-    //   compressVideoPreset: 'MediumQuality',
-    //   includeExif: false,
-    //   cropperStatusBarColor: '#fff',
-    //   cropperToolbarColor: '#fff',
-    //   cropperActiveWidgetColor: '#fff',
-    //   cropperToolbarWidgetColor: '#3498DB',
-    //   mediaType: 'photo',
-    // })
-    //   .then((image: any) => {
-    //     const lastSlashIndex = image.path.lastIndexOf('/');
-    //     const imageName = image.path.substring(lastSlashIndex + 1);
-    //     setImagemSelecionada(image.path);
-    //     setImagemEnvio(image);
-    //     handleAtualizaLogoPerfil(image);
-    //   })
-    //   .catch((error) => {
-    //     console.log(error);
-    //     Alert.alert(error.message ? error.message : error);
-    //   });
   }
 
   useEffect(() => {
@@ -131,7 +253,7 @@ export default function ClientePerfilTrocarFotoScreen() {
       <View className="mt-6">
         <TouchableOpacity
           className="border rounded p-3"
-          onPress={() => pickSingle(false)}
+          onPress={handlePickImage}
         >
           {logomarca && !imagemSelecionada && (
             <Image

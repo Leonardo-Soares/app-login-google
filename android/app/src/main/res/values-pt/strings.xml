@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- uCrop (react-native-image-crop-picker) - textos em português -->
+    <string name="ucrop_label_original">Original</string>
+    <string name="ucrop_label_edit_photo">Editar foto</string>
+    <string name="ucrop_menu_crop">Cortar</string>
+    <string name="ucrop_rotate">Girar</string>
+    <string name="ucrop_scale">Zoom</string>
+    <string name="ucrop_crop">Cortar</string>
+</resources>
