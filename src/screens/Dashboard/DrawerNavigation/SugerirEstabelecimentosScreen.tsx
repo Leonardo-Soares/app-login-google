@@ -10,6 +10,7 @@ import HeaderPrimary from '../../../components/header/HeaderPrimary'
 import InputMascaraPaper from '../../../components/forms/InputMascaraPaper'
 import { KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native'
 import MainLayoutAutenticadoSemScroll from '../../../components/layout/MainLayoutAutenticadoSemScroll'
+import React from 'react'
 
 export default function SugerirEstabelecimentosScreen() {
   const { navigate } = useNavigate()
@@ -53,7 +54,11 @@ export default function SugerirEstabelecimentosScreen() {
           type: 'success',
           text1: 'Dados enviados com sucesso!',
         })
-        navigate('Home')
+        setNome('')
+        setTelefone('')
+        setPerfilFacebook('')
+        setPerfilInstagram('')
+        setErrorNome(false)
       } else {
         Toast.show({
           type: 'error',
@@ -95,6 +100,7 @@ export default function SugerirEstabelecimentosScreen() {
               <InputOutlined
                 error={errorNome}
                 keyboardType={''}
+                value={nome}
                 onChange={setNome}
                 label='Nome do estabelecimento'
               />
@@ -109,12 +115,14 @@ export default function SugerirEstabelecimentosScreen() {
               <InputOutlined
                 mt={12}
                 keyboardType={'default'}
+                value={perfilFacebook}
                 onChange={setPerfilFacebook}
                 label='Perfil do facebook (opcional)'
               />
               <InputOutlined
                 mt={12}
                 keyboardType={'default'}
+                value={perfilInstagram}
                 onChange={setPerfilInstagram}
                 label='Perfil do intagram (opcional)'
               />
