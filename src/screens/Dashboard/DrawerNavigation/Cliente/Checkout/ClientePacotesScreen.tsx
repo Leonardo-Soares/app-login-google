@@ -73,7 +73,9 @@ export default function ClientePacotesScreen() {
     <MainLayoutAutenticado marginTop={0} marginHorizontal={0} loading={loading}>
       <HeaderPrimary titulo='Selecionar pacotes' />
       <View className='mx-7 mt-5 min-h-full'>
-        {listaplanos && listaplanos.map((item: any, index: any) => (
+        {listaplanos && [...listaplanos]
+          .sort((a: any, b: any) => (a.valor === '0.00' ? -1 : 1) - (b.valor === '0.00' ? -1 : 1))
+          .map((item: any, index: any) => (
           <View key={index}>
             {item.status != 0 &&
               <>{item.id === 4
