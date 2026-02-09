@@ -69,8 +69,8 @@ export default function CadastroSucessoAnuncianteScreen({ navigation }: { naviga
 
   return (
     <MainLayout carregando={loading}>
-      <View className='flex-1 items-center justify-between'>
-        <View>
+      <View className='flex-1'>
+        <View className='flex-1 justify-center items-center'>
           <IcoMulherSucesso />
           <View className='mt-2 mx-4'>
             <H2 align={'center'} title='Cadastro realizado com sucesso!' />
