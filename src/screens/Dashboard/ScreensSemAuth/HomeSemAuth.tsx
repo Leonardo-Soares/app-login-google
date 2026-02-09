@@ -49,7 +49,7 @@ export default function HomeSemAuth() {
       }
 
     } catch (error: any) {
-      console.log('ERROR Lista Cupons(Sem auth): ', error.response.data)
+      console.error('ERROR Lista Cupons(Sem auth): ', error.response.data)
     }
 
     setIsRefreshing(false)

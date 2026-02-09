@@ -9,7 +9,7 @@ export default function ContentBottomCliente(props: any) {
   const { navigate } = useNavigate();
 
   return (
-    <View className='absolute bottom-0 flex-row justify-around items-center z-50 w-full ' style={{ backgroundColor: colors.secondary50, height: 82 }}>
+    <View className='absolute bottom-0 flex-row justify-around items-center z-50 w-full' style={{ backgroundColor: colors.secondary50, height: 82 }}>
       <ItemDrawer
         titulo='Home'
         onPress={() => navigate('ClienteTabNavigation', { screen: 'HomeClienteScreen' })}

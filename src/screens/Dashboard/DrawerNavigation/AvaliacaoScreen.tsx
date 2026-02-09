@@ -11,6 +11,7 @@ import FilledButton from '../../../components/buttons/FilledButton'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import MainLayoutAutenticado from '../../../components/layout/MainLayoutAutenticado'
 import { ScrollView } from 'react-native-gesture-handler'
+import React from 'react'
 
 export default function AvaliacaoScreen({ route }: { route?: any }) {
   const { goBack } = useNavigate()
