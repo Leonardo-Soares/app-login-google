@@ -40,6 +40,10 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   plugins: [
     'expo-font',
     [
+      'react-native-vision-camera',
+      { enableCodeScanner: true },
+    ],
+    [
       "@react-native-google-signin/google-signin",
       {
         "iosUrlScheme": "com.googleusercontent.apps.729042460039-94o2afcsqiosc4nuddq3b067pt9upda4"

@@ -1,26 +1,40 @@
+import React, { useEffect, useState, useRef } from 'react'
 import { api } from '../../../service/api'
-import { useEffect, useState } from 'react'
 import IcoClose from '../../../svg/IcoClose'
 import Toast from 'react-native-toast-message'
 import Loading from '../../../components/Loading'
 import H3 from '../../../components/typography/H3'
-// import { BarCodeScanner } from 'expo-barcode-scanner'
 import IcoCloseWhite from '../../../svg/IcoCloseWhite'
 import { useIsFocused } from '@react-navigation/native'
 import { useNavigate } from '../../../hooks/useNavigate'
 import FilledButton from '../../../components/buttons/FilledButton'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import ButtonPrimary from '../../../components/buttons/ButtonPrimary'
-import { View, Text, TouchableOpacity, Modal, Image } from 'react-native'
+import { View, Text, TouchableOpacity, Modal, Image, Platform, PermissionsAndroid, StyleSheet } from 'react-native'
+import { check, request, PERMISSIONS, RESULTS } from 'react-native-permissions'
+import { Camera, useCameraDevice, useCodeScanner } from 'react-native-vision-camera'
 
 export default function CameraScreen() {
   const isFocused = useIsFocused()
-  const { navigate } = useNavigate()
+  const { navigate, goBack } = useNavigate()
+  const device = useCameraDevice('back')
   const [scanned, setScanned] = useState(false)
   const [loading, setLoading] = useState(false)
   const [dataValue, setDataValue] = useState('')
   const [modalVisible, setModalVisible] = useState(false)
-  const [hasPermission, setHasPermission] = useState(null)
+  const [hasPermission, setHasPermission] = useState<boolean | null>(null)
+  const scannedRef = useRef(false)
+
+  const codeScanner = useCodeScanner({
+    codeTypes: ['qr', 'ean-13', 'code-128', 'code-39'],
+    onCodeScanned: (codes) => {
+      if (codes.length > 0 && codes[0].value && !scannedRef.current) {
+        scannedRef.current = true
+        setDataValue(codes[0].value)
+        setScanned(true)
+      }
+    },
+  })
 
   // Request Camera Permission
   useEffect(() => {
@@ -28,33 +42,56 @@ export default function CameraScreen() {
   }, [])
 
   useEffect(() => {
+    scannedRef.current = false
     setScanned(false)
     askForCameraPermission()
   }, [isFocused])
 
-  useEffect(() => {
-    if (scanned) {
-      console.log('valor', dataValue)
-    }
-  }, [scanned])
-
   const handleStatusCodigo = () => {
+    scannedRef.current = false
     setDataValue('')
     setScanned(false)
   }
 
   const handleBackCamera = () => {
+    scannedRef.current = false
     setScanned(false)
     setDataValue('')
-    navigate('ClienteUtilizadosScreen')
+    goBack()
   }
 
   // Ask for permission to use the cam
-  const askForCameraPermission = () => {
-    // (async () => {
-    //   const { status } = await BarCodeScanner.requestPermissionsAsync();
-    //   setHasPermission((status === 'granted') as any);
-    // })();
+  const askForCameraPermission = async () => {
+    try {
+      if (Platform.OS === 'ios') {
+        const status = await check(PERMISSIONS.IOS.CAMERA)
+        if (status === RESULTS.GRANTED) {
+          setHasPermission(true)
+          return
+        }
+        const requestStatus = await request(PERMISSIONS.IOS.CAMERA)
+        setHasPermission(requestStatus === RESULTS.GRANTED)
+      } else {
+        const hasCameraPermission = await PermissionsAndroid.check(PermissionsAndroid.PERMISSIONS.CAMERA)
+        if (hasCameraPermission) {
+          setHasPermission(true)
+          return
+        }
+        const granted = await PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.CAMERA,
+          {
+            title: 'Acesso à câmera',
+            message: 'O app precisa usar a câmera para escanear códigos.',
+            buttonPositive: 'Permitir',
+            buttonNegative: 'Negar',
+          },
+        )
+        setHasPermission(granted === PermissionsAndroid.RESULTS.GRANTED)
+      }
+    } catch (err) {
+      console.warn('Erro ao solicitar permissão da câmera:', err)
+      setHasPermission(false)
+    }
   }
 
   async function onSubmit() {
@@ -99,13 +136,6 @@ export default function CameraScreen() {
     setDataValue('')
   }
 
-  // What happens when we scan the bar code
-  const handleBarCodeScanned = ({ type, data }: any) => {
-    setScanned(true);
-    // alert(`Bar code with type ${type} and data ${data} has been scanned!`);
-    setDataValue(data);
-  }
-
   //check permission and return the screens
   if (hasPermission === null) {
     return <View className='flex-1 items-center justify-center'>
@@ -115,9 +145,18 @@ export default function CameraScreen() {
   }
   if (hasPermission === false) {
     return (
-      <View>
-        <Text>Sem acesso a Câmera</Text>
-        <ButtonPrimary handler={() => null}>Permitir Acesso</ButtonPrimary>
+      <View className='flex-1 items-center justify-center px-6'>
+        <Text className='text-center mb-4'>Sem acesso à câmera. Permita o acesso para escanear códigos.</Text>
+        <ButtonPrimary handler={() => askForCameraPermission()}>Permitir Acesso</ButtonPrimary>
+      </View>
+    )
+  }
+
+  if (device == null && hasPermission) {
+    return (
+      <View className='flex-1 items-center justify-center'>
+        <Loading />
+        <Text className='mt-2'>Carregando câmera...</Text>
       </View>
     )
   }
@@ -148,7 +187,7 @@ export default function CameraScreen() {
           </View>
         </View>
       </Modal >
-      <View className='w-full flex-1 bg-[#fff]'>
+      <View className='w-full flex-1 bg-black'>
         <View className='flex-1 flex-row w-full absolute top-8 left-6 z-50 justify-start items-center'>
           <View className='flex-row items-center'>
             <TouchableOpacity onPress={handleBackCamera} className='bg-[#6750A4] items-center justify-center rounded-full h-12 w-12 mr-3'>
@@ -156,10 +195,12 @@ export default function CameraScreen() {
             </TouchableOpacity>
           </View>
         </View>
-        {/* <BarCodeScanner
-          onBarCodeScanned={scanned ? undefined : handleBarCodeScanned}
-          style={{ flex: 1, justifyContent: 'flex-start', alignItems: 'flex-start' }}
-        /> */}
+        <Camera
+          style={StyleSheet.absoluteFill}
+          device={device!}
+          isActive={isFocused}
+          codeScanner={codeScanner}
+        />
         {scanned &&
           <View className='absolute bottom-36 bg-[#E5DEFF] h-20 w-full items-center justify-center'>
             <TouchableOpacity onPress={handleStatusCodigo} className='absolute right-3 top-2 rounded-full'>

@@ -232,27 +232,27 @@ export default function ButtonsTecladoCamera() {
 
         <TouchableOpacity
           onPress={() => setModalVisible(true)}
-          className='rounded-full w-auto py-3 px-5'
+          className='rounded-full w-auto flex flex-row items-center py-3 px-5'
           style={larguraTela >= 160
             ? { borderWidth: 1, borderColor: colors.secondary50 }
             : { borderWidth: 1, borderColor: colors.secondary50, marginBottom: 8, alignItems: 'center' }
           }>
-          <Image className='absolute top-2 left-1 ml-2' source={require('../../../../assets/img/icons/comprovante.png')} />
+          <Image className='' source={require('../../../../assets/img/icons/comprovante.png')} />
           <View className='ml-4'>
-            <Caption fontSize={16} fontWeight={'500'} color={colors.secondary50}>Digitar código</Caption>
+            <Caption fontSize={14} fontWeight={'500'} color={colors.secondary50}>Digitar código</Caption>
           </View>
         </TouchableOpacity>
 
         <TouchableOpacity
-          className='rounded-full w-auto py-3 px-5'
+          className='rounded-full w-auto flex flex-row items-center py-3 px-5'
           onPress={() => navigate('CameraScreen')}
           style={larguraTela >= 160
             ? { borderWidth: 1, borderColor: colors.secondary50, backgroundColor: colors.secondary50 }
             : { borderWidth: 1, borderColor: colors.secondary50, backgroundColor: colors.secondary50, marginBottom: 8, alignItems: 'center' }
           }>
-          <Image className='absolute top-2 left-1 ml-2' source={require('../../../../assets/img/icons/camera.png')} />
+          <Image source={require('../../../../assets/img/icons/camera.png')} />
           <View className='ml-4'>
-            <Caption fontSize={16} fontWeight={'500'} color={colors.white}>Abrir câmera</Caption>
+            <Caption fontSize={14} fontWeight={'500'} color={colors.white}>Abrir câmera</Caption>
           </View>
         </TouchableOpacity>
       </View>
