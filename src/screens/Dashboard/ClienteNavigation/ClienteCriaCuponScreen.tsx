@@ -191,16 +191,18 @@ export default function ClienteCriaCuponScreen() {
           showPermissionDeniedAlert();
         }
       } else {
-        const readStorage = await PermissionsAndroid.request(
-          PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
-          {
-            title: 'Acesso à galeria',
-            message: 'O app precisa acessar suas fotos para enviar a imagem do anúncio.',
-            buttonPositive: 'Permitir',
-            buttonNegative: 'Negar',
-          }
-        );
-        if (readStorage === PermissionsAndroid.RESULTS.GRANTED) {
+        // Android 13+ (API 33+) usa READ_MEDIA_IMAGES; versões anteriores usam READ_EXTERNAL_STORAGE
+        const galleryPermission = (Platform.Version as number) >= 33
+          ? PERMISSIONS.ANDROID.READ_MEDIA_IMAGES
+          : PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE;
+
+        const status = await check(galleryPermission);
+        if (status === RESULTS.GRANTED) {
+          openGallery();
+          return;
+        }
+        const requestStatus = await request(galleryPermission);
+        if (requestStatus === RESULTS.GRANTED) {
           openGallery();
         } else {
           showPermissionDeniedAlert();

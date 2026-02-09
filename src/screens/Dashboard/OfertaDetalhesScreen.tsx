@@ -126,8 +126,8 @@ export default function OfertaDetalhesScreen(props: any) {
         <View className='w-full justify-center items-center h-96'>
           <LottieView style={{ width: 120, height: 120 }} source={require('../../animations/cupom-validado.json')} autoPlay loop />
           <H3 color={colors.secondary70} align={'center'}>Cupom validado com sucesso !!!</H3>
-          <View className='w-52 mt-6'>
-            <ButtonOutline title='Avaliar anunciante' onPress={handleCloseModalSucesso} />
+          <View className='w-56 mt-6'>
+            <ButtonOutline title='Avaliar Anunciante' onPress={handleCloseModalSucesso} />
             <View className='w-full h-4' />
             <ButtonOutline
               title='Voltar'
