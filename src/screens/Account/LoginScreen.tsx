@@ -163,12 +163,24 @@ export default function LoginScreen() {
   };
 
   async function getLocalizacao() {
-    Geolocation.getCurrentPosition((info) => {
-      setRegiao({
-        latitude: info.coords.latitude,
-        longitude: info.coords.longitude,
-      });
-    });
+    Geolocation.getCurrentPosition(
+      (info) => {
+        setRegiao({
+          latitude: info.coords.latitude,
+          longitude: info.coords.longitude,
+        });
+      },
+      (error) => {
+        if (error.code === 3) {
+          console.warn('Localização: timeout. Tente em área com melhor sinal.');
+        }
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 25000,
+        maximumAge: 15000,
+      }
+    );
   }
 
   async function getPermissionIOS() {

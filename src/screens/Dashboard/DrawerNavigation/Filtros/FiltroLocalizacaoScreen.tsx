@@ -98,7 +98,6 @@ export default function FiltroLocalizacaoScreen() {
         })
       },
       (error) => {
-        console.log('Erro ao obter localização', error)
         if (error.code === 3) {
           setLocalizacaoErro('Não conseguimos obter sua localização a tempo. Tente novamente em uma área com melhor sinal.')
         } else {

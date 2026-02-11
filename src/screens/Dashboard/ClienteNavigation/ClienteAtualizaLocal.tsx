@@ -101,12 +101,28 @@ export default function ClienteAtualizaLocal() {
   }
 
   function getLocalizacao() {
-    Geolocation.getCurrentPosition(info => {
-      setLocalizacaoGPS({
-        latitude: info.coords.latitude,
-        longitude: info.coords.longitude,
-      })
-    })
+    Geolocation.getCurrentPosition(
+      info => {
+        setLocalizacaoGPS({
+          latitude: info.coords.latitude,
+          longitude: info.coords.longitude,
+        })
+      },
+      error => {
+        if (error.code === 3) {
+          Toast.show({
+            type: 'info',
+            text1: 'Localização',
+            text2: 'Não foi possível obter a localização a tempo. Tente em um local com melhor sinal ou ao ar livre.'
+          })
+        }
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 25000,
+        maximumAge: 15000
+      }
+    )
   }
 
   async function getVerifica() {
