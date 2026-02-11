@@ -43,18 +43,22 @@ export default function HomeTabNavigation() {
               ? require('../../../assets/img/icons/perfil-focus.png')
               : require('../../../assets/img/icons/perfil.png')
           }
-          return <Image source={iconName} />;
+          return <Image
+            style={{
+              marginTop: 12,
+            }}
+            source={iconName} />;
         },
         tabBarActiveTintColor: '#FFF',
         tabBarInactiveTintColor: '#FFF',
         tabBarStyle: {
-          height: 82,
+          height: 72,
           borderTopColor: 'transparent',
           backgroundColor: colors.secondary50,
-          paddingBottom: 8
         },
         tabBarLabelStyle: {
           fontSize: 14,
+          marginTop: 12,
         },
       })}
     >
