@@ -46,11 +46,9 @@ export default function HomeScreen() {
           setCidade(atualCidade)
           const response = await api.get(`/cupons?estado=${atualEstado.sigla}&cidade=${atualCidade.nome}`, { headers })
           setProdutos(response.data.results)
-
         } else {
           const response = await api.get(`/cupons`, { headers })
           setProdutos(response.data.results)
-          console.log(response.data.results);
           setEstado(null)
           setCidade(null)
         }
