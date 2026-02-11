@@ -20,6 +20,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage'
 import { View, TouchableOpacity, Text, Image, Modal, Dimensions } from 'react-native'
 import { useGlobal } from '../../context/GlobalContextProvider'
 import MapView, { Marker } from 'react-native-maps'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 interface PropsProduto {
   qr_code?: any
@@ -77,6 +78,7 @@ export default function CardProduto(
   }: PropsProduto) {
 
   const isFocused = useIsFocused()
+  const insets = useSafeAreaInsets()
   const { navigate } = useNavigate()
   const { usuarioLogado } = useGlobal()
   const [loading, setLoading] = useState(false)
@@ -471,129 +473,80 @@ export default function CardProduto(
           </View>
         </View>
       </Modal>
-      <Modal visible={modalInfosAnunciante} animationType='slide' >
-        <View className='flex-1 w-full ' style={{ backgroundColor: colors.blackbase }}>
-          <View className='flex-1 justify-center my-20 mx-2 rounded-lg'>
-            <View className='bg-white mt-4'>
-              <ScrollView showsVerticalScrollIndicator={false} className='my-4 px-4'>
-                <TouchableOpacity onPress={() => setModalInfosAnunciante(false)} className='w-full rounded-md border-solid border-2 border-[#2F009C] flex justify-center items-center h-12 mb-4 px-2'>
-                  <Text className='text-[#2F009C]'>
-                    Voltar
-                  </Text>
-                </TouchableOpacity>
-                {/* {depoimentos && depoimentos.length > 0 &&
-                  <>
-                    <TouchableOpacity
-                      onPress={() => {
-                        setModalInfosAnunciante(false);
-                        navigate('ListaDepoimentosScreen');
-                      }}
-                      className='w-full flex-row justify-between items-center rounded-md h-12'
-                    >
-                      <Text className='font-bold text-base'>
-                        Ver Depoimentos ({depoimentos.length})
-                      </Text>
-                    </TouchableOpacity>
-                  </>
-                } */}
-                <Caption color={colors.dark} fontWeight={'bold'} fontSize={16} >
-                  Nome da Empresa:{' '}
-                  <Caption color={colors.dark} fontSize={16} margintop={0} >
-                    {nome_empresa}
-                  </Caption>
-                </Caption>
-                <View className='w-full h-4' />
-
-                <Caption fontWeight={'bold'} color={colors.dark} fontSize={16} >
-                  Telefone: {' '}
-                  <Caption color={colors.dark} fontSize={16} >
-                    {formatarTelefone(dados_gerais?.telefone)}
-                  </Caption>
-                </Caption>
-                {dados_gerais?.endereco && dados_gerais.endereco.length > 5 &&
-                  <>
-                    <View className='w-full h-4' />
-                    <Caption fontWeight={'bold'} color={colors.dark} fontSize={16} >
-                      Endereço: {' '}
-                      <Caption color={colors.dark} fontSize={16} margintop={0}>
-                        {dados_gerais?.endereco}
-                      </Caption>
-                    </Caption>
-                    <TouchableOpacity onPress={() => abrirNoMaps(dados_gerais?.endereco)} className='w-full flex-row justify-between rounded-md bg-[#2F009C] flex items-center h-10 px-2 mt-2'>
-                      <Text className='text-white font-bold text-base'>
-                        Traçar rota
-                      </Text>
-                      <Image source={require(`../../../assets/img/icons/icon-mapa.png`)} className='w-7 h-auto' resizeMode='contain' />
-                    </TouchableOpacity>
-                  </>
-                }
-                {listaHorarios &&
-                  <View className='w-full mt-2'>
-                    <Caption color={colors.dark} fontWeight={'bold'} margintop={0} fontSize={16} >
-                      Horários:
-                    </Caption>
-                    <View>
-                      <Caption color={colors.dark} fontSize={12} >
-                        Segunda-feira: {formatarHorario(listaHorarios?.segunda)}
-                      </Caption>
-                      <Caption color={colors.dark} fontSize={12} >
-                        Terça-feira: {formatarHorario(listaHorarios?.terca)}
-                      </Caption>
-                      <Caption color={colors.dark} fontSize={12} >
-                        Quarta-feira: {formatarHorario(listaHorarios?.quarta)}
-                      </Caption>
-                      <Caption color={colors.dark} fontSize={12} >
-                        Quinta-feira: {formatarHorario(listaHorarios?.quinta)}
-                      </Caption>
-                      <Caption color={colors.dark} fontSize={12} >
-                        Sexta-feira: {formatarHorario(listaHorarios?.sexta)}
-                      </Caption>
-                      <Caption color={colors.dark} fontSize={12} >
-                        Sábado: {formatarHorario(listaHorarios?.sabado)}
-                      </Caption>
-                      <Caption color={colors.dark} fontSize={12} >
-                        Domingo: {formatarHorario(listaHorarios?.domingo)}
-                      </Caption>
-                    </View>
-                  </View>
-                }
-                {dados_gerais?.latitude && dados_gerais?.longitude &&
-                  <>
-                    <View className='w-full h-4' />
-                    <Caption fontWeight={'bold'} color={colors.dark} fontSize={16} >
-                      Mapa:
-                    </Caption>
-                    {/* <MapView
-                      onPress={() => Linking.openURL(`https://www.google.com/maps/@${dados_gerais?.latitude},${dados_gerais?.longitude},25z`)}
-                      className='w-full h-40 mt-2'
-                      initialRegion={{
-                        latitude: parseFloat(String(dados_gerais?.latitude)),
-                        longitude: parseFloat(String(dados_gerais?.longitude)),
-                        latitudeDelta: 0.0922,
-                        longitudeDelta: 0.0421,
-                      }}
-                      showsUserLocation={false}
-                      showsMyLocationButton={false}
-                      loadingEnabled={false}
-                      toolbarEnabled={false}
-                      onMapReady={() => { }}
-                    >
-                      <Marker
-                        coordinate={{
-                          latitude: parseFloat(String(dados_gerais?.latitude)),
-                          longitude: parseFloat(String(dados_gerais?.longitude)),
-                        }}
-                        draggable={false}
-                        pinColor={'#5D35F1'}
-                        anchor={{ x: 0.69, y: 1 }}
-                        centerOffset={{ x: -18, y: -60 }}
-                      />
-                    </MapView> */}
-                  </>
-                }
-              </ScrollView>
-            </View>
+      <Modal visible={modalInfosAnunciante} animationType='slide' statusBarTranslucent>
+        <View style={{ flex: 1, backgroundColor: colors.neutral99, marginTop: '10%' }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingTop: (insets.top || 0) + 12, paddingBottom: 12, borderBottomWidth: 1, borderBottomColor: colors.neutral90 }}>
+            <Text style={{ fontSize: 11, fontWeight: '600', letterSpacing: 1, color: colors.neutralvariant50 }}>INFORMAÇÕES DO ANUNCIANTE</Text>
+            <TouchableOpacity onPress={() => setModalInfosAnunciante(false)} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
+              <Text style={{ fontSize: 15, color: colors.primary20, fontWeight: '600' }}>Fechar</Text>
+            </TouchableOpacity>
           </View>
+          <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ padding: 20, paddingBottom: 40 }}>
+            <View style={{ marginBottom: 20 }}>
+              <Text style={{ fontSize: 11, fontWeight: '600', letterSpacing: 0.5, color: colors.neutralvariant50, marginBottom: 6 }}>EMPRESA</Text>
+              <Text style={{ fontSize: 20, fontWeight: '700', color: colors.blackbase }}>{nome_empresa}</Text>
+            </View>
+
+            {dados_gerais?.telefone && (
+              <View style={{ marginBottom: 20 }}>
+                <Text style={{ fontSize: 11, fontWeight: '600', letterSpacing: 0.5, color: colors.neutralvariant50, marginBottom: 6 }}>TELEFONE</Text>
+                <Text style={{ fontSize: 17, fontWeight: '600', color: colors.blackbase }}>{formatarTelefone(dados_gerais.telefone)}</Text>
+              </View>
+            )}
+
+            {dados_gerais?.endereco && dados_gerais.endereco.length > 5 && (
+              <View style={{ marginBottom: 16 }}>
+                <Text style={{ fontSize: 11, fontWeight: '600', letterSpacing: 0.5, color: colors.neutralvariant50, marginBottom: 6 }}>ENDEREÇO</Text>
+                <Text style={{ fontSize: 15, fontWeight: '500', color: colors.blackbase, lineHeight: 22 }}>{dados_gerais.endereco}</Text>
+                <TouchableOpacity
+                  onPress={() => abrirNoMaps(dados_gerais?.endereco)}
+                  style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginTop: 10, paddingVertical: 12, paddingHorizontal: 16, backgroundColor: colors.primary20, borderRadius: 8 }}
+                >
+                  <Image source={require('../../../assets/img/icons/icon-mapa.png')} style={{ width: 20, height: 20, marginRight: 8 }} resizeMode='contain' />
+                  <Text style={{ fontSize: 15, fontWeight: '600', color: colors.white }}>Traçar rota</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+
+            {dados_gerais?.latitude != null && dados_gerais?.longitude != null && !isNaN(Number(dados_gerais.latitude)) && !isNaN(Number(dados_gerais.longitude)) && (
+              <TouchableOpacity
+                onPress={() => Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${dados_gerais.latitude},${dados_gerais.longitude}`)}
+                style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginBottom: 20, paddingVertical: 12, paddingHorizontal: 16, backgroundColor: '#4285F4', borderRadius: 8 }}
+              >
+                <Image source={require('../../../assets/img/icons/icon-mapa.png')} style={{ width: 20, height: 20, marginRight: 10, tintColor: colors.white }} resizeMode='contain' />
+                <Text style={{ fontSize: 15, fontWeight: '600', color: colors.white }}>Abrir no Google Maps</Text>
+              </TouchableOpacity>
+            )}
+
+            {listaHorarios && (
+              <View style={{ marginBottom: 20 }}>
+                <Text style={{ fontSize: 11, fontWeight: '600', letterSpacing: 0.5, color: colors.neutralvariant50, marginBottom: 8 }}>HORÁRIOS</Text>
+                <View style={{ backgroundColor: colors.neutral90, borderRadius: 8, padding: 12 }}>
+                  {[
+                    { key: 'segunda', label: 'Segunda' },
+                    { key: 'terca', label: 'Terça' },
+                    { key: 'quarta', label: 'Quarta' },
+                    { key: 'quinta', label: 'Quinta' },
+                    { key: 'sexta', label: 'Sexta' },
+                    { key: 'sabado', label: 'Sábado' },
+                    { key: 'domingo', label: 'Domingo' },
+                  ].map(({ key, label }) => (
+                    <View key={key} style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 6 }}>
+                      <Text style={{ fontSize: 13, color: colors.neutralvariant50 }}>{label}</Text>
+                      <Text style={{ fontSize: 13, fontWeight: '600', color: colors.blackbase }}>{formatarHorario(listaHorarios?.[key])}</Text>
+                    </View>
+                  ))}
+                </View>
+              </View>
+            )}
+
+            <TouchableOpacity
+              onPress={() => setModalInfosAnunciante(false)}
+              style={{ marginTop: 8, paddingVertical: 14, paddingHorizontal: 24, alignItems: 'center', justifyContent: 'center', borderWidth: 1.5, borderColor: colors.neutralvariant80, borderRadius: 8, alignSelf: 'stretch' }}
+            >
+              <Text style={{ fontSize: 15, fontWeight: '600', color: colors.blackbase }}>Voltar</Text>
+            </TouchableOpacity>
+          </ScrollView>
         </View>
       </Modal>
       <View
