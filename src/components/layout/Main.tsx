@@ -119,59 +119,57 @@ export default function Main({ children }: { children: any }) {
 
   return (
     <>
-      <SafeAreaView className='flex-1 bg-white'>
-        <ModalTemplate visible={modalFeedback} onClose={() => setModalFeedback(false)}>
-          <H3 align={'center'}>Envie seu feedback e avaliação do app</H3>
-          {mensagemError &&
-            <Caption fontSize={12} fontWeight={'400'} align={'center'} color={colors.error40} >
-              {mensagemError}
-            </Caption>
-          }
-          <ScrollView className=" max-h-80 mb-2">
-            <InputOutlined
-              mt={8}
-              required={true}
-              label='Comentários'
-              keyboardType={'default'}
-              onChange={(text: string) => setInputComentario(text)}
-            />
+      <ModalTemplate visible={modalFeedback} onClose={() => setModalFeedback(false)}>
+        <H3 align={'center'}>Envie seu feedback e avaliação do app</H3>
+        {mensagemError &&
+          <Caption fontSize={12} fontWeight={'400'} align={'center'} color={colors.error40} >
+            {mensagemError}
+          </Caption>
+        }
+        <ScrollView className=" max-h-80 mb-2">
+          <InputOutlined
+            mt={8}
+            required={true}
+            label='Comentários'
+            keyboardType={'default'}
+            onChange={(text: string) => setInputComentario(text)}
+          />
 
-            {!imagemSelecionada &&
-              <TouchableOpacity onPress={() => pickSingle(false)} className='items-center p-4'>
-                <View className='bg-[#F0F0F0] flex items-center justify-center rounded-2xl mb-2 p-3'>
-                  {/* <Image source={require('./assets/img/icons/camera-gray.png')} /> */}
-                </View>
+          {!imagemSelecionada &&
+            <TouchableOpacity onPress={() => pickSingle(false)} className='items-center p-4'>
+              <View className='bg-[#F0F0F0] flex items-center justify-center rounded-2xl mb-2 p-3'>
+                {/* <Image source={require('./assets/img/icons/camera-gray.png')} /> */}
+              </View>
 
-                <Caption fontSize={12} fontWeight={'400'} align={'center'} color={colors.blackdark}>
-                  Enviar print de ocorrência
-                </Caption>
-              </TouchableOpacity>
-            }
-
-            {imagemSelecionada &&
-              <TouchableOpacity onPress={() => pickSingle(false)} className='items-center mt-2 rounded-2xl bg-[#E5DEFF]'>
-                <Image resizeMode='contain' source={{ uri: imagemSelecionada }} className='rounded-2xl w-52 h-52' />
-              </TouchableOpacity>
-            }
-          </ScrollView>
-
-          {loading ?
-            <FilledButton
-              disabled={true}
-              title='Carregando...'
-              onPress={() => { }}
-            />
-            :
-            <FilledButton
-              title='Enviar feedback'
-              onPress={onSubmit}
-            />
+              <Caption fontSize={12} fontWeight={'400'} align={'center'} color={colors.blackdark}>
+                Enviar print de ocorrência
+              </Caption>
+            </TouchableOpacity>
           }
 
-        </ModalTemplate>
+          {imagemSelecionada &&
+            <TouchableOpacity onPress={() => pickSingle(false)} className='items-center mt-2 rounded-2xl bg-[#E5DEFF]'>
+              <Image resizeMode='contain' source={{ uri: imagemSelecionada }} className='rounded-2xl w-52 h-52' />
+            </TouchableOpacity>
+          }
+        </ScrollView>
 
-        {children}
-      </SafeAreaView>
+        {loading ?
+          <FilledButton
+            disabled={true}
+            title='Carregando...'
+            onPress={() => { }}
+          />
+          :
+          <FilledButton
+            title='Enviar feedback'
+            onPress={onSubmit}
+          />
+        }
+
+      </ModalTemplate>
+
+      {children}
 
       {token && usuarioLogado &&
         <TouchableOpacity

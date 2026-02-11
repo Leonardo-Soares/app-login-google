@@ -96,43 +96,41 @@ export default function HomeFiltradaScreen(route: any) {
 
   return (
     <MainLayoutAutenticado notScroll={true} marginTop={80} loading={isRefreshing}>
-      <SafeAreaView>
-        <ScrollView horizontal={true} showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false} className='w-full h-14 pb-2' >
+      <ScrollView horizontal={true} showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false} className='w-full h-14 pb-2' >
+        <CardCategoria
+          ativo={false}
+          titulo={"Discontoken"}
+          slug={"discontoken-teste"}
+          onPress={() => navigate('Discontoken')}
+        />
+        {listacategorias && listacategorias.map((categoria: any) => (
           <CardCategoria
-            ativo={false}
-            titulo={"Discontoken"}
-            slug={"discontoken-teste"}
-            onPress={() => navigate('Discontoken')}
+            ativo={idCategoria === categoria.id ? true : false} // Destacar a categoria selecionada
+            key={categoria.id}
+            slug={categoria.id}
+            titulo={categoria.categorias}
+            onPress={() => navigate('Categorias', { idCategoria: categoria.id })}
           />
-          {listacategorias && listacategorias.map((categoria: any) => (
-            <CardCategoria
-              ativo={idCategoria === categoria.id ? true : false} // Destacar a categoria selecionada
-              key={categoria.id}
-              slug={categoria.id}
-              titulo={categoria.categorias}
-              onPress={() => navigate('Categorias', { idCategoria: categoria.id })}
-            />
-          ))}
-        </ScrollView>
+        ))}
+      </ScrollView>
 
-        {listaprodutos && listaprodutos.length >= 1 &&
-          <FlatList
-            data={listaprodutos}
-            className='mb-60'
-            renderItem={renderItem}
-            refreshControl={
-              <RefreshControl
-                refreshing={isRefreshing}
-                onRefresh={handleRefresh}
-              />
-            }
-          />}
-        {!isRefreshing && listaprodutos.length <= 0 &&
-          <View className=''>
-            <CardNotFound titulo='Não há cupons disponíveis para esta categoria no momento.' />
-          </View>
-        }
-      </SafeAreaView>
+      {listaprodutos && listaprodutos.length >= 1 &&
+        <FlatList
+          data={listaprodutos}
+          className='mb-60'
+          renderItem={renderItem}
+          refreshControl={
+            <RefreshControl
+              refreshing={isRefreshing}
+              onRefresh={handleRefresh}
+            />
+          }
+        />}
+      {!isRefreshing && listaprodutos.length <= 0 &&
+        <View className=''>
+          <CardNotFound titulo='Não há cupons disponíveis para esta categoria no momento.' />
+        </View>
+      }
     </MainLayoutAutenticado>
   );
 }

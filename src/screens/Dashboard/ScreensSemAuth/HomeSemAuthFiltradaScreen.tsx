@@ -95,46 +95,44 @@ export default function HomeSemAuthFiltradaScreen(route: any) {
       <ModalTemplateLogin visible={modalVisible} onClose={() => setModalVisible(false)} />
       <View className='mt-6 mb-3'>
       </View>
-      <SafeAreaView>
-        <ScrollView horizontal={true} showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false} className='w-full h-14 pb-2' >
+      <ScrollView horizontal={true} showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false} className='w-full h-14 pb-2' >
+        <CardCategoria
+          ativo={false}
+          slug={'todas'}
+          titulo={'Todas'}
+          onPress={() => navigate('HomeSemAuth')}
+        />
+        {listacategorias && listacategorias.map((categoria: any) => (
           <CardCategoria
-            ativo={false}
-            slug={'todas'}
-            titulo={'Todas'}
-            onPress={() => navigate('HomeSemAuth')}
+            ativo={idCategoria === categoria.id ? true : false} // Destacar a categoria selecionada
+            key={categoria.id}
+            slug={categoria.id}
+            titulo={categoria.categorias}
+            onPress={() => navigate('HomeSemAuthFiltradaScreen', { idCategoria: categoria.id })}
           />
-          {listacategorias && listacategorias.map((categoria: any) => (
-            <CardCategoria
-              ativo={idCategoria === categoria.id ? true : false} // Destacar a categoria selecionada
-              key={categoria.id}
-              slug={categoria.id}
-              titulo={categoria.categorias}
-              onPress={() => navigate('HomeSemAuthFiltradaScreen', { idCategoria: categoria.id })}
-            />
-          ))}
-        </ScrollView>
+        ))}
+      </ScrollView>
 
-        {listaprodutos && listaprodutos.length >= 1 &&
-          <FlatList
-            data={listaprodutos}
-            className='mb-60'
-            renderItem={renderItem}
-            refreshControl={
-              <RefreshControl
-                refreshing={isRefreshing}
-                onRefresh={handleRefresh}
-              />
-            }
-          />}
-        {!isRefreshing && listaprodutos.length <= 0 &&
-          <View className=''>
-            <CardNotFound titulo='Não há cupons disponíveis para esta categoria no momento.' />
-            <View className='mt-3 mx-8'>
-              <ButtonOutline title='Sugerir estabelecimentos' onPress={() => setModalVisible(true)} />
-            </View>
+      {listaprodutos && listaprodutos.length >= 1 &&
+        <FlatList
+          data={listaprodutos}
+          className='mb-60'
+          renderItem={renderItem}
+          refreshControl={
+            <RefreshControl
+              refreshing={isRefreshing}
+              onRefresh={handleRefresh}
+            />
+          }
+        />}
+      {!isRefreshing && listaprodutos.length <= 0 &&
+        <View className=''>
+          <CardNotFound titulo='Não há cupons disponíveis para esta categoria no momento.' />
+          <View className='mt-3 mx-8'>
+            <ButtonOutline title='Sugerir estabelecimentos' onPress={() => setModalVisible(true)} />
           </View>
-        }
-      </SafeAreaView>
+        </View>
+      }
     </MainLayoutAutenticado>
   );
 }
