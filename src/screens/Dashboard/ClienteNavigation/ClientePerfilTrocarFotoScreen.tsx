@@ -73,19 +73,27 @@ export default function ClientePerfilTrocarFotoScreen() {
           showPermissionDeniedAlert();
         }
       } else {
-        const readStorage = await PermissionsAndroid.request(
-          PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
-          {
-            title: 'Acesso à galeria',
-            message: 'O app precisa acessar suas fotos para alterar a logomarca.',
-            buttonPositive: 'Permitir',
-            buttonNegative: 'Negar',
-          }
-        );
-        if (readStorage === PermissionsAndroid.RESULTS.GRANTED) {
+        // Android 13+ (API 33+) usa Photo Picker do sistema (não requer permissão READ_MEDIA_IMAGES)
+        // Android < 13 ainda precisa de READ_EXTERNAL_STORAGE
+        if ((Platform.Version as number) >= 33) {
+          // Android 13+: usar Photo Picker do sistema diretamente (sem solicitar permissão)
           openGallery();
         } else {
-          showPermissionDeniedAlert();
+          // Android < 13: solicitar READ_EXTERNAL_STORAGE
+          const readStorage = await PermissionsAndroid.request(
+            PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
+            {
+              title: 'Acesso à galeria',
+              message: 'O app precisa acessar suas fotos para alterar a logomarca.',
+              buttonPositive: 'Permitir',
+              buttonNegative: 'Negar',
+            }
+          );
+          if (readStorage === PermissionsAndroid.RESULTS.GRANTED) {
+            openGallery();
+          } else {
+            showPermissionDeniedAlert();
+          }
         }
       }
     } catch (err) {

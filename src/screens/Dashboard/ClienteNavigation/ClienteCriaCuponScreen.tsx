@@ -191,21 +191,24 @@ export default function ClienteCriaCuponScreen() {
           showPermissionDeniedAlert();
         }
       } else {
-        // Android 13+ (API 33+) usa READ_MEDIA_IMAGES; versões anteriores usam READ_EXTERNAL_STORAGE
-        const galleryPermission = (Platform.Version as number) >= 33
-          ? PERMISSIONS.ANDROID.READ_MEDIA_IMAGES
-          : PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE;
-
-        const status = await check(galleryPermission);
-        if (status === RESULTS.GRANTED) {
-          openGallery();
-          return;
-        }
-        const requestStatus = await request(galleryPermission);
-        if (requestStatus === RESULTS.GRANTED) {
+        // Android 13+ (API 33+) usa Photo Picker do sistema (não requer permissão READ_MEDIA_IMAGES)
+        // Android < 13 ainda precisa de READ_EXTERNAL_STORAGE
+        if ((Platform.Version as number) >= 33) {
+          // Android 13+: usar Photo Picker do sistema diretamente (sem solicitar permissão)
           openGallery();
         } else {
-          showPermissionDeniedAlert();
+          // Android < 13: solicitar READ_EXTERNAL_STORAGE
+          const status = await check(PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE);
+          if (status === RESULTS.GRANTED) {
+            openGallery();
+            return;
+          }
+          const requestStatus = await request(PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE);
+          if (requestStatus === RESULTS.GRANTED) {
+            openGallery();
+          } else {
+            showPermissionDeniedAlert();
+          }
         }
       }
     } catch (err) {
