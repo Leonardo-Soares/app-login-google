@@ -3,8 +3,9 @@
   <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
   <uses-permission android:name="android.permission.CAMERA"/>
   <uses-permission android:name="android.permission.INTERNET"/>
-  <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
-  <uses-permission android:name="android.permission.READ_MEDIA_IMAGES"/>
+  <!-- READ_EXTERNAL_STORAGE apenas para Android < 13 (API < 33) -->
+  <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32"/>
+  <!-- READ_MEDIA_IMAGES removido - usando Photo Picker do sistema para Android 13+ -->
   <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
   <uses-permission android:name="android.permission.VIBRATE"/>
   <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
