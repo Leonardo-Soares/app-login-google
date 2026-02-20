@@ -52,15 +52,15 @@
 		<true/>
 	</dict>
 	<key>NSCameraUsageDescription</key>
-	<string>Allow $(PRODUCT_NAME) to access your camera to take photos</string>
+	<string>O Discontapp precisa acessar sua câmera para tirar fotos de produtos, documentos ou comprovantes. Por exemplo, você pode usar a câmera para fotografar produtos que deseja cadastrar ou comprovantes de compra para validar ofertas.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-	<string>Allow $(PRODUCT_NAME) to access your location</string>
+	<string>O Discontapp precisa da sua localização para encontrar estabelecimentos e ofertas próximos a você. Por exemplo, quando você busca por descontos, o app usa sua localização para mostrar lojas e promoções na sua região, permitindo que você encontre as melhores ofertas perto de onde você está.</string>
 	<key>NSLocationAlwaysUsageDescription</key>
-	<string>Allow $(PRODUCT_NAME) to access your location</string>
+	<string>O Discontapp precisa da sua localização para encontrar estabelecimentos e ofertas próximos a você. Por exemplo, quando você busca por descontos, o app usa sua localização para mostrar lojas e promoções na sua região, permitindo que você encontre as melhores ofertas perto de onde você está.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>Allow $(PRODUCT_NAME) to access your location</string>
+	<string>O Discontapp precisa da sua localização para encontrar estabelecimentos e ofertas próximos a você. Por exemplo, quando você busca por descontos, o app usa sua localização para mostrar lojas e promoções na sua região, permitindo que você encontre as melhores ofertas perto de onde você está.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Allow $(PRODUCT_NAME) to access your photo library to select photos</string>
+	<string>O Discontapp precisa acessar sua galeria de fotos para selecionar imagens de produtos, documentos ou comprovantes. Por exemplo, você pode escolher fotos da sua galeria para cadastrar produtos ou enviar comprovantes de compra para validar ofertas.</string>
 	<key>RCTNewArchEnabled</key>
 	<true/>
 	<key>UIBackgroundModes</key>
