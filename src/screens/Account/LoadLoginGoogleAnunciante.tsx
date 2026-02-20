@@ -15,7 +15,7 @@ import Paragrafo from '../../components/typography/Paragrafo'
 import { useGlobal } from '../../context/GlobalContextProvider'
 import InputOutlined from '../../components/forms/InputOutlined'
 import FilledButton from '../../components/buttons/FilledButton'
-import { ScrollView, TouchableOpacity, View } from 'react-native'
+import { Platform, ScrollView, TouchableOpacity, View } from 'react-native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 
 export default function LoadLoginGoogleAnunciante() {
@@ -164,12 +164,16 @@ export default function LoadLoginGoogleAnunciante() {
             title='Trocar perfil'
             backgroundColor={colors.secondary60}
           />
-          <View className="mt-2"></View>
-          <FilledButton
-            onPress={() => Linking.openURL('https://www.backend.discontapp.com.br/api/auth/google?tipo=anunciante')}
-            title='Login Google'
-            backgroundColor={colors.primary10}
-          />
+          {Platform.OS !== 'ios' && (
+            <>
+              <View className="mt-2"></View>
+              <FilledButton
+                onPress={() => Linking.openURL('https://www.backend.discontapp.com.br/api/auth/google?tipo=anunciante')}
+                title='Login Google'
+                backgroundColor={colors.primary10}
+              />
+            </>
+          )}
         </View>
         <View className='absolute bottom-0 right-0'>
           <Caption fontWeight={'bold'}>{versionName ?? ''}</Caption>

@@ -9,7 +9,7 @@ import { useNavigate } from '../../hooks/useNavigate'
 import IcoCelularLogin from '../../svg/IcoCelularLogin'
 import Caption from '../../components/typography/Caption'
 import MainLayout from '../../components/layout/MainLayout'
-import { ScrollView, TouchableOpacity, View, Text } from 'react-native'
+import { ScrollView, TouchableOpacity, View, Text, Platform } from 'react-native'
 import Paragrafo from '../../components/typography/Paragrafo'
 import { useGlobal } from '../../context/GlobalContextProvider'
 import InputOutlined from '../../components/forms/InputOutlined'
@@ -181,16 +181,20 @@ export default function LoginAnuncianteScreen() {
             title='Trocar perfil'
             backgroundColor={colors.secondary60}
           />
-          <View className="mt-2"></View>
-          <View className="flex-row items-center justify-center my-2">
-            <View className="flex-1 h-px bg-gray-300"></View>
-            <Text className="mx-3 text-gray-600" style={{ fontSize: 14 }}>ou</Text>
-            <View className="flex-1 h-px bg-gray-300"></View>
-          </View>
-          <GoogleLoginButton
-            onPress={() => Linking.openURL('https://www.backend.discontapp.com.br/api/auth/google?tipo=anunciante')}
-            title='Continuar com Google'
-          />
+          {Platform.OS !== 'ios' && (
+            <>
+              <View className="mt-2"></View>
+              <View className="flex-row items-center justify-center my-2">
+                <View className="flex-1 h-px bg-gray-300"></View>
+                <Text className="mx-3 text-gray-600" style={{ fontSize: 14 }}>ou</Text>
+                <View className="flex-1 h-px bg-gray-300"></View>
+              </View>
+              <GoogleLoginButton
+                onPress={() => Linking.openURL('https://www.backend.discontapp.com.br/api/auth/google?tipo=anunciante')}
+                title='Continuar com Google'
+              />
+            </>
+          )}
         </View>
         <View className='absolute bottom-0 right-0'>
           <Caption fontWeight={'bold'}>{versionName ?? ''}</Caption>
