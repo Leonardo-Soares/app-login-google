@@ -2,9 +2,8 @@ import { useNavigate } from '@hooks/useNavigate'
 import React, { useEffect, useState, useRef } from 'react'
 import { useIsFocused } from '@react-navigation/native'
 import MainLayoutAutenticado from '@components/layout/MainLayoutAutenticado'
-import { Text, TouchableOpacity, View } from 'react-native'
+import { Text, TouchableOpacity, View, Linking } from 'react-native'
 import InputOutlined from '@components/forms/InputOutlined'
-import InputMascaraPaper from '@components/forms/InputMascaraPaper'
 import FilledButton from '@components/buttons/FilledButton'
 import RadioButton from '@components/forms/RadioButton'
 import H3 from '@components/typography/H3'
@@ -16,6 +15,10 @@ import { api } from '../../../service/api'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import LottieView from 'lottie-react-native'
 import Clipboard from '@react-native-clipboard/clipboard'
+import ModalTemplate from '@components/Modals/ModalTemplate'
+import { Ionicons } from '@expo/vector-icons'
+
+const TERMOS_AFILIADO_URL = 'https://www.discontapp.com.br/politicaDePrivacidade'
 
 export default function CadastroAfiliadoScreen() {
   const isFocused = useIsFocused()
@@ -34,6 +37,7 @@ export default function CadastroAfiliadoScreen() {
   const [chavePix, setChavePix] = useState('')
   const [aceiteTermos, setAceiteTermos] = useState(false)
   const [cpfPreenchido, setCpfPreenchido] = useState('')
+  const [modalTermosVisible, setModalTermosVisible] = useState(false)
 
   // Estados de erro
   const [errorName, setErrorName] = useState(false)
@@ -84,6 +88,38 @@ export default function CadastroAfiliadoScreen() {
     'aleatoria': 'Aleatória'
   }
 
+  // Labels de status do afiliado para exibição
+  const STATUS_LABELS: Record<string, string> = {
+    nao_solicitou: 'Não solicitou',
+    nao_solicitado: 'Não solicitou',
+    em_validacao: 'Em validação',
+    pendente: 'Em validação',
+    aprovado: 'Aprovado',
+    reprovado: 'Reprovado',
+    suspenso: 'Suspenso'
+  }
+
+  const getStatusLabel = (status: string | undefined) => {
+    if (!status) return ''
+    const key = status.toLowerCase().replace(/\s/g, '_')
+    return STATUS_LABELS[key] ?? status
+  }
+
+  const getStatusColor = (status: string | undefined) => {
+    if (!status) return colors.warning
+    const key = status.toLowerCase().replace(/\s/g, '_')
+    switch (key) {
+      case 'aprovado': return '#4CAF50'
+      case 'reprovado': return colors.error40
+      case 'suspenso': return colors.gray
+      case 'nao_solicitou':
+      case 'nao_solicitado':
+      case 'em_validacao':
+      case 'pendente':
+      default: return colors.warning
+    }
+  }
+
   // Função para navegar entre inputs
   const focusNextInput = (ref: any) => {
     if (ref && ref.current) {
@@ -109,6 +145,31 @@ export default function CadastroAfiliadoScreen() {
       .replace(/(\d{4})(\d)/, '$1-$2')
       .replace(/(\d{4})-(\d)(\d{4})/, '$1$2-$3')
     setTelefone(phone)
+  }
+
+  // Máscara da chave PIX conforme o tipo selecionado (sem máscara para Aleatória)
+  const handleChavePixChange = (value: string) => {
+    if (tipoChavePix === 'aleatoria' || tipoChavePix === 'email' || !tipoChavePix) {
+      setChavePix(value)
+      return
+    }
+    if (tipoChavePix === 'cpf') {
+      const cpfFormatted = value
+        .replace(/\D/g, '')
+        .replace(/(\d{3})(\d)/, '$1.$2')
+        .replace(/(\d{3})(\d)/, '$1.$2')
+        .replace(/(\d{3})(\d{2})$/, '$1-$2')
+      setChavePix(cpfFormatted)
+      return
+    }
+    if (tipoChavePix === 'telefone') {
+      const phone = value
+        .replace(/\D/g, '')
+        .replace(/(\d{2})(\d)/, '($1) $2')
+        .replace(/(\d{4})(\d)/, '$1-$2')
+        .replace(/(\d{4})-(\d)(\d{4})/, '$1$2-$3')
+      setChavePix(phone)
+    }
   }
 
   // Validação de email
@@ -244,9 +305,10 @@ export default function CadastroAfiliadoScreen() {
         agencia: agencia.trim(),
         conta_corrente: contaCorrente.trim(),
         tipo_chave_pix: tiposChavePixMap[tipoChavePix] || tipoChavePix.toLowerCase(),
-        chave_pix: chavePix.trim(),
+        chave_pix: (tipoChavePix === 'cpf' || tipoChavePix === 'telefone') ? chavePix.replace(/\D/g, '') : chavePix.trim(),
         aceite_termos: aceiteTermos,
       }
+      console.log('dadosAfiliado: ', dadosAfiliado)
 
       // Verificar se há token de autenticação
       const jsonValue = await AsyncStorage.getItem('infos-user')
@@ -445,12 +507,13 @@ export default function CadastroAfiliadoScreen() {
               />
             </View>
             <View className='my-4 mt-2 items-center'>
-              <H3 align={'center'}>
-                Cadastro realizado com sucesso!
-              </H3>
               <Caption fontSize={14} color={colors.gray} margintop={8} align={'center'}>
-                Aguarde a aprovação do seu cadastro
+                Solicitação enviada com sucesso!
               </Caption>
+              <H3 align={'center'}>
+                Sua solicitação passará por validação. Após aprovado, você receberá aviso por e-mail e notificação no aplicativo.
+              </H3>
+
             </View>
 
             <View className='w-full mt-6 px-4'>
@@ -485,10 +548,10 @@ export default function CadastroAfiliadoScreen() {
                 <View className='flex-row items-center mt-1'>
                   <View
                     className='w-3 h-3 rounded-full mr-2'
-                    style={{ backgroundColor: colors.warning }}
+                    style={{ backgroundColor: getStatusColor(dadosSucesso.status) }}
                   />
-                  <Text style={{ textTransform: 'capitalize', fontSize: 18, fontWeight: 'bold', color: colors.dark }}>
-                    {dadosSucesso.status}
+                  <Text style={{ fontSize: 18, fontWeight: 'bold', color: colors.dark }}>
+                    {getStatusLabel(dadosSucesso.status)}
                   </Text>
                 </View>
               </View>
@@ -518,47 +581,8 @@ export default function CadastroAfiliadoScreen() {
         </Caption>
       </View>
 
-      {/* Campos do formulário */}
-      {/* <InputOutlined
-        mt={8}
-        required
-        label="Nome completo"
-        value={name}
-        error={errorName}
-        refInput={input1Ref}
-        keyboardType={'default'}
-        onChange={(text: string) => setName(text)}
-        onSubmitEditing={() => focusNextInput(input2Ref)}
-      />
-
-      <InputOutlined
-        mt={8}
-        required
-        label="Email"
-        value={email}
-        error={errorEmail}
-        refInput={input2Ref}
-        keyboardType={'email-address'}
-        onChange={(text: string) => setEmail(text)}
-        onSubmitEditing={() => focusNextInput(input3Ref)}
-      />
-
-      <InputMascaraPaper
-        mt={8}
-        required
-        label="Telefone"
-        value={telefone}
-        error={errorTelefone}
-        refInput={input3Ref}
-        keyboardType={'phone-pad'}
-        maxLength={15}
-        onChangeText={handlePhoneMask}
-        onSubmitEditing={() => focusNextInput(input4Ref)}
-      /> */}
-
-
       {cpfPreenchido.length <= 2 &&
-        <InputMascaraPaper
+        <InputOutlined
           mt={8}
           required
           label="CPF"
@@ -567,7 +591,7 @@ export default function CadastroAfiliadoScreen() {
           refInput={input5Ref}
           keyboardType={'number-pad'}
           maxLength={14}
-          onChangeText={handleCPFMask}
+          onChange={(text: string) => handleCPFMask(text)}
           onSubmitEditing={() => focusNextInput(input6Ref)}
         />
       }
@@ -584,7 +608,7 @@ export default function CadastroAfiliadoScreen() {
         onSubmitEditing={() => focusNextInput(input7Ref)}
       />
 
-      <InputMascaraPaper
+      <InputOutlined
         mt={8}
         required
         label="Agência"
@@ -592,11 +616,11 @@ export default function CadastroAfiliadoScreen() {
         error={errorAgencia}
         refInput={input7Ref}
         keyboardType={'number-pad'}
-        onChangeText={(text: string) => setAgencia(text)}
+        onChange={(text: string) => setAgencia(text)}
         onSubmitEditing={() => focusNextInput(input8Ref)}
       />
 
-      <InputMascaraPaper
+      <InputOutlined
         mt={8}
         required
         label="Conta Corrente"
@@ -604,7 +628,7 @@ export default function CadastroAfiliadoScreen() {
         error={errorContaCorrente}
         refInput={input8Ref}
         keyboardType={'number-pad'}
-        onChangeText={(text: string) => setContaCorrente(text)}
+        onChange={(text: string) => setContaCorrente(text)}
         onSubmitEditing={() => focusNextInput(input9Ref)}
       />
 
@@ -619,24 +643,54 @@ export default function CadastroAfiliadoScreen() {
           options={tiposChavePixDisplay}
           selectedOption={tiposChavePixReverseMap[tipoChavePix] || tipoChavePix}
           onSelectOption={(option: string) => {
-            // Armazenar o valor da API (minúsculo, sem acentuação)
             setTipoChavePix(tiposChavePixMap[option] || option.toLowerCase())
             setErrorTipoChavePix(false)
+            setChavePix('') // Limpa ao trocar o tipo para não misturar formato
           }}
         />
       </View>
 
-      <InputOutlined
-        mt={8}
-        required
-        label="Chave PIX"
-        value={chavePix}
-        error={errorChavePix}
-        refInput={input9Ref}
-        keyboardType={tipoChavePix === 'email' ? 'email-address' : tipoChavePix === 'telefone' ? 'phone-pad' : 'default'}
-        onChange={(text: string) => setChavePix(text)}
-        placeholder={tipoChavePix ? `Digite sua ${tiposChavePixReverseMap[tipoChavePix] || tipoChavePix}` : 'Digite sua chave PIX'}
-      />
+      {tipoChavePix === 'cpf' ? (
+        <InputOutlined
+          mt={8}
+          required
+          label="Chave PIX"
+          value={chavePix}
+          error={errorChavePix}
+          refInput={input9Ref}
+          keyboardType={'number-pad'}
+          maxLength={14}
+          onChange={(text: string) => handleChavePixChange(text)}
+          placeholder="Digite o CPF da chave PIX"
+          onSubmitEditing={() => focusNextInput(input4Ref)}
+        />
+      ) : tipoChavePix === 'telefone' ? (
+        <InputOutlined
+          mt={8}
+          required
+          label="Chave PIX"
+          value={chavePix}
+          error={errorChavePix}
+          refInput={input9Ref}
+          keyboardType={'phone-pad'}
+          maxLength={15}
+          onChange={(text: string) => handleChavePixChange(text)}
+          placeholder="Digite o telefone da chave PIX"
+          onSubmitEditing={() => focusNextInput(input4Ref)}
+        />
+      ) : (
+        <InputOutlined
+          mt={8}
+          required
+          label="Chave PIX"
+          value={chavePix}
+          error={errorChavePix}
+          refInput={input9Ref}
+          keyboardType={tipoChavePix === 'email' ? 'email-address' : 'default'}
+          onChange={(text: string) => setChavePix(text)}
+          placeholder={tipoChavePix === 'email' ? 'Digite o e-mail da chave PIX' : tipoChavePix === 'aleatoria' ? 'Digite a chave PIX aleatória' : 'Digite sua chave PIX'}
+        />
+      )}
 
       <InputOutlined
         mt={8}
@@ -678,7 +732,13 @@ export default function CadastroAfiliadoScreen() {
         </TouchableOpacity>
         <View className='flex-1'>
           <Caption fontSize={14}>
-            Aceito os termos e condições*
+            Aceito os{' '}
+            <Text
+              onPress={() => setModalTermosVisible(true)}
+              style={{ color: colors.primary40, textDecorationLine: 'underline', fontWeight: '600' }}
+            >
+              termos e condições*
+            </Text>
           </Caption>
           {errorAceiteTermos && (
             <Caption fontSize={12} color={colors.error40} margintop={4}>
@@ -688,9 +748,47 @@ export default function CadastroAfiliadoScreen() {
         </View>
       </View>
 
+      <ModalTemplate
+        visible={modalTermosVisible}
+        onClose={() => setModalTermosVisible(false)}
+        width={'95%'}
+        maxWidth={500}
+      >
+        <View className='p-4'>
+          <H5>Termos e Condições</H5>
+          <Caption fontSize={14} color={colors.gray} margintop={4}>
+            Políticas de privacidade e termos do programa de afiliados Discontapp
+          </Caption>
+          <Caption fontSize={14} color={colors.dark} margintop={12}>
+            Para conhecer os termos e condições, abra o link no navegador.
+          </Caption>
+          <TouchableOpacity
+            onPress={() => {
+              Linking.openURL(TERMOS_AFILIADO_URL)
+              setModalTermosVisible(false)
+            }}
+            className='mt-6 rounded-lg py-3 flex-row items-center justify-center'
+            style={{ backgroundColor: colors.primary40 }}
+          >
+            <Ionicons name="open-outline" size={20} color="#FFF" style={{ marginRight: 8 }} />
+            <Text className='text-base font-semibold' style={{ color: '#FFF' }}>
+              Abrir termos e condições
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => setModalTermosVisible(false)}
+            className='mt-4 py-2'
+          >
+            <Caption fontSize={14} color={colors.gray} margintop={0} align={'center'}>
+              Fechar
+            </Caption>
+          </TouchableOpacity>
+        </View>
+      </ModalTemplate>
+
       <View className='mb-8'>
         <FilledButton
-          title="Cadastrar Afiliado"
+          title="Enviar Solicitação"
           onPress={handleSubmit}
           disabled={loading}
         />

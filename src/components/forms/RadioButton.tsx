@@ -1,6 +1,6 @@
 import React from 'react'
-import Caption from '../typography/Caption'
-import { TouchableOpacity, View } from 'react-native'
+import { Text, TouchableOpacity, View } from 'react-native'
+import { colors } from '@theme/colors';
 
 interface RadioButtonProps {
   options: string[];
@@ -11,7 +11,11 @@ interface RadioButtonProps {
 
 export default function RadioButton({ options, selectedOption, onSelectOption, desativar }: RadioButtonProps) {
   return (
-    <View>
+    <View
+      style={{
+        marginTop: 8,
+      }}
+    >
       {options.map((option) => (
         <TouchableOpacity
           key={option}
@@ -28,7 +32,17 @@ export default function RadioButton({ options, selectedOption, onSelectOption, d
               <View className='rounded-full bg-[#6200E8] w-3 h-3' />
             )}
           </View>
-          <Caption fontSize={16}> {option} </Caption>
+          <Text
+            style={{
+              fontSize: 16,
+              marginTop: 0,
+              textAlign: 'left',
+              fontWeight: '400',
+              color: colors.dark,
+            }}
+          >
+            {option}
+          </Text>
         </TouchableOpacity>
       ))}
     </View>

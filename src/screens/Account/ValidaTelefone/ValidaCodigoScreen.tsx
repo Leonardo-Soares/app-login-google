@@ -36,7 +36,6 @@ export default function ValidaCodigoScreen({ navigation }: { navigation: any }) 
     setLoading(true)
 
     const jsonPerfil = await AsyncStorage.getItem('dados-perfil')
-
     if (jsonPerfil) {
       const jsonPefil = JSON.parse(jsonPerfil)
 
@@ -45,13 +44,14 @@ export default function ValidaCodigoScreen({ navigation }: { navigation: any }) 
           id: jsonPefil.id
         })
 
+
         Toast.show({
           type: 'success',
           text1: response.data.message ?? 'Código reenviado com sucesso',
         })
         setSeconds(30)
       } catch (error: any) {
-        console.log('ERROR reenvio de código POST: ', error.response.data)
+        console.error('ERROR reenvio de código POST: ', error.response.data)
         Toast.show({
           type: 'error',
           text1: error.response.data.message ?? 'Ocorreu um erro, tente novamente!',

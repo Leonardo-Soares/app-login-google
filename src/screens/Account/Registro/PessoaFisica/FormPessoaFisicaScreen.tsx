@@ -113,7 +113,7 @@ export default function FormPessoaFisicaScreen({
       setErrorEmail(true);
       return;
     }
-    if (celularField.length <= 9) {
+    if (celularField.replace(/\D/g, '').length < 10) {
       Toast.show({
         type: 'error',
         text1: 'Informe um Telefone válido !',
@@ -600,17 +600,17 @@ export default function FormPessoaFisicaScreen({
           onChange={(text: string) => setEmail(text)}
           onSubmitEditing={() => focusNextInput(input2Ref)}
         />
-        <InputMascaraPaper
+        <InputOutlined
           mt={8}
           required
-          maxLength={15}
-          refInput={input2Ref}
-          value={celularField}
           label="Telefone (DDD)"
+          value={celularField}
           error={errorcelularField}
-          keyboardType={'number-pad'}
+          refInput={input2Ref}
+          keyboardType={'phone-pad'}
+          maxLength={15}
+          onChange={(text: string) => handlePhoneMask(text)}
           onSubmitEditing={() => focusNextInput(input3Ref)}
-          onChangeText={(text: any) => handlePhoneMask(text)}
         />
         {/* <InputMascaraPaper
           mt={8}

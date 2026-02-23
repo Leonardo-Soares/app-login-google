@@ -4,7 +4,7 @@ import Caption from '@components/typography/Caption'
 import { useNavigate } from '@hooks/useNavigate'
 import { useIsFocused } from '@react-navigation/native'
 import React, { useEffect, useState, useRef } from 'react'
-import { Text, TouchableOpacity, View } from 'react-native'
+import { Text, TouchableOpacity, View, Linking } from 'react-native'
 import MainLayoutAutenticado from '@components/layout/MainLayoutAutenticado'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { colors } from '../../../styles/colors'
@@ -13,11 +13,15 @@ import Toast from 'react-native-toast-message'
 import FilledButton from '@components/buttons/FilledButton'
 import axios from 'axios'
 import { Ionicons } from '@expo/vector-icons'
+import ModalTemplate from '@components/Modals/ModalTemplate'
+
+const TERMOS_AFILIADO_URL = 'https://www.discontapp.com.br/politicaDePrivacidade'
 
 export default function AcompanhamentoAfiliadoScreen() {
   const isFocused = useIsFocused()
   const { navigate } = useNavigate()
   const [dadosAfiliado, setDadosAfiliado] = useState<any>(null)
+  const [modalTermosVisible, setModalTermosVisible] = useState(false)
 
   async function getVerificaStatus() {
     const jsonValue = await AsyncStorage.getItem('infos-user')
@@ -60,6 +64,17 @@ export default function AcompanhamentoAfiliadoScreen() {
             motivo_reprovacao: response.data.data.motivo_reprovacao,
           })
         }
+        // Novos status: nao_solicitou, em_validacao, suspenso (backend pode enviar qualquer um)
+        const statusAtual = response.data.data?.status_aprovacao
+        if (response.data.data && statusAtual && !['aprovado', 'pendente', 'reprovado'].includes(statusAtual)) {
+          setDadosAfiliado({
+            codigo_afiliado: response.data.data.codigo_afiliado ?? null,
+            data_aprovacao: response.data.data.data_aprovacao ?? null,
+            data_cadastro: response.data.data.data_cadastro,
+            status: statusAtual,
+            motivo_reprovacao: response.data.data.motivo_reprovacao ?? null,
+          })
+        }
 
       } catch (error: any) {
         console.error('Error verificar status: ', error)
@@ -78,13 +93,34 @@ export default function AcompanhamentoAfiliadoScreen() {
     }
   }
 
+  // Labels de status: nao_solicitou, em_validacao, aprovado, reprovado, suspenso
+  const STATUS_LABELS: Record<string, string> = {
+    nao_solicitou: 'Não Solicitou',
+    em_validacao: 'Em Validação',
+    pendente: 'Em Validação',
+    aprovado: 'Aprovado',
+    reprovado: 'Reprovado',
+    suspenso: 'Suspenso',
+  }
+
+  const getStatusLabel = (status: string | undefined) => {
+    if (!status) return ''
+    const key = status.toLowerCase().replace(/\s/g, '_')
+    return STATUS_LABELS[key] ?? status
+  }
+
   // Função para obter cor do status
   const getStatusColor = (status: string) => {
-    switch (status) {
+    const key = status?.toLowerCase().replace(/\s/g, '_') ?? ''
+    switch (key) {
       case 'aprovado':
         return '#4CAF50'
       case 'reprovado':
         return colors.error40
+      case 'suspenso':
+        return colors.gray
+      case 'nao_solicitou':
+      case 'em_validacao':
       case 'pendente':
       default:
         return colors.warning
@@ -93,11 +129,17 @@ export default function AcompanhamentoAfiliadoScreen() {
 
   // Função para obter ícone do status
   const getStatusIcon = (status: string) => {
-    switch (status) {
+    const key = status?.toLowerCase().replace(/\s/g, '_') ?? ''
+    switch (key) {
       case 'aprovado':
         return 'checkmark-circle'
       case 'reprovado':
         return 'close-circle'
+      case 'suspenso':
+        return 'pause-circle'
+      case 'nao_solicitou':
+        return 'document-text-outline'
+      case 'em_validacao':
       case 'pendente':
       default:
         return 'time'
@@ -159,8 +201,8 @@ export default function AcompanhamentoAfiliadoScreen() {
                     className='w-3 h-3 rounded-full mr-2'
                     style={{ backgroundColor: getStatusColor(dadosAfiliado.status) }}
                   />
-                  <Text style={{ textTransform: 'capitalize', fontSize: 18, fontWeight: 'bold', color: colors.dark }}>
-                    {dadosAfiliado.status}
+                  <Text style={{ fontSize: 18, fontWeight: 'bold', color: colors.dark }}>
+                    {getStatusLabel(dadosAfiliado.status)}
                   </Text>
                 </View>
               </View>
@@ -242,15 +284,60 @@ export default function AcompanhamentoAfiliadoScreen() {
 
               <View className='mt-8 mb-8'>
                 <FilledButton
-                  title="Cadastrar-me como afiliado"
-                  onPress={() => navigate('CadastroAfiliadoScreen')}
+                  backgroundColor={colors.gray}
+                  title="Ver termos e políticas"
+                  onPress={() => setModalTermosVisible(true)}
                 />
+                <View className='mt-3'>
+                  <FilledButton
+                    title="Enviar Solicitação"
+                    onPress={() => navigate('CadastroAfiliadoScreen')}
+                  />
+                </View>
               </View>
             </View>
           </>
         )}
 
       </View>
+
+      <ModalTemplate
+        visible={modalTermosVisible}
+        onClose={() => setModalTermosVisible(false)}
+        width={'95%'}
+        maxWidth={500}
+      >
+        <View className='p-4'>
+          <H5>Políticas de Privacidade</H5>
+          <Caption fontSize={14} color={colors.gray} margintop={4}>
+            Termos sobre solicitar como afiliado Discontapp
+          </Caption>
+          <Caption fontSize={14} color={colors.dark} margintop={12}>
+            Para conhecer os termos e políticas de privacidade do programa de afiliados, abra o link no navegador.
+          </Caption>
+          <TouchableOpacity
+            onPress={() => {
+              Linking.openURL(TERMOS_AFILIADO_URL)
+              setModalTermosVisible(false)
+            }}
+            className='mt-6 rounded-lg py-3 flex-row items-center justify-center'
+            style={{ backgroundColor: colors.primary40 }}
+          >
+            <Ionicons name="open-outline" size={20} color="#FFF" style={{ marginRight: 8 }} />
+            <Text className='text-base font-semibold' style={{ color: '#FFF' }}>
+              Abrir Política de Privacidade
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => setModalTermosVisible(false)}
+            className='mt-4 py-2'
+          >
+            <Caption fontSize={14} color={colors.gray} margintop={0} align={'center'}>
+              Fechar
+            </Caption>
+          </TouchableOpacity>
+        </View>
+      </ModalTemplate>
     </MainLayoutAutenticado>
   )
 }
