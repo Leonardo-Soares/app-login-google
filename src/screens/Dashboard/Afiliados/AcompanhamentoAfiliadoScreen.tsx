@@ -4,7 +4,7 @@ import Caption from '@components/typography/Caption'
 import { useNavigate } from '@hooks/useNavigate'
 import { useIsFocused } from '@react-navigation/native'
 import React, { useEffect, useState, useRef } from 'react'
-import { Text, TouchableOpacity, View, Linking } from 'react-native'
+import { Text, TouchableOpacity, View, Linking, Share } from 'react-native'
 import MainLayoutAutenticado from '@components/layout/MainLayoutAutenticado'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { colors } from '../../../styles/colors'
@@ -15,7 +15,7 @@ import axios from 'axios'
 import { Ionicons } from '@expo/vector-icons'
 import ModalTemplate from '@components/Modals/ModalTemplate'
 
-const TERMOS_AFILIADO_URL = 'https://www.discontapp.com.br/politicaDePrivacidade'
+const TERMOS_AFILIADO_URL = 'https://www.discontapp.com.br/termo-de-uso-de-afiliados.pdf'
 
 export default function AcompanhamentoAfiliadoScreen() {
   const isFocused = useIsFocused()
@@ -73,6 +73,7 @@ export default function AcompanhamentoAfiliadoScreen() {
             data_cadastro: response.data.data.data_cadastro,
             status: statusAtual,
             motivo_reprovacao: response.data.data.motivo_reprovacao ?? null,
+            motivo_suspensao: response.data.data.motivo_suspensao ?? null,
           })
         }
 
@@ -90,6 +91,20 @@ export default function AcompanhamentoAfiliadoScreen() {
         type: 'success',
         text1: 'Código copiado para a área de transferência!',
       })
+    }
+  }
+
+  // Função para compartilhar código do afiliado
+  const compartilharCodigoAfiliado = async () => {
+    if (!dadosAfiliado?.codigo_afiliado) return
+    const message = `Meu código de afiliado Discontapp: ${dadosAfiliado.codigo_afiliado}\nUse no app para ganhar benefícios!`
+    try {
+      await Share.share({
+        message,
+        title: 'Código de afiliado Discontapp',
+      })
+    } catch {
+      Toast.show({ type: 'error', text1: 'Não foi possível compartilhar.' })
     }
   }
 
@@ -164,33 +179,66 @@ export default function AcompanhamentoAfiliadoScreen() {
                 color={getStatusColor(dadosAfiliado.status)}
                 style={{ marginBottom: 16 }}
               />
-              <H3 align={'center'}>Acompanhamento de Afiliado</H3>
+              <H3 align={'center'}>Status do Afiliado</H3>
               <Caption fontSize={14} color={colors.gray} margintop={8} align={'center'}>
                 Consulte o status e informações do seu cadastro
               </Caption>
             </View>
 
             <View className='w-full mt-6'>
-              {
-                dadosAfiliado.codigo_afiliado &&
+              {dadosAfiliado.status?.toLowerCase().replace(/\s/g, '_') === 'suspenso' && (
+                <View className='bg-[#F5F5F5] rounded-lg p-4 mb-4'>
+                  <Caption fontSize={12} color={colors.gray} margintop={0}>
+                    Mensagem de suspensão
+                  </Caption>
+                  <View style={{ marginTop: 4 }}>
+                    <H5 color={colors.error40}>
+                      {dadosAfiliado.motivo_suspensao || 'Seu cadastro como afiliado está suspenso. Entre em contato com o suporte para mais informações.'}
+                    </H5>
+                  </View>
+                </View>
+              )}
+
+              {dadosAfiliado.codigo_afiliado && dadosAfiliado.status?.toLowerCase().replace(/\s/g, '_') !== 'suspenso' && (
                 <View className='bg-[#F5F5F5] rounded-lg p-4 mb-4'>
                   <Caption fontSize={12} color={colors.gray} margintop={0}>
                     Código do Afiliado
                   </Caption>
-                  <View className='flex-row items-center justify-between'>
+                  <View style={{ marginBottom: 12 }}>
                     <H5>{dadosAfiliado.codigo_afiliado}</H5>
-                    <TouchableOpacity
-                      onPress={copyCodigoAfiliado}
-                      className='bg-[#E5DEFF] px-3 py-2 rounded-lg'
-                    >
-                      <Caption fontSize={12} color={colors.primary40} fontWeight={'bold'}>
-                        Copiar
-                      </Caption>
-                    </TouchableOpacity>
                   </View>
+                  {dadosAfiliado.status?.toLowerCase().replace(/\s/g, '_') === 'aprovado' && (
+                    <View className='flex-row'>
+                      <TouchableOpacity
+                        onPress={compartilharCodigoAfiliado}
+                        className='flex-1 flex-row items-center justify-center px-4 py-3 rounded-lg mr-3'
+                        style={{ backgroundColor: colors.primary30 }}
+                        activeOpacity={0.8}
+                      >
+                        <Ionicons name="share-social-outline" size={20} color={colors.white} />
+                        <View style={{ marginLeft: 8 }}>
+                          <Caption fontSize={14} color={colors.white} fontWeight={'bold'}>
+                            Compartilhar código
+                          </Caption>
+                        </View>
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        onPress={copyCodigoAfiliado}
+                        className='flex-row items-center px-4 py-3 rounded-lg'
+                        style={{ backgroundColor: colors.primary90 }}
+                        activeOpacity={0.8}
+                      >
+                        <Ionicons name="copy-outline" size={18} color={colors.primary40} />
+                        <View style={{ marginLeft: 8 }}>
+                          <Caption fontSize={14} color={colors.primary40} fontWeight={'bold'}>
+                            Copiar
+                          </Caption>
+                        </View>
+                      </TouchableOpacity>
+                    </View>
+                  )}
                 </View>
-              }
-
+              )}
 
               <View className='bg-[#F5F5F5] rounded-lg p-4 mb-4'>
                 <Caption fontSize={12} color={colors.gray} margintop={0}>
@@ -325,7 +373,7 @@ export default function AcompanhamentoAfiliadoScreen() {
           >
             <Ionicons name="open-outline" size={20} color="#FFF" style={{ marginRight: 8 }} />
             <Text className='text-base font-semibold' style={{ color: '#FFF' }}>
-              Abrir Política de Privacidade
+              Abrir termos e condições
             </Text>
           </TouchableOpacity>
           <TouchableOpacity

@@ -113,21 +113,23 @@ export default function App() {
   }
 
   return (
-    <GestureHandlerRootView>
-      <SafeAreaView style={{
-        flex: 1
-      }}>
+    <GestureHandlerRootView style={{ flex: 1, backgroundColor: colors.white }}>
+      <StatusBar barStyle="dark-content" backgroundColor={colors.white} />
+      <SafeAreaView style={styles.safeArea}>
         <GlobalContextProvider>
           <MainStack />
           <Toast />
         </GlobalContextProvider>
       </SafeAreaView>
-      <StatusBar barStyle="dark-content" backgroundColor="transparent" translucent />
     </GestureHandlerRootView>
   );
 }
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: colors.white,
+  },
   loadingContainer: {
     flex: 1,
     backgroundColor: colors.white,

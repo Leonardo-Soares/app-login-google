@@ -35,13 +35,13 @@ export default function ValidaCodigoScreen({ navigation }: { navigation: any }) 
     setInput1('')
     setLoading(true)
 
-    const jsonPerfil = await AsyncStorage.getItem('dados-perfil')
-    if (jsonPerfil) {
-      const jsonPefil = JSON.parse(jsonPerfil)
+    const jsonPerfil = await AsyncStorage.getItem('id-user')
+    console.log('jsonPerfil', jsonPerfil);
 
+    if (jsonPerfil) {
       try {
         const response = await api.post(`/valida-codigo/reenvia`, {
-          id: jsonPefil.id
+          id: jsonPerfil
         })
 
 

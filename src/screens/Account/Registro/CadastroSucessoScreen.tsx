@@ -8,12 +8,14 @@ import MainLayout from '../../../components/layout/MainLayout'
 import { useGlobal } from '../../../context/GlobalContextProvider'
 import FilledButton from '../../../components/buttons/FilledButton'
 import AsyncStorage from '@react-native-async-storage/async-storage'
+import { OneSignal } from 'react-native-onesignal'
 
 export default function CadastroSucessoScreen() {
   const { navigate } = useNavigate()
   const [loading, setLoading] = useState(false)
   const { senhaUser, setTipoUser, setUsuarioLogado } = useGlobal()
   const [emailStorage, setEmailStorage] = useState('')
+  const [subscriptionId, setSubscriptionId] = useState('')
 
   async function getEmail() {
     setLoading(true)
@@ -43,7 +45,8 @@ export default function CadastroSucessoScreen() {
     const formData = {
       email: emailStorage,
       password: senhaUser,
-      role: 'Cliente'
+      role: 'Cliente',
+      player_id: subscriptionId,
     }
 
     try {
@@ -64,8 +67,15 @@ export default function CadastroSucessoScreen() {
     setLoading(false)
   }
 
+
   useEffect(() => {
     getEmail()
+    // OneSignal.User.getOnesignalId().then((id) => {
+    //   console.log('playerId', id)
+    // })
+    OneSignal.User.pushSubscription.getIdAsync().then((subscriptionId) => {
+      setSubscriptionId(subscriptionId ?? '')
+    })
   }, [])
 
   return (

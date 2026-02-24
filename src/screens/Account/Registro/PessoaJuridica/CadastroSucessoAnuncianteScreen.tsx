@@ -8,12 +8,14 @@ import MainLayout from '../../../../components/layout/MainLayout'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useGlobal } from '../../../../context/GlobalContextProvider'
 import FilledButton from '../../../../components/buttons/FilledButton'
+import { OneSignal } from 'react-native-onesignal'
 
 export default function CadastroSucessoAnuncianteScreen({ navigation }: { navigation: any }) {
   const { navigate } = useNavigate()
   const [loading, setLoading] = useState(false)
   const { senhaUser, setTipoUser } = useGlobal()
   const [emailStorage, setEmailStorage] = useState('')
+  const [subscriptionId, setSubscriptionId] = useState('')
 
   async function getEmail() {
     setLoading(true)
@@ -44,7 +46,8 @@ export default function CadastroSucessoAnuncianteScreen({ navigation }: { naviga
     const formData = {
       email: emailStorage,
       password: senhaUser,
-      role: "Anunciante"
+      role: "Anunciante",
+      player_id: subscriptionId,
     }
 
     try {
@@ -65,8 +68,13 @@ export default function CadastroSucessoAnuncianteScreen({ navigation }: { naviga
 
   useEffect(() => {
     getEmail()
+    // OneSignal.User.getOnesignalId().then((id) => {
+    //   console.log('playerId', id)
+    // })
+    OneSignal.User.pushSubscription.getIdAsync().then((subscriptionId) => {
+      setSubscriptionId(subscriptionId ?? '')
+    })
   }, [])
-
   return (
     <MainLayout carregando={loading}>
       <View className='flex-1'>

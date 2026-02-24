@@ -22,7 +22,7 @@ export default function LoginClienteScreen() {
   const { navigate } = useNavigate()
   const [email, setEmail] = useState('')
   const versionName = DeviceInfo.getVersion()
-  const [playerId, setPlayerId] = useState('')
+  const [subscriptionId, setSubscriptionId] = useState('')
   const [loadign, setLoading] = useState(false)
   const [password, onChangePassword] = useState('')
   const { setTipoUser, setUsuarioLogado } = useGlobal()
@@ -56,7 +56,7 @@ export default function LoginClienteScreen() {
         email: email,
         role: "Cliente",
         password: password,
-        player_id: playerId,
+        player_id: subscriptionId,
       })
       OneSignal.User.addEmail(email)
 
@@ -104,8 +104,11 @@ export default function LoginClienteScreen() {
 
   useEffect(() => {
     getEmail()
-    OneSignal.User.getOnesignalId().then((id) => {
-      setPlayerId(id ?? '')
+    // OneSignal.User.getOnesignalId().then((id) => {
+    //   console.log('playerId', id)
+    // })
+    OneSignal.User.pushSubscription.getIdAsync().then((subscriptionId) => {
+      setSubscriptionId(subscriptionId ?? '')
     })
   }, [])
 

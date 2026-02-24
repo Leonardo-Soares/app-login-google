@@ -18,7 +18,7 @@ import Clipboard from '@react-native-clipboard/clipboard'
 import ModalTemplate from '@components/Modals/ModalTemplate'
 import { Ionicons } from '@expo/vector-icons'
 
-const TERMOS_AFILIADO_URL = 'https://www.discontapp.com.br/politicaDePrivacidade'
+const TERMOS_AFILIADO_URL = 'https://www.discontapp.com.br/termo-de-uso-de-afiliados.pdf'
 
 export default function CadastroAfiliadoScreen() {
   const isFocused = useIsFocused()
@@ -38,6 +38,8 @@ export default function CadastroAfiliadoScreen() {
   const [aceiteTermos, setAceiteTermos] = useState(false)
   const [cpfPreenchido, setCpfPreenchido] = useState('')
   const [modalTermosVisible, setModalTermosVisible] = useState(false)
+  const [modalValidacaoVisible, setModalValidacaoVisible] = useState(false)
+  const [mensagemValidacao, setMensagemValidacao] = useState('')
 
   // Estados de erro
   const [errorName, setErrorName] = useState(false)
@@ -172,22 +174,34 @@ export default function CadastroAfiliadoScreen() {
     }
   }
 
-  // Validação de email
+  // Validação de email (formato válido)
   const validateEmail = (email: string) => {
-    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    return re.test(email)
+    const trimmed = email.trim()
+    if (!trimmed) return false
+    // Formato: local@domínio.tld (com pelo menos um caractere em cada parte)
+    const re = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}$/
+    return re.test(trimmed)
   }
 
-  // Validação de CPF (básica - apenas formato)
+  // Validação de CPF (11 dígitos numéricos)
   const validateCPF = (cpf: string) => {
     const cpfNumbers = cpf.replace(/\D/g, '')
-    return cpfNumbers.length === 11
+    return cpfNumbers.length === 11 && /^\d{11}$/.test(cpfNumbers)
   }
 
-  // Validação de telefone
+  // Validação de telefone (formato BR: 10 dígitos fixo ou 11 dígitos celular com 9 após DDD)
   const validatePhone = (phone: string) => {
-    const phoneNumbers = phone.replace(/\D/g, '')
-    return phoneNumbers.length === 10 || phoneNumbers.length === 11
+    const digits = phone.replace(/\D/g, '')
+    if (digits.length === 10) {
+      const ddd = parseInt(digits.slice(0, 2), 10)
+      return ddd >= 11 && ddd <= 99
+    }
+    if (digits.length === 11) {
+      const ddd = parseInt(digits.slice(0, 2), 10)
+      const nove = digits[2] === '9'
+      return ddd >= 11 && ddd <= 99 && nove
+    }
+    return false
   }
 
   // Validação de senha
@@ -224,11 +238,6 @@ export default function CadastroAfiliadoScreen() {
       isValid = false
     }
 
-    // Validar telefone
-    if (!telefone.trim() || !validatePhone(telefone)) {
-      setErrorTelefone(true)
-      isValid = false
-    }
 
     // Validar senha
     if (!password || !validatePassword(password)) {
@@ -266,8 +275,17 @@ export default function CadastroAfiliadoScreen() {
       isValid = false
     }
 
-    // Validar chave PIX
-    if (!chavePix.trim()) {
+    // Validar chave PIX apenas conforme o tipo selecionado (não validar outros formatos)
+    const tipoNormalized = tipoChavePix?.toLowerCase().replace(/\s/g, '') || ''
+    let chavePixValida = false
+    if (tipoChavePix && chavePix.trim()) {
+      if (tipoNormalized === 'cpf') chavePixValida = validateCPF(chavePix)
+      else if (tipoNormalized === 'telefone') chavePixValida = validatePhone(chavePix)
+      else if (tipoNormalized === 'e-mail' || tipoNormalized === 'email') chavePixValida = validateEmail(chavePix)
+      else if (tipoNormalized === 'aleatória' || tipoNormalized === 'aleatoria') chavePixValida = chavePix.trim().length > 0
+      else chavePixValida = chavePix.trim().length > 0
+    }
+    if (!chavePixValida) {
       setErrorChavePix(true)
       isValid = false
     }
@@ -284,10 +302,32 @@ export default function CadastroAfiliadoScreen() {
   // Função de submit
   const handleSubmit = async () => {
     if (!validateForm()) {
-      Toast.show({
-        type: 'error',
-        text1: 'Por favor, preencha todos os campos corretamente',
-      })
+      const msgEmail = !email.trim() || !validateEmail(email)
+      const msgPhone = !telefone.trim() || !validatePhone(telefone)
+      const msgCpf = !cpf.trim() || !validateCPF(cpf)
+      const tipoNorm = tipoChavePix?.toLowerCase().replace(/\s/g, '') || ''
+      let chavePixOk = false
+      if (tipoChavePix && chavePix.trim()) {
+        if (tipoNorm === 'cpf') chavePixOk = validateCPF(chavePix)
+        else if (tipoNorm === 'telefone') chavePixOk = validatePhone(chavePix)
+        else if (tipoNorm === 'e-mail' || tipoNorm === 'email') chavePixOk = validateEmail(chavePix)
+        else chavePixOk = true
+      }
+      const msgChavePix = !chavePixOk
+      let text1 = 'Por favor, preencha todos os campos corretamente.'
+      const parts: string[] = []
+      if (msgEmail) parts.push('E-mail: formato válido (ex: nome@dominio.com)')
+      if (msgPhone) parts.push('Telefone (contato): 10 ou 11 dígitos')
+      if (msgCpf) parts.push('CPF (dados pessoais): 11 dígitos')
+      if (msgChavePix) {
+        if (tipoNorm === 'cpf') parts.push('Chave PIX (CPF): 11 dígitos')
+        else if (tipoNorm === 'telefone') parts.push('Chave PIX (Telefone): 10 ou 11 dígitos')
+        else if (tipoNorm === 'e-mail' || tipoNorm === 'email') parts.push('Chave PIX (E-mail): formato válido')
+        else parts.push('Chave PIX: preencha conforme o tipo selecionado')
+      }
+      if (parts.length > 0) text1 = parts.join('; ')
+      setMensagemValidacao(text1)
+      setModalValidacaoVisible(true)
       return
     }
 
@@ -575,7 +615,7 @@ export default function CadastroAfiliadoScreen() {
   return (
     <MainLayoutAutenticado notScroll={false} loading={loading} marginTop={24} marginHorizontal={16}>
       <View className='mb-6 mt-12'>
-        <H3>Cadastro de Afiliado</H3>
+        <H3>Solicitação de Afiliado</H3>
         <Caption fontSize={14} color={colors.gray} margintop={8}>
           Preencha todos os campos para cadastrar um novo afiliado
         </Caption>
@@ -786,6 +826,29 @@ export default function CadastroAfiliadoScreen() {
         </View>
       </ModalTemplate>
 
+      <ModalTemplate
+        visible={modalValidacaoVisible}
+        onClose={() => setModalValidacaoVisible(false)}
+        width={'95%'}
+        maxWidth={500}
+      >
+        <View className='p-4'>
+          <H5 color={colors.error40}>Validação incorreta</H5>
+          <Caption fontSize={14} color={colors.dark} margintop={8}>
+            {mensagemValidacao}
+          </Caption>
+          <TouchableOpacity
+            onPress={() => setModalValidacaoVisible(false)}
+            className='mt-6 rounded-lg py-3 flex-row items-center justify-center'
+            style={{ backgroundColor: colors.primary40 }}
+          >
+            <Text className='text-base font-semibold' style={{ color: colors.white }}>
+              Entendi
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </ModalTemplate>
+
       <View className='mb-8'>
         <FilledButton
           title="Enviar Solicitação"
@@ -793,6 +856,7 @@ export default function CadastroAfiliadoScreen() {
           disabled={loading}
         />
       </View>
+      <View className='h-40 w-full' />
     </MainLayoutAutenticado>
   )
 }
