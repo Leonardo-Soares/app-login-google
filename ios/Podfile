@@ -66,6 +66,35 @@ target 'Discontapp' do
       :mac_catalyst_enabled => false,
       :ccache_enabled => ccache_enabled?(podfile_properties),
     )
+    # Fix "framework 'React' not found": add React.xcframework slice paths so linker finds React.framework
+    rncore = installer.sandbox.pod_dir('React-Core-prebuilt')
+    rncore_path = rncore ? rncore.to_s : ''
+    if rncore_path != '' && File.directory?("#{rncore_path}/React.xcframework")
+      react_xcframework_paths = [
+        "\"#{rncore_path}/React.xcframework/ios-arm64\"",
+        "\"#{rncore_path}/React.xcframework/ios-arm64_x86_64-simulator\"",
+      ].join(' ')
+      installer.pods_project.targets.each do |target|
+        target.build_configurations.each do |config|
+          current = config.build_settings['FRAMEWORK_SEARCH_PATHS']
+          current = current.is_a?(Array) ? current.join(' ') : (current || '$(inherited)').to_s
+          next if current.include?(rncore_path)
+          config.build_settings['FRAMEWORK_SEARCH_PATHS'] = "#{current} #{react_xcframework_paths}"
+        end
+      end
+      # Also patch the xcconfig so the app target (which uses it) sees the paths
+      support_dir = File.join(installer.sandbox.root.to_s, 'Target Support Files', 'Pods-Discontapp')
+      ['debug', 'release'].each do |config_name|
+        xcconfig_path = File.join(support_dir, "Pods-Discontapp.#{config_name}.xcconfig")
+        if File.exist?(xcconfig_path)
+          xcconfig = File.read(xcconfig_path)
+          unless xcconfig.include?(rncore_path)
+            xcconfig.gsub!(/^(FRAMEWORK_SEARCH_PATHS = .+)$/, "\\1 #{react_xcframework_paths}")
+            File.write(xcconfig_path, xcconfig)
+          end
+        end
+      end
+    end
   end
 end
 

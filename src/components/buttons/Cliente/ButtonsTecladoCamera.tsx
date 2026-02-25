@@ -24,7 +24,7 @@ export default function ButtonsTecladoCamera() {
   const [codigo, setCodigo] = useState('')
   const [flashOn, setFlashOn] = useState(false)
   const [loading, setLoading] = useState(false)
-  const larguraTela = Dimensions.get('window').width
+  const { width: larguraTela, height: alturaTela } = Dimensions.get('window')
   const [exibiCodigo, setExibiCodigo] = useState('')
   const [codigoCliente, setCodigoCliente] = useState('')
   const [modalVisible, setModalVisible] = useState(false)
@@ -130,69 +130,92 @@ export default function ButtonsTecladoCamera() {
 
   return (
     <>
-      <View className='justify-around bg-white w-full  absolute bottom-0 pb-4 pt-4' style={larguraTela >= 160 ? { flexDirection: 'row', zIndex: 9999 } : { flexDirection: 'column' }}>
-        <Modal visible={modalVisible} animationType='slide' className='flex-1 items-center justify-center bg-black/70'>
-          {loading &&
-            <Loading />
-          }
-          <ScrollView contentContainerStyle={{ flexGrow: 1, paddingBottom: 320 }}>
-            <View className='relative rounded-lg  mx-6 px-4 py-24'>
-              <TouchableOpacity onPress={closeModal} className='absolute right-2 top-10'>
-                <Image source={require('../../../../assets/img/icons/close.png')} />
-              </TouchableOpacity>
-
-              {envioSucesso
-                ? <View className='my-4'>
-                  <H3 align={'center'}>Código <Text className=' font-bold'>{exibiCodigo}</Text> validado com sucesso!</H3>
-                  <View className='flex items-center justify-center'>
-                    <Image className='mt-4' source={require('../../../../assets/img/cliente/coidog-auxiliar.png')} />
+      <View
+        className='bg-white w-full absolute bottom-0 pb-4 pt-4 items-center justify-center'
+        style={[
+          { zIndex: 9999 },
+          larguraTela >= 360 ? { flexDirection: 'row', gap: 16 } : { flexDirection: 'column', gap: 12 }
+        ]}
+      >
+        <Modal visible={modalVisible} animationType='slide' transparent statusBarTranslucent>
+          {loading && <Loading />}
+          <View
+            style={{
+              flex: 1,
+              width: larguraTela,
+              height: alturaTela,
+              backgroundColor: '#fff',
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}
+          >
+            <ScrollView
+              style={{ width: '100%', flex: 1 }}
+              contentContainerStyle={{
+                flexGrow: 1,
+                justifyContent: 'center',
+                alignItems: 'center',
+                paddingVertical: 48,
+                paddingHorizontal: 24,
+                paddingBottom: 120,
+              }}
+              keyboardShouldPersistTaps="handled"
+              showsVerticalScrollIndicator={false}
+            >
+              <View
+                className='relative rounded-lg px-6 py-8 items-center'
+                style={{ width: '100%', maxWidth: 400 }}
+              >
+                {envioSucesso ? (
+                  <View className='items-center w-full'>
+                    <H3 align='center'>Código <Text className='font-bold'>{exibiCodigo}</Text> validado com sucesso!</H3>
+                    <View className='my-6'>
+                      <Image source={require('../../../../assets/img/cliente/coidog-auxiliar.png')} />
+                    </View>
+                    <View className='w-full mt-2'>
+                      <FilledButton title='Validar outro código' onPress={voltaModal} />
+                    </View>
                   </View>
-
-                  <View className='mt-4'>
-                    <FilledButton
-                      title='Válidar outro código'
-                      onPress={voltaModal}
+                ) : (
+                  <View className='w-full'>
+                    <View className='mb-6'><H3 align='center'>Informe as informações necessárias:</H3></View>
+                    <InputOutlined
+                      onChange={setCodigo}
+                      label='Código: '
+                      value={codigo}
+                      maxLength={10}
+                      keyboardType='default'
                     />
-                  </View>
-                </View>
-                : <View className=''>
-                  <H3 align={'center'}>Informe as informações necessárias:</H3>
-
-                  <InputOutlined
-                    onChange={setCodigo}
-                    label='Código: '
-                    value={codigo}
-                    maxLength={10}
-                    keyboardType={'default'}
-                  />
-                  <InputOutlined
-                    onChange={setCodigoCliente}
-                    label='Código do Cliente: '
-                    value={codigoCliente}
-                    maxLength={10}
-                    keyboardType={'number-pad'}
-                  />
-
-                  <View className='mt-12'>
-                    <FilledButton
-                      disabled={codigo.length <= 0 ? true : false}
-                      title='Válidar Código'
-                      onPress={() => onSubmit()}
+                    <View className='w-full h-4' />
+                    <InputOutlined
+                      onChange={setCodigoCliente}
+                      label='Código do Cliente: '
+                      value={codigoCliente}
+                      maxLength={10}
+                      keyboardType='number-pad'
                     />
+                    <View className='mt-8'>
+                      <FilledButton
+                        disabled={codigo.length <= 0}
+                        title='Validar Código'
+                        onPress={() => onSubmit()}
+                      />
+                    </View>
                   </View>
+                )}
+
+                <View className='w-full mt-6'>
+                  <FilledButton
+                    title='Fechar'
+                    backgroundColor='transparent'
+                    color={colors.secondary50}
+                    border
+                    onPress={closeModal}
+                  />
                 </View>
-              }
-              <View>
-                <FilledButton
-                  title='Voltar para o início'
-                  backgroundColor={'transparent'}
-                  color={colors.secondary50}
-                  border
-                  onPress={() => goBack()}
-                />
               </View>
-            </View>
-          </ScrollView>
+            </ScrollView>
+          </View>
         </Modal>
         <ModalTemplate
           closeSecondary={true}
@@ -232,31 +255,26 @@ export default function ButtonsTecladoCamera() {
 
         <TouchableOpacity
           onPress={() => setModalVisible(true)}
-          className='rounded-full w-auto flex flex-row items-center py-3 px-5'
-          style={larguraTela >= 160
-            ? { borderWidth: 1, borderColor: colors.secondary50 }
-            : { borderWidth: 1, borderColor: colors.secondary50, marginBottom: 8, alignItems: 'center' }
-          }>
-          <Image className='' source={require('../../../../assets/img/icons/comprovante.png')} />
-          <View className='ml-4'>
-            <Caption fontSize={14} fontWeight={'500'} color={colors.secondary50}>Digitar código</Caption>
+          className='rounded-full flex-row items-center py-3 px-5'
+          style={{ borderWidth: 1, borderColor: colors.secondary50 }}
+        >
+          <Image source={require('../../../../assets/img/icons/comprovante.png')} />
+          <View className='ml-3'>
+            <Caption fontSize={14} fontWeight='500' color={colors.secondary50}>Digitar código</Caption>
           </View>
         </TouchableOpacity>
 
         <TouchableOpacity
-          className='rounded-full w-auto flex flex-row items-center py-3 px-5'
           onPress={() => navigate('CameraScreen')}
-          style={larguraTela >= 160
-            ? { borderWidth: 1, borderColor: colors.secondary50, backgroundColor: colors.secondary50 }
-            : { borderWidth: 1, borderColor: colors.secondary50, backgroundColor: colors.secondary50, marginBottom: 8, alignItems: 'center' }
-          }>
+          className='rounded-full flex-row items-center py-3 px-5'
+          style={{ borderWidth: 1, borderColor: colors.secondary50, backgroundColor: colors.secondary50 }}
+        >
           <Image source={require('../../../../assets/img/icons/camera.png')} />
-          <View className='ml-4'>
-            <Caption fontSize={14} fontWeight={'500'} color={colors.white}>Abrir câmera</Caption>
+          <View className='ml-3'>
+            <Caption fontSize={14} fontWeight='500' color={colors.white}>Abrir câmera</Caption>
           </View>
         </TouchableOpacity>
       </View>
     </>
-
   )
 }
