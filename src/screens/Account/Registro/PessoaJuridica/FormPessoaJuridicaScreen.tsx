@@ -16,7 +16,6 @@ import FilledButton from '../../../../components/buttons/FilledButton';
 import ModalTemplate from '../../../../components/Modals/ModalTemplate';
 import HeaderPrimary from '../../../../components/header/HeaderPrimary';
 import RemoveCaracteres from '../../../../components/forms/RemoveCaracteres';
-import InputMascaraPaper from '../../../../components/forms/InputMascaraPaper';
 import MainLayoutSecondary from '../../../../components/layout/MainLayoutSecondary';
 import {
   LocationAccuracy,
@@ -848,7 +847,7 @@ export default function FormPessoaJuridicaScreen({
             />
           </TouchableOpacity>
         )}
-        <InputMascaraPaper
+        <InputOutlinedCadastro
           mt={8}
           required
           label="CNPJ"
@@ -858,7 +857,7 @@ export default function FormPessoaJuridicaScreen({
           error={errorCnpj}
           keyboardType={'number-pad'}
           onSubmitEditing={() => focusNextInput(input1Ref)}
-          onChangeText={(text: any) => handleCNPJMask(text)}
+          onChange={(text: string) => handleCNPJMask(text)}
         />
         <InputOutlinedCadastro
           mt={8}
@@ -872,7 +871,6 @@ export default function FormPessoaJuridicaScreen({
         />
         <InputOutlinedCadastro
           mt={8}
-          height={64}
           required
           refInput={input1Ref}
           value={nomeEmpressarial}
@@ -894,7 +892,7 @@ export default function FormPessoaJuridicaScreen({
           onChange={(text: string) => setEmail(text)}
           onSubmitEditing={() => focusNextInput(input4Ref)}
         />
-        <InputMascaraPaper
+        <InputOutlinedCadastro
           mt={8}
           required
           maxLength={15}
@@ -904,18 +902,18 @@ export default function FormPessoaJuridicaScreen({
           label="Telefone (DDD)"
           keyboardType={'number-pad'}
           onSubmitEditing={() => focusNextInput(input5Ref)}
-          onChangeText={(text: any) => handlePhoneMask(text)}
+          onChange={(text: string) => handlePhoneMask(text)}
         />
-        <InputMascaraPaper
+        <InputOutlinedCadastro
           mt={8}
           label="CEP"
           value={cep}
-          maxLength={10}
+          maxLength={8}
           error={errorCep}
           onBlur={handleCep}
           refInput={input5Ref}
           keyboardType={'number-pad'}
-          onChangeText={(text: any) => setCep(text)}
+          onChange={(text: string) => setCep(text.replace(/\D/g, ''))}
           onSubmitEditing={() => focusNextInput(input6Ref)}
         />
         <View className="flex flex-row w-full">
@@ -925,7 +923,7 @@ export default function FormPessoaJuridicaScreen({
           >
             <View
               style={{ borderColor: errorEstado ? '#f01' : '#49454F' }}
-              className="bg-white text-base overflow-scroll justify-center border-solid border-[1px] rounded-md h-[52px] w-16 mt-3 pl-2"
+              className="bg-[#FFF] text-base overflow-scroll justify-center border-solid border-[1px] rounded-md h-[52px] w-16 mt-3 pl-2"
             >
               {uf ? (
                 <Text className="text-[#000]">{uf}</Text>
@@ -940,7 +938,7 @@ export default function FormPessoaJuridicaScreen({
             className="flex-1 pl-2 z-10"
             onPress={openModalCidades}
           >
-            <View className="bg-white text-base overflow-scroll justify-center border-solid border-[1px] border-[#49454F] rounded-md h-[52px] mt-3 pl-2">
+            <View className="bg-[#FFF] text-base overflow-scroll justify-center border-solid border-[1px] border-[#49454F] rounded-md h-[52px] mt-3 pl-2">
               {cidade ? (
                 <Text className="text-[#49454F]">{cidade}</Text>
               ) : (
@@ -971,7 +969,7 @@ export default function FormPessoaJuridicaScreen({
           onSubmitEditing={() => focusNextInput(input10Ref)}
           onChange={(text: string) => setNomeRepresetante(text)}
         />
-        <InputMascaraPaper
+        <InputOutlinedCadastro
           mt={8}
           required
           maxLength={14}
@@ -981,7 +979,7 @@ export default function FormPessoaJuridicaScreen({
           error={errorCpfRepresetante}
           label="CPF representante da empresa"
           onSubmitEditing={() => focusNextInput(input11Ref)}
-          onChangeText={(text: any) => handleCPFMask(text)}
+          onChange={(text: string) => handleCPFMask(text)}
         />
         <InputOutlined
           mt={8}

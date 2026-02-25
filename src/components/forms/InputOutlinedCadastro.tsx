@@ -66,6 +66,7 @@ export default function InputOutlinedCadastro({
         style={{
           color: '#49454F',
           height: height ?? 52,
+          backgroundColor: '#FFF',
         }}
         maxLength={maxLength ?? 9999}
         onSubmitEditing={onSubmitEditing}
