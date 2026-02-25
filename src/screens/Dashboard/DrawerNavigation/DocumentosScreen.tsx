@@ -4,6 +4,7 @@ import { useIsFocused } from '@react-navigation/native'
 import { useNavigate } from '../../../hooks/useNavigate'
 import ButtonFiltro from '../../../components/buttons/ButtonFiltro'
 import MainLayoutAutenticado from '../../../components/layout/MainLayoutAutenticado'
+import React from 'react'
 
 export default function DocumentosScreen() {
   const isFocused = useIsFocused()
@@ -28,15 +29,24 @@ export default function DocumentosScreen() {
 
 
   return (
-    <MainLayoutAutenticado bottomDrawer loading={loading}>
-      {documentos && documentos.map((documento: any) => (
-        <ButtonFiltro
-          key={documento.id}
-          title={documento.titulo}
-          isActive={documento.status}
-          onPress={() => navigate('TermoModeloScreen', { documento })}
-        />
-      ))}
+    <MainLayoutAutenticado
+      notScroll={true}
+      marginTop={72}
+      bottomDrawer
+      loading={loading}>
+      {documentos && documentos.map((documento: any) => {
+        const titulo = documento.titulo
+          ? documento.titulo.charAt(0).toUpperCase() + documento.titulo.slice(1).toLowerCase()
+          : ''
+        return (
+          <ButtonFiltro
+            key={documento.id}
+            title={titulo}
+            isActive={documento.status}
+            onPress={() => navigate('TermoModeloScreen', { documento })}
+          />
+        )
+      })}
     </MainLayoutAutenticado>
   );
 }

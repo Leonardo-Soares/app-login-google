@@ -36,6 +36,7 @@ import {
 } from 'react-native';
 import InputOutlinedCadastro from '@components/forms/InputOutlinedCadastro';
 import InputOutlined from '@components/forms/InputOutlined';
+import LogoUpload from '@components/LogoUpload';
 
 interface ILocalizacao {
   latitude: number;
@@ -814,39 +815,12 @@ export default function FormPessoaJuridicaScreen({
       />
 
       <ScrollView contentContainerStyle={{ flexGrow: 1, paddingBottom: 320, marginHorizontal: 20 }}>
-        {!imagemSelecionada && (
-          <TouchableOpacity
-            onPress={handlePickImage}
-            className="items-center p-4"
-          >
-            <View className="bg-[#F0F0F0] flex items-center justify-center rounded-full mb-2 p-3">
-              <Image
-                source={require('../../../../../assets/img/icons/camera-gray.png')}
-              />
-            </View>
-
-            <Caption
-              fontSize={12}
-              fontWeight={'400'}
-              align={'center'}
-              color={colors.blackdark}
-            >
-              Upload da logomarca
-            </Caption>
-          </TouchableOpacity>
-        )}
-
-        {imagemSelecionada && (
-          <TouchableOpacity
-            onPress={handlePickImage}
-            className="items-center  p-4"
-          >
-            <Image
-              source={{ uri: imagemSelecionada }}
-              className="rounded-full w-28 h-28"
-            />
-          </TouchableOpacity>
-        )}
+        <LogoUpload
+          imageUri={imagemSelecionada}
+          onPress={handlePickImage}
+          label="Adicionar logomarca"
+          labelWithImage="Toque para alterar"
+        />
         <InputOutlinedCadastro
           mt={8}
           required

@@ -11,6 +11,8 @@ import { useGlobal } from 'src/context/GlobalContextProvider';
 import { api } from 'src/service/api';
 import { colors } from 'src/styles/colors';
 import DateTimePickerModal from "react-native-modal-datetime-picker";
+import MainLayoutAutenticado from '@components/layout/MainLayoutAutenticado';
+import ButtonPerfil from '@components/buttons/ButtonPerfil';
 
 const diasDaSemana = [
   "segunda", "terca", "quarta", "quinta", "sexta", "sabado", "domingo"
@@ -143,7 +145,19 @@ export default function FormAtualizarHorarioScreen() {
   useEffect(() => { if (isFocused) getHorarios(); }, [isFocused]);
 
   return (
-    <MainLayoutAutenticadoSemScroll loadign={loading} marginTop={72} marginHorizontal={0}>
+    <MainLayoutAutenticado
+      notScroll
+      marginTop={72} marginHorizontal={0} >
+
+      <View style={{
+        padding: 12,
+      }}>
+        <ButtonPerfil
+          fontsize={20}
+          title="Atualizar horários de funcionamento"
+          onPress={() => navigate('ClientePerfilScreen')}
+        />
+      </View>
       <ScrollView contentContainerStyle={styles.container}>
         {diasDaSemana.map((dia) => (
           <View key={dia} style={styles.diaContainer}>
@@ -190,7 +204,7 @@ export default function FormAtualizarHorarioScreen() {
         locale="pt-BR"
         timeZoneName="America/Sao_Paulo"
       />
-    </MainLayoutAutenticadoSemScroll>
+    </MainLayoutAutenticado >
   );
 }
 
