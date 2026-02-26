@@ -11,6 +11,7 @@ import FilledButton from '../../../../../components/buttons/FilledButton'
 import { useDadosPagamento } from '../../../../../stores/useDadosPagamento'
 import MainLayoutSecondary from '../../../../../components/layout/MainLayoutSecondary'
 import { useIsFocused } from '@react-navigation/native'
+import React from 'react'
 
 export default function ClienteSucessoPagamentoScreen() {
   const isFocused = useIsFocused()

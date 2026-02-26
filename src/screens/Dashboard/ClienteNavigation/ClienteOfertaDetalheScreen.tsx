@@ -10,6 +10,8 @@ import MainLayoutAutenticado from '../../../components/layout/MainLayoutAutentic
 import IcoShare from 'src/svg/IcoShare'
 import H3 from '@components/typography/H3'
 import { colors } from 'src/styles/colors'
+import React from 'react'
+import FilledButton from '@components/buttons/FilledButton'
 
 interface PropsOferta {
   id: number

@@ -8,6 +8,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage'
 import HeaderPrimary from '../../../components/header/HeaderPrimary'
 import CardProdutoDetalhes from '../../../components/cards/CardProdutoDetalhes'
 import MainLayoutAutenticado from '../../../components/layout/MainLayoutAutenticado'
+import React from 'react'
 
 interface PropsOferta {
   id: number
@@ -108,6 +109,8 @@ export default function ClienteOfertaDetalheHistoricoScreen({ route }: { route?:
             );
           }
         })}
+
+
       </View>
     </MainLayoutAutenticado >
   );
