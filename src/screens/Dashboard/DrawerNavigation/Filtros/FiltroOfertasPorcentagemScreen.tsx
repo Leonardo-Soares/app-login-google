@@ -1,7 +1,7 @@
 import { api } from '../../../../service/api'
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from '../../../../hooks/useNavigate'
-import { FlatList, RefreshControl, View } from 'react-native'
+import { FlatList, RefreshControl, View, StyleSheet } from 'react-native'
 import Caption from '../../../../components/typography/Caption'
 import CardEmpresa from '../../../../components/cards/CardEmpresa'
 import AsyncStorage from '@react-native-async-storage/async-storage'
@@ -78,32 +78,53 @@ export default function FiltroOfertasPorcentagemScreen() {
 
   return (
     <MainLayoutAutenticado notScroll={true} bottomDrawer marginTop={0} marginHorizontal={0}>
-      <HeaderPrimary titulo='Resultado da busca' voltarScreen={() => navigate('FiltroOfertasScreen')} />
-      <View className='mx-6'>
-        {totalCupons &&
-          <Caption fontSize={14} fontWeight={'400'}>{totalCupons} oferta(s) encontrada(s)</Caption>
-        }
-
-        <View className='mt-6'>
-          {cuponsPorcentagem &&
-            <FlatList
-              data={cuponsPorcentagem as any}
-              className='mb-16'
-              renderItem={renderItem as any}
-              refreshControl={
-                <RefreshControl
-                  refreshing={isRefreshing}
-                  onRefresh={handleRefresh}
-                />
-              }
-              showsVerticalScrollIndicator={false}
-            />}
-
-          {!isRefreshing && cuponsPorcentagem.length <= 0 &&
-            <CardNotFound titulo='Não encontramos cupons no momento para você' />
+      <View style={styles.container}>
+        <View className='mt-[4%]' />
+        <HeaderPrimary titulo='Resultado da busca' voltarScreen={() => navigate('FiltroOfertasScreen')} />
+        <View style={styles.content}>
+          {totalCupons &&
+            <Caption fontSize={14} fontWeight={'400'}>{totalCupons} oferta(s) encontrada(s)</Caption>
           }
+          <View style={styles.listWrapper}>
+            {cuponsPorcentagem && cuponsPorcentagem.length > 0 &&
+              <FlatList
+                data={cuponsPorcentagem as any}
+                renderItem={renderItem as any}
+                keyExtractor={(item: any) => String(item.id)}
+                contentContainerStyle={styles.listContent}
+                refreshControl={
+                  <RefreshControl
+                    refreshing={isRefreshing}
+                    onRefresh={handleRefresh}
+                  />
+                }
+                showsVerticalScrollIndicator={false}
+              />
+            }
+
+            {!isRefreshing && cuponsPorcentagem.length <= 0 &&
+              <CardNotFound titulo='Não encontramos cupons no momento para você' />
+            }
+          </View>
         </View>
       </View>
     </MainLayoutAutenticado>
   )
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  content: {
+    flex: 1,
+    marginHorizontal: 24,
+  },
+  listWrapper: {
+    flex: 1,
+    marginTop: 24,
+  },
+  listContent: {
+    paddingBottom: 220,
+  },
+})

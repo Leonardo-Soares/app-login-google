@@ -87,7 +87,7 @@ export default function FiltroAvaliacoesScreen() {
 
   return (
     <MainLayoutAutenticado notScroll={true} loading={isRefreshing} bottomDrawer>
-      <View className='mb-6'>
+      <View className='mb-6 mt-[20%]'>
         <H5>Resultado da busca</H5>
         <View className='pb-3'>
           {totalCupons && totalCupons.length <= 1 ?

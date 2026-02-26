@@ -36,7 +36,7 @@ export default function MainLayoutAutenticado(
         <Loading />
       }
       {notScroll ?
-        <View style={{ marginTop: marginTop ?? 96, marginHorizontal: marginHorizontal ?? 16 }}>
+        <View style={{ flex: 1, marginHorizontal: marginHorizontal ?? 16 }}>
           {children}
           < View className='h-24'></View>
         </View>

@@ -93,6 +93,30 @@ export default function CardProduto(
   const [cupomUsado, setCupomUsado] = useState(false)
   const [depoimentos, setDepoimentos] = useState<any[]>([])
 
+  function formatarReais(valor: string | number): string {
+    if (typeof valor === 'number') {
+      return valor.toLocaleString('pt-BR', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      })
+    }
+    const str = String(valor ?? '')
+    const apenasNumeros = str.replace(/\D/g, '')
+    if (apenasNumeros.length === 0) return '0,00'
+    const num = parseInt(apenasNumeros, 10) / 100
+    return num.toLocaleString('pt-BR', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })
+  }
+
+  function valorReaisNum(valor: string | number): number {
+    const str = String(valor ?? '')
+    const apenasNumeros = str.replace(/\D/g, '')
+    if (apenasNumeros.length === 0) return 0
+    return parseInt(apenasNumeros, 10) / 100
+  }
+
   const handleOpenModal = () => {
     setModalVisible(true)
   }
@@ -620,7 +644,7 @@ export default function CardProduto(
           {vantagem_reais && vantagem_reais != '-' &&
             <View className="bg-[#FFB876]">
               <Text className="text-center text-[#9C5706] font-medium text-[16px] py-2 ">
-                R$: {parseFloat(vantagem_reais).toFixed(2).replace('.', ',')} de desconto
+                R$ {formatarReais(vantagem_reais)} de desconto
               </Text>
             </View>
           }
@@ -642,15 +666,15 @@ export default function CardProduto(
           <Text className="text-md">
             De:{' '}
             <Text className="line-through">
-              R$ {parseFloat(dados_gerais.valor).toFixed(2).replace('.', ',')}
+              R$ {formatarReais(dados_gerais.valor)}
             </Text>
           </Text>
           <Text className="text-lg">
             Por:{' '}
             <Text className="font-bold">
               {vantagem_reais != '-'
-                ? `R$: ${(parseFloat(dados_gerais.valor) - parseFloat(vantagem_reais)).toFixed(2).replace('.', ',')}`
-                : `R$: ${(dados_gerais.valor - (dados_gerais.valor * vantagem_porcentagem / 100)).toFixed(2).replace('.', ',')}`
+                ? `R$ ${formatarReais(valorReaisNum(dados_gerais.valor) - valorReaisNum(vantagem_reais))}`
+                : `R$ ${formatarReais(valorReaisNum(dados_gerais.valor) * (1 - (vantagem_porcentagem ?? 0) / 100))}`
               }
             </Text>
           </Text>
