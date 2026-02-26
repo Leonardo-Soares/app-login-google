@@ -9,6 +9,7 @@ import { useNavigate } from '../../../hooks/useNavigate'
 import Clipboard from '@react-native-clipboard/clipboard'
 import IcoCupomDesconto from '../../../svg/IcoCupomDesconto'
 import MainLayoutAutenticado from '../../../components/layout/MainLayoutAutenticado'
+import React from 'react'
 
 export default function ClienteCupomSucessoScreen(props: any) {
   const { navigate } = useNavigate()

@@ -54,6 +54,16 @@ export default function CardProdutoDetalhes(
     return dataFormatada;
   }
 
+  function formatarReais(valor: string): string {
+    const apenasNumeros = valor.replace(/\D/g, '');
+    if (apenasNumeros.length === 0) return valor;
+    const num = parseInt(apenasNumeros, 10) / 100;
+    return num.toLocaleString('pt-BR', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
+  }
+
   return (
     <View className='rounded-xl p-4' style={{ backgroundColor: '#EEF0FF', borderColor: colors.secondary50, borderWidth: 3 }}>
 
@@ -96,7 +106,7 @@ export default function CardProdutoDetalhes(
         }
         {vantagem_reais && vantagem_reais != '-' &&
           <Caption fontSize={16} margintop={4}>
-            R$: {vantagem_reais} de desconto
+            R$ {formatarReais(vantagem_reais)} de desconto
           </Caption>
         }
       </View>
