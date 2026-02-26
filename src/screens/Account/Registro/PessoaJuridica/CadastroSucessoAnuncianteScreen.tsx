@@ -56,7 +56,7 @@ export default function CadastroSucessoAnuncianteScreen({ navigation }: { naviga
         const storageEmail = await AsyncStorage.setItem('user-email', emailStorage)
         submitStorageLogin(response.data.results)
         setTipoUser('Anunciante')
-        navigate('HomeDrawerNavigation')
+        // navigate('HomeDrawerNavigation')
       } else {
         navigate('LoginScreen')
       }
@@ -78,13 +78,13 @@ export default function CadastroSucessoAnuncianteScreen({ navigation }: { naviga
   return (
     <MainLayout carregando={loading}>
       <View className='flex-1'>
-        <View className='flex-1 justify-center items-center'>
+        <View className='flex-1 justify-center items-center px-4'>
           <IcoMulherSucesso />
-          <View className='mt-2 mx-4'>
+          <View className='mt-2'>
             <H2 align={'center'} title='Cadastro realizado com sucesso!' />
           </View>
         </View>
-        <View className='w-full px-4 mb-4 z-50'>
+        <View className='w-full px-4 pb-8'>
           <FilledButton onPress={onSubmit} title='Continuar' />
         </View>
       </View>

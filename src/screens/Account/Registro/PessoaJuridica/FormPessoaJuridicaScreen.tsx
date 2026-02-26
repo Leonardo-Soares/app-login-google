@@ -727,9 +727,10 @@ export default function FormPessoaJuridicaScreen({
     <MainLayoutSecondary loading={loading}>
       <ModalTemplate
         onClose={() => setModalAviso(false)}
+        closeSecondary={true}
         visible={modalAviso}
       >
-        <View style={{ paddingTop: 36 }}>
+        <View>
           <Text className="text-xl text-red-600 font-bold">
             Atenção
           </Text>

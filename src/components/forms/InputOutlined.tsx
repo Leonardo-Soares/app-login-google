@@ -24,6 +24,7 @@ interface PropsInput {
   edicao?: boolean;
   required?: boolean;
   clearInput?: any;
+  height?: number;
 }
 
 const InputOutlined: React.FC<PropsInput> = ({
@@ -45,6 +46,7 @@ const InputOutlined: React.FC<PropsInput> = ({
   onBlur,
   onFocus,
   edicao = true,
+  height,
 }) => {
   const [visible, setVisible] = useState(false);
 
@@ -85,7 +87,7 @@ const InputOutlined: React.FC<PropsInput> = ({
         value={value}
         secureTextEntry={secureTextEntry && !visible}
         onSubmitEditing={onSubmitEditing}
-        style={{ color: '#49454F' }}
+        style={{ color: '#49454F', ...(height != null && { minHeight: height }) }}
       />
       {/* Botão para alternar visibilidade de senha */}
       {secureTextEntry && (

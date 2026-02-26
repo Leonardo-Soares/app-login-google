@@ -1,6 +1,8 @@
 import React from 'react'
-import { View } from 'react-native'
+import { View, TouchableOpacity } from 'react-native'
 import MaskInput from 'react-native-mask-input'
+import Caption from '@components/typography/Caption'
+import { colors } from 'src/styles/colors'
 
 interface PropsIputaMascara {
   mt?: any
@@ -18,6 +20,7 @@ interface PropsIputaMascara {
   returnKeyType?: any
   placeholder?: string
   onSubmitEditing?: any
+  clearInput?: () => void
 }
 
 export default function InputMascaraMoney(
@@ -33,11 +36,27 @@ export default function InputMascaraMoney(
     onChangeText,
     keyboardType,
     returnKeyType,
-    onSubmitEditing
+    onSubmitEditing,
+    clearInput,
+    height,
   }: PropsIputaMascara) {
 
   return (
     <View className='w-full' style={{ marginTop: mt ?? 0 }}>
+      {clearInput &&
+        <View className='w-full h-4 relative z-50'>
+          <TouchableOpacity className='absolute h-12 flex top-10 right-2' onPress={clearInput}>
+            <Caption
+              fontSize={14}
+              align={'center'}
+              fontWeight={'500'}
+              color={colors.primary20}
+            >
+              Limpar
+            </Caption>
+          </TouchableOpacity>
+        </View>
+      }
       <MaskInput
         mask={mask}
         value={value}
@@ -49,13 +68,14 @@ export default function InputMascaraMoney(
         keyboardType={keyboardType}
         style={{
           color: '#49454F',
-          borderColor: error ? '#FF0000' : '#49454F'
+          borderColor: error ? '#FF0000' : '#49454F',
+          height: height ?? 44,
         }}
         maxLength={maxLength ?? 9999}
         placeholderTextColor={'#49454F'}
         onSubmitEditing={onSubmitEditing}
         returnKeyType={returnKeyType ?? 'default'}
-        className='bg-white overflow-scroll border-[1px] rounded-[4px] text-base h-[44px] pl-4'
+        className='bg-white overflow-scroll border-[1px] rounded-[4px] text-base pl-4'
       />
     </View>
   )

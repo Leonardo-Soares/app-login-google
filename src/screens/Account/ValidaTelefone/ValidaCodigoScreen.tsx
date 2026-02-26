@@ -26,9 +26,20 @@ export default function ValidaCodigoScreen({ navigation }: { navigation: any }) 
   const input4Ref = useRef<TextInput>(null)
   const input5Ref = useRef<TextInput>(null)
   const input6Ref = useRef<TextInput>(null)
-  const [seconds, setSeconds] = useState(30)
+  const [seconds, setSeconds] = useState(60)
   const [loading, setLoading] = useState(false)
   const { telefoneDigitado, tipoUser } = useGlobal()
+
+  const telefoneFormatado = React.useMemo(() => {
+    const apenasNumeros = String(telefoneDigitado ?? '').replace(/\D/g, '')
+    if (apenasNumeros.length === 11) {
+      return `(${apenasNumeros.slice(0, 2)}) ${apenasNumeros.slice(2, 7)}-${apenasNumeros.slice(7)}`
+    }
+    if (apenasNumeros.length === 10) {
+      return `(${apenasNumeros.slice(0, 2)}) ${apenasNumeros.slice(2, 6)}-${apenasNumeros.slice(6)}`
+    }
+    return telefoneDigitado ?? ''
+  }, [telefoneDigitado])
 
 
   async function reenviaCodigo() {
@@ -36,7 +47,6 @@ export default function ValidaCodigoScreen({ navigation }: { navigation: any }) 
     setLoading(true)
 
     const jsonPerfil = await AsyncStorage.getItem('id-user')
-    console.log('jsonPerfil', jsonPerfil);
 
     if (jsonPerfil) {
       try {
@@ -44,12 +54,11 @@ export default function ValidaCodigoScreen({ navigation }: { navigation: any }) 
           id: jsonPerfil
         })
 
-
         Toast.show({
           type: 'success',
           text1: response.data.message ?? 'Código reenviado com sucesso',
         })
-        setSeconds(30)
+        setSeconds(60 + 30)
       } catch (error: any) {
         console.error('ERROR reenvio de código POST: ', error.response.data)
         Toast.show({
@@ -146,7 +155,7 @@ export default function ValidaCodigoScreen({ navigation }: { navigation: any }) 
           />
           <Paragrafo
             align={'center'}
-            title={`+55 ${telefoneDigitado}`}
+            title={`+55 ${telefoneFormatado}`}
           />
           <TouchableOpacity onPress={() => navigation.navigate('TelefoneScreen')}>
             <Paragrafo
@@ -222,8 +231,4 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primary90,
   },
 });
-
-function setSeconds(arg0: (prevSeconds: any) => number) {
-  throw new Error('Function not implemented.')
-}
 

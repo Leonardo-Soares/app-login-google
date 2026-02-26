@@ -14,7 +14,7 @@ interface PropsCaption {
 export default function Caption({ children, color, align, fontSize, fontWeight, margintop }: PropsCaption) {
     return (
         <Text
-            className='text-xs'
+            className=''
             style={{
                 fontSize: fontSize ?? 12,
                 marginTop: margintop ?? 0,
