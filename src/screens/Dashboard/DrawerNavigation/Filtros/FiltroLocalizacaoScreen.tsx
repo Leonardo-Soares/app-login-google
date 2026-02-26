@@ -1,5 +1,5 @@
 import { api } from '../../../../service/api'
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback, useRef } from 'react'
 import { useIsFocused } from '@react-navigation/native'
 import { useNavigate } from '../../../../hooks/useNavigate'
 import MapView, { Callout, Marker } from 'react-native-maps'
@@ -7,9 +7,18 @@ import Geolocation from '@react-native-community/geolocation'
 import ButtonMapa from '../../../../components/buttons/ButtonMapa'
 import { requestForegroundPermissionsAsync } from 'expo-location'
 import AsyncStorage from '@react-native-async-storage/async-storage'
-import { View, StyleSheet, Platform, PermissionsAndroid } from 'react-native'
+import { View, StyleSheet, Platform, PermissionsAndroid, Dimensions } from 'react-native'
 import H3 from '../../../../components/typography/H3'
 import { colors } from '../../../../styles/colors'
+
+const DEFAULT_REGION = {
+  latitude: -15.7942,
+  longitude: -47.8822,
+  latitudeDelta: 0.05,
+  longitudeDelta: 0.05,
+}
+
+const { height: SCREEN_HEIGHT } = Dimensions.get('window')
 
 export default function FiltroLocalizacaoScreen() {
   const isFocused = useIsFocused()
@@ -21,6 +30,7 @@ export default function FiltroLocalizacaoScreen() {
   const [localizacaoErro, setLocalizacaoErro] = useState<string | null>(null)
   const [erroCarregarLocais, setErroCarregarLocais] = useState<string | null>(null)
   const [anunciantesCarregados, setAnunciantesCarregados] = useState(false)
+  const mapRef = useRef<MapView>(null)
 
   async function getAnunciantes() {
     const jsonValue = await AsyncStorage.getItem('infos-user')
@@ -122,77 +132,96 @@ export default function FiltroLocalizacaoScreen() {
     getLocalizacao()
   }, [getLocalizacao, isFocused])
 
+  useEffect(() => {
+    if (regiao && mapRef.current) {
+      const region = {
+        latitude: regiao.latitude,
+        longitude: regiao.longitude,
+        latitudeDelta: 0.02,
+        longitudeDelta: 0.02,
+      }
+      mapRef.current.animateToRegion(region, 500)
+    }
+  }, [regiao])
+
+  const initialRegion = regiao
+    ? {
+        latitude: regiao.latitude,
+        longitude: regiao.longitude,
+        latitudeDelta: 0.02,
+        longitudeDelta: 0.02,
+      }
+    : DEFAULT_REGION
+
   return (
     <View style={styles.container}>
-      {regiao &&
+      <View style={styles.mapWrapper}>
         <MapView
+          ref={mapRef}
+          style={styles.map}
           showsMyLocationButton
+          showsUserLocation={!!permissaoLocal}
           onMapReady={() => {
-            Platform.OS === 'android' ?
+            if (Platform.OS === 'android') {
               PermissionsAndroid.request(
                 PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
               ).then(granted => {
-                if (granted.toString() == 'granted') {
-                  setPermissaoLocal(true)
-                } else {
-                  setPermissaoLocal(false)
-                }
+                setPermissaoLocal(granted === PermissionsAndroid.RESULTS.GRANTED)
               })
-              : ''
+            }
+            if (regiao && mapRef.current) {
+              mapRef.current.animateToRegion({
+                latitude: regiao.latitude,
+                longitude: regiao.longitude,
+                latitudeDelta: 0.02,
+                longitudeDelta: 0.02,
+              }, 500)
+            }
           }}
-          initialRegion={{
-            latitude: regiao.latitude,
-            longitude: regiao.longitude,
-            latitudeDelta: 0.02,
-            longitudeDelta: 0.02,
-          }}
+          initialRegion={initialRegion}
           zoomEnabled
           loadingEnabled
           showsTraffic={false}
-          zoomTapEnabled={true}
+          zoomTapEnabled
           showsBuildings={false}
-          className='w-full h-full'
         >
-          {regiao &&
-            < Marker
-              pinColor={'#f01'}
-              title='Você está aqui'
+          {regiao && (
+            <Marker
+              pinColor="#f01"
+              title="Você está aqui"
               coordinate={{
                 latitude: regiao.latitude,
-                longitude: regiao.longitude
+                longitude: regiao.longitude,
               }}
             />
-          }
-          {listaAnunciantes && listaAnunciantes.map((item: any, index: any) => (
-            item.latitude && item.longitude ?
-              <>
-                <Marker
-                  key={index}
-                  pinColor={'#5D35F1'}
-                  calloutOffset={{ x: 0, y: 0 }}
-                  calloutAnchor={{ x: 0.5, y: 0.4 }}
-                  coordinate={{
-                    latitude: parseFloat(item?.latitude),
-                    longitude: parseFloat(item?.longitude)
-                  }}
+          )}
+          {listaAnunciantes?.map((item: any, index: number) =>
+            item.latitude && item.longitude ? (
+              <Marker
+                key={`${item.id ?? index}-${item.latitude}`}
+                pinColor="#5D35F1"
+                calloutOffset={{ x: 0, y: 0 }}
+                calloutAnchor={{ x: 0.5, y: 0.4 }}
+                coordinate={{
+                  latitude: parseFloat(item.latitude),
+                  longitude: parseFloat(item.longitude),
+                }}
+              >
+                <Callout
+                  tooltip
+                  alphaHitTest
+                  onPress={() => navigate('FiltroDetalheLocalizacaoScreen', { item })}
                 >
-                  <Callout
-                    tooltip
-                    alphaHitTest
-                    className='w-36'
-                    onPress={() => navigate('FiltroDetalheLocalizacaoScreen', { item })}
-                  >
-                    <ButtonMapa
-                      title={item.empresa}
-                      image={item.imagem_empresa}
-                    />
-                  </Callout>
-                </Marker>
-              </>
-              : <></>
-          ))}
+                  <ButtonMapa
+                    title={item.empresa}
+                    image={item.imagem_empresa}
+                  />
+                </Callout>
+              </Marker>
+            ) : null
+          )}
         </MapView>
-      }
+      </View>
       {localizacaoErro &&
         <View style={styles.mensagemContainer}>
           <H3 align={'center'} color={colors.error30}>{localizacaoErro}</H3>
@@ -220,9 +249,19 @@ const styles = StyleSheet.create({
     flex: 1,
     marginTop: 64,
   },
+  mapWrapper: {
+    flex: 1,
+    width: '100%',
+    minHeight: Math.max(SCREEN_HEIGHT * 0.5, 300),
+  },
+  map: {
+    flex: 1,
+    width: '100%',
+    height: '100%',
+  },
   mensagemContainer: {
     marginHorizontal: 16,
     marginTop: 24,
     paddingHorizontal: 8,
   },
-});
+})
