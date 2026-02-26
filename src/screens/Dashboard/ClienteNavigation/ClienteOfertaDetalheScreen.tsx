@@ -1,4 +1,4 @@
-import { Share, TouchableOpacity, View } from 'react-native'
+import { Share, View } from 'react-native'
 import { api } from '../../../service/api'
 import { useEffect, useState } from 'react'
 import { useNavigate } from '../../../hooks/useNavigate'
@@ -7,9 +7,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage'
 import HeaderPrimary from '../../../components/header/HeaderPrimary'
 import CardProdutoDetalhes from '../../../components/cards/CardProdutoDetalhes'
 import MainLayoutAutenticado from '../../../components/layout/MainLayoutAutenticado'
-import IcoShare from 'src/svg/IcoShare'
-import H3 from '@components/typography/H3'
-import { colors } from 'src/styles/colors'
 import React from 'react'
 import FilledButton from '@components/buttons/FilledButton'
 
@@ -105,14 +102,10 @@ export default function ClienteOfertaDetalheScreen({ route }: { route?: any }) {
               cupoms_disponiveis={item.cupoms_disponiveis}
               descricao_completa={item.descricao_completa}
               vantagem_porcentagem={item.vantagem_porcentagem}
+              onCompartilhar={shareLinkAndText}
             />
           </View>
         ))}
-
-        <TouchableOpacity className='flex-row justify-center items-center bg-[#2F009C] py-1 rounded-xl mt-4' onPress={shareLinkAndText} >
-          <IcoShare />
-          <H3 align={'center'} color={colors.white}> Compartilhar</H3>
-        </TouchableOpacity>
 
       </View>
     </MainLayoutAutenticado >
