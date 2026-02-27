@@ -70,7 +70,7 @@ export default function ClienteTesteGratisSucessoScreen() {
             </Animated.View>
 
             <Animated.View style={[styles.textBlock, { opacity: fadeTitle }]}>
-              <H2 align="center" title="Parabéns, tudo pronto para iniciar o seu teste 🎉" />
+              <H2 align="center" title="Parabéns, tudo pronto para iniciar o seu teste 🎉🎉🎉" />
             </Animated.View>
 
             <Animated.View style={[styles.captionBlock, { opacity: fadeCaption }]}>

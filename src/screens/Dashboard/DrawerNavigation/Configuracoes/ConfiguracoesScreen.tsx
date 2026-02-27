@@ -12,6 +12,7 @@ import { api } from '../../../../service/api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useGlobal } from '../../../../context/GlobalContextProvider';
 import Toast from 'react-native-toast-message';
+import React from 'react';
 
 export default function ConfiguracoesScreen() {
   const { navigate, dispatch } = useNavigate();
@@ -72,7 +73,8 @@ export default function ConfiguracoesScreen() {
         </View>
         <FilledButton title="Voltar" onPress={handleCloseModal} />
       </ModalTemplate>
-      <MainLayoutAutenticado loading={loading}>
+      <MainLayoutAutenticado marginTop={0} loading={loading}>
+        <View className='w-full h-[25%]' />
         <ButtonFiltro
           isActive={1}
           title="Alterar senha"

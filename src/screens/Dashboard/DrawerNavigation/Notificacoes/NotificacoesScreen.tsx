@@ -6,6 +6,7 @@ import { useNavigate } from '../../../../hooks/useNavigate'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import CardNotificacao from '../../../../components/cards/CardNotificacao'
 import MainLayoutAutenticado from '../../../../components/layout/MainLayoutAutenticado'
+import React from 'react';
 
 interface PropsNotificacao {
   id: string
@@ -45,7 +46,7 @@ export default function NotificacoesScreen() {
   }, [isFocused])
 
   return (
-    <MainLayoutAutenticado marginHorizontal={0}>
+    <MainLayoutAutenticado>
       {listaNotificacao &&
         [...listaNotificacao]
           .sort((a: PropsNotificacao, b: PropsNotificacao) => {
@@ -55,14 +56,14 @@ export default function NotificacoesScreen() {
               if (!a || !a.data || !a.hora || typeof a.data !== 'string' || typeof a.hora !== 'string') return 0
               const dataPartsA = a.data.split('/')
               const horaPartsA = a.hora.split(':')
-              
+
               if (dataPartsA.length !== 3 || horaPartsA.length !== 2) return 0
-              
+
               const [diaA, mesA, anoA] = dataPartsA.map(Number)
               const [horaA, minutoA] = horaPartsA.map(Number)
-              
+
               if (isNaN(diaA) || isNaN(mesA) || isNaN(anoA) || isNaN(horaA) || isNaN(minutoA)) return 0
-              
+
               const dateA = new Date(anoA, mesA - 1, diaA, horaA, minutoA)
               if (!dateA || !(dateA instanceof Date) || isNaN(dateA.getTime())) return 0
 
@@ -70,14 +71,14 @@ export default function NotificacoesScreen() {
               if (!b || !b.data || !b.hora || typeof b.data !== 'string' || typeof b.hora !== 'string') return 0
               const dataPartsB = b.data.split('/')
               const horaPartsB = b.hora.split(':')
-              
+
               if (dataPartsB.length !== 3 || horaPartsB.length !== 2) return 0
-              
+
               const [diaB, mesB, anoB] = dataPartsB.map(Number)
               const [horaB, minutoB] = horaPartsB.map(Number)
-              
+
               if (isNaN(diaB) || isNaN(mesB) || isNaN(anoB) || isNaN(horaB) || isNaN(minutoB)) return 0
-              
+
               const dateB = new Date(anoB, mesB - 1, diaB, horaB, minutoB)
               if (!dateB || !(dateB instanceof Date) || isNaN(dateB.getTime())) return 0
 
@@ -91,11 +92,9 @@ export default function NotificacoesScreen() {
             <CardNotificacao
               key={`${item.id}-${index}`}
               titulo={item.data}
-              subtitulo={item.hora}
               descricao={item.titulo}
               visualizado={item.visualizado}
-              onPress={() => navigate('NotificacoesDetalhesScreen', { id: item.id })}
-            />
+              onPress={() => navigate('NotificacoesDetalhesScreen', { id: item.id })} id={''} data={''} hora={''} />
           ))}
 
       {listaNotificacao.length === 0 && !loading &&

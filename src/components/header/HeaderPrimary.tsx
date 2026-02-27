@@ -19,9 +19,9 @@ export default function HeaderPrimary({ titulo, descricao, voltarScreen }: Props
 
   return (
     <View>
-      <View className='flex-row px-2 items-center' style={{ flexWrap: 'wrap' }}>
+      <View className='flex-row items-center' style={{ flexWrap: 'wrap' }}>
         {voltarScreen ? (
-          <TouchableOpacity onPress={voltarScreen} className='flex-row px-2' style={{ flex: 1, flexDirection: 'row', alignItems: 'center' }}>
+          <TouchableOpacity onPress={voltarScreen} className='flex-row' style={{ flex: 1, flexDirection: 'row', alignItems: 'center' }}>
             <Image
               source={require('../../../assets/img/icons/seta-esquerda.png')}
             />

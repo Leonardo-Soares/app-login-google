@@ -5,7 +5,7 @@ import { colors } from '../../styles/colors'
 export interface PropsCardNotificacao {
   id: number | string
   data: string
-  hora: string
+  hora?: string
   titulo: string
   descricao?: string | null
   visualizado: boolean
@@ -74,11 +74,14 @@ export default function CardNotificacao({
             </View>
           )}
         </View>
-        <View className='flex-row items-center mt-1'>
-          <Text className='text-xs' style={{ color: colors.gray }}>
-            {data} às {hora}
-          </Text>
-        </View>
+        {hora &&
+          <View className='flex-row items-center mt-1'>
+            <Text className='text-xs' style={{ color: colors.gray }}>
+              {data}{hora?.trim() ? ` às ${hora.trim()}` : ''}
+            </Text>
+          </View>
+        }
+
         {descricao && (
           <Text
             className='text-sm mt-1'

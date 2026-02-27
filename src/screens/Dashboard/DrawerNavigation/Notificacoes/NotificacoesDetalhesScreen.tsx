@@ -1,85 +1,74 @@
-import { View } from 'react-native'
-import { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
+import { useIsFocused, useRoute } from '@react-navigation/native'
 import { api } from '../../../../service/api'
-import { useIsFocused } from '@react-navigation/native'
 import { useNavigate } from '../../../../hooks/useNavigate'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import HeaderPrimary from '../../../../components/header/HeaderPrimary'
 import MainLayoutAutenticado from '../../../../components/layout/MainLayoutAutenticado'
 import CardDetalheNotificacao from '../../../../components/cards/CardDetalheNotificacao'
+import { View } from 'react-native'
 
-interface PropsNotificacao {
-  id: any
+interface Notificacao {
+  id: string
   data: string
   hora: string
   titulo: string
   descricao: string
 }
 
-export default function NotificacoesDetalhesScreen(props: any) {
-  const isFocused = useIsFocused()
+export default function NotificacoesDetalhesScreen() {
   const { navigate } = useNavigate()
-  const idNotificacao = props.route.params.id
-  const [listaNotificacao, setListaNotificacao] = useState([])
+  const isFocused = useIsFocused()
+  const { params } = useRoute()
+  const id = (params as { id?: string })?.id
 
-  async function postVisualiza() {
-    const jsonValue = await AsyncStorage.getItem('infos-user')
-    if (jsonValue) {
-      const newJson = JSON.parse(jsonValue)
-      try {
-        const headers = {
-          Authorization: `Bearer ${newJson.token}`,
-        }
-        const response = await api.post(`/notificacoes`,
-          {
-            notificacao_id: idNotificacao
-          }, { headers })
-      } catch (error: any) {
-        console.log('ERRO POST Visualiza Notificação: ', error)
-      }
-    }
-  }
-
-  async function getNotificacoes() {
-    const jsonValue = await AsyncStorage.getItem('infos-user')
-    if (jsonValue) {
-      const newJson = JSON.parse(jsonValue)
-      try {
-        const headers = {
-          Authorization: `Bearer ${newJson.token}`,
-        }
-        const response = await api.get(`/notificacoes/${idNotificacao}`, { headers })
-        setListaNotificacao(response.data.results)
-      } catch (error: any) {
-        console.error('ERRO GET Detalhe Notificação: ', error)
-      }
-    }
-    postVisualiza()
-  }
+  const [notificacao, setNotificacao] = useState<Notificacao | null>(null)
 
   useEffect(() => {
-    getNotificacoes()
-  }, [])
+    if (!id) return
 
-  useEffect(() => {
-    getNotificacoes()
-  }, [isFocused])
+    let cancelled = false
+
+    async function load() {
+      const json = await AsyncStorage.getItem('infos-user')
+      if (!json || cancelled) return
+
+      const { token } = JSON.parse(json)
+      const headers = { Authorization: `Bearer ${token}` }
+
+      try {
+        const res = await api.get(`/notificacoes/${id}`, { headers })
+        const results = res.data?.results
+        const item = Array.isArray(results) && results.length ? results[0] : res.data
+        if (!cancelled && item?.titulo != null) setNotificacao(item)
+
+        await api.post('/notificacoes', { notificacao_id: id }, { headers })
+      } catch (e) {
+        if (!cancelled) console.error('Erro ao carregar notificação:', e)
+      }
+    }
+
+    load()
+    return () => { cancelled = true }
+  }, [id, isFocused])
 
   return (
-    <MainLayoutAutenticado marginHorizontal={0} marginTop={0}>
-      <HeaderPrimary titulo='Detalhes da notificação' voltarScreen={() => navigate('NotificacoesScreen')} />
-      <View className='mx-2'>
-        {listaNotificacao && listaNotificacao.map((item: PropsNotificacao) => (
+    <MainLayoutAutenticado marginTop={16}>
+      <HeaderPrimary
+        titulo="Detalhes da notificação"
+        voltarScreen={() => navigate('NotificacoesScreen')}
+      />
+      <View className='mt-6'>
+        {notificacao && (
           <CardDetalheNotificacao
-            key={item.id}
-            data={item.data}
-            hora={item.hora}
-            titulo={item.titulo}
-            descricao={item.descricao}
+            id={Number(notificacao.id) || 0}
+            data={notificacao.data}
+            hora={notificacao.hora}
+            titulo={notificacao.titulo}
+            descricao={notificacao.descricao}
           />
-        ))}
+        )}
       </View>
-
     </MainLayoutAutenticado>
-  );
+  )
 }

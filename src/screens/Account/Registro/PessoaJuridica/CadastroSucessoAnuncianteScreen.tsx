@@ -56,7 +56,7 @@ export default function CadastroSucessoAnuncianteScreen({ navigation }: { naviga
         const storageEmail = await AsyncStorage.setItem('user-email', emailStorage)
         submitStorageLogin(response.data.results)
         setTipoUser('Anunciante')
-        // navigate('HomeDrawerNavigation')
+        navigate('HomeDrawerNavigation')
       } else {
         navigate('LoginScreen')
       }
