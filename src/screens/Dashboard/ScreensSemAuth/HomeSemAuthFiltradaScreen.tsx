@@ -11,7 +11,7 @@ import ModalTemplateLogin from '../../../components/Modals/ModalTemplateLogin'
 import MainLayoutAutenticado from '../../../components/layout/MainLayoutAutenticado'
 import { FlatList, RefreshControl, ScrollView, Text, TouchableOpacity, View, } from 'react-native'
 import ButtonOutline from '../../../components/buttons/ButtonOutline'
-import { SafeAreaView } from 'react-native-safe-area-context'
+import Spacing from '@components/layout/Spacing'
 
 export default function HomeSemAuthFiltradaScreen(route: any) {
   const { navigate } = useNavigate()
@@ -28,20 +28,29 @@ export default function HomeSemAuthFiltradaScreen(route: any) {
       const response = await api.get(`/cupons/cupons/v2/categoria/${idCategoria}`)
       setProdutos(response.data.results)
     } catch (error: any) {
-      console.log('Error Filtrar Categoria(no auth):', error)
+      console.error('Error Filtrar Categoria(no auth):', error)
     }
     setIsRefreshing(false);
   }
 
   async function getCategorias() {
-    setIsRefreshing(true);
     try {
-      const response = await api.get(`/categorias`)
-      setCategorias(response.data.results)
+      const [resCategorias, resCupons] = await Promise.all([
+        api.get('/categorias'),
+        api.get('/cupons/cupons/v2'),
+      ])
+      const todasCategorias = resCategorias.data?.results ?? []
+      const cupons = resCupons.data?.results ?? []
+      const idsComCupons = new Set(
+        cupons
+          .filter((item: any) => !item.anuncio && (item.id_categoria_cupom != null || item.categoria_id != null))
+          .map((item: any) => item.id_categoria_cupom ?? item.categoria_id)
+      )
+      const categoriasComCupom = todasCategorias.filter((c: any) => idsComCupons.has(c.id))
+      setCategorias(categoriasComCupom)
     } catch (error: any) {
-      console.log('Error Listar Categorias: ', error);
+      console.log('Error Listar Categorias: ', error)
     }
-    setIsRefreshing(false);
   }
 
   const handleRefresh = () => {
@@ -90,22 +99,31 @@ export default function HomeSemAuthFiltradaScreen(route: any) {
     getCategorias()
   }, [idCategoria])
 
+  const temCupons = listaprodutos.length >= 1
+  const semCupons = !isRefreshing && listaprodutos.length <= 0
+
   return (
-    <MainLayoutAutenticado notScroll={true} marginTop={40} loading={isRefreshing}>
+    <MainLayoutAutenticado notScroll={true} loading={isRefreshing}>
+      <Spacing />
       <ModalTemplateLogin visible={modalVisible} onClose={() => setModalVisible(false)} />
-      <View className='mt-6 mb-3'>
-      </View>
-      <ScrollView horizontal={true} showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false} className='w-full h-14 pb-2' >
+
+      {/* Categorias: sempre visível no topo */}
+      <ScrollView
+        horizontal
+        showsVerticalScrollIndicator={false}
+        showsHorizontalScrollIndicator={false}
+        className='w-full h-14 pb-2 mb-1'
+      >
         <CardCategoria
           ativo={false}
-          slug={'todas'}
-          titulo={'Todas'}
+          slug='todas'
+          titulo='Todas'
           onPress={() => navigate('HomeSemAuth')}
         />
-        {listacategorias && listacategorias.map((categoria: any) => (
+        {listacategorias?.map((categoria: any) => (
           <CardCategoria
-            ativo={idCategoria === categoria.id ? true : false} // Destacar a categoria selecionada
             key={categoria.id}
+            ativo={idCategoria === categoria.id}
             slug={categoria.id}
             titulo={categoria.categorias}
             onPress={() => navigate('HomeSemAuthFiltradaScreen', { idCategoria: categoria.id })}
@@ -113,26 +131,30 @@ export default function HomeSemAuthFiltradaScreen(route: any) {
         ))}
       </ScrollView>
 
-      {listaprodutos && listaprodutos.length >= 1 &&
+      {temCupons && (
         <FlatList
           data={listaprodutos}
           className='mb-60'
           renderItem={renderItem}
           refreshControl={
-            <RefreshControl
-              refreshing={isRefreshing}
-              onRefresh={handleRefresh}
-            />
+            <RefreshControl refreshing={isRefreshing} onRefresh={handleRefresh} />
           }
-        />}
-      {!isRefreshing && listaprodutos.length <= 0 &&
-        <View className=''>
-          <CardNotFound titulo='Não há cupons disponíveis para esta categoria no momento.' />
-          <View className='mt-3 mx-8'>
-            <ButtonOutline title='Sugerir estabelecimentos' onPress={() => setModalVisible(true)} />
+        />
+      )}
+
+      {semCupons && (
+        <View className='flex-1 justify-center items-center'>
+          <View className='w-full px-8 items-center'>
+            <CardNotFound titulo='Não há cupons disponíveis para esta categoria no momento.' />
+            <View className='mt-5 gap-3 w-full items-center'>
+              <ButtonOutline title='Sugerir estabelecimentos' onPress={() => setModalVisible(true)} />
+              <TouchableOpacity onPress={() => navigate('HomeSemAuth')} className='py-2'>
+                <Text style={{ fontSize: 14, color: colors.gray }}>Voltar</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
-      }
+      )}
     </MainLayoutAutenticado>
   );
 }

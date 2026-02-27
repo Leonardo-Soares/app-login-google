@@ -38,12 +38,10 @@ export default function MainLayoutAutenticado(
       {notScroll ?
         <View style={{ flex: 1, marginHorizontal: marginHorizontal ?? 16 }}>
           {children}
-          < View className='h-24'></View>
         </View>
         :
-        <ScrollView contentContainerStyle={{ marginTop: marginTop ?? 80, marginHorizontal: marginHorizontal ?? 16 }} showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false}>
+        <ScrollView contentContainerStyle={{ marginHorizontal: marginHorizontal ?? 16 }} showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false}>
           {children}
-          <View className='h-24'></View>
         </ScrollView>
       }
       {

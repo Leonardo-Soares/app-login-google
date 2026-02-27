@@ -1,4 +1,4 @@
-import { View } from 'react-native';
+import { View, TouchableOpacity, Text } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import { colors } from '../../styles/colors';
 import H2 from '../../components/typography/H2';
@@ -209,6 +209,7 @@ export default function LoginScreen() {
         <ModalTemplate
           width={'90%'}
           visible={modalVisible}
+          closeSecondary={true}
           onClose={() => setModalVisible(false)}
         >
           <View className="justify-center items-center mt-4">
@@ -220,6 +221,21 @@ export default function LoginScreen() {
               />
               <View className="h-2"></View>
               <FilledButton title="Usuário cupom" onPress={onLoginCliente} />
+              <TouchableOpacity
+                onPress={() => setModalVisible(false)}
+                className="mt-4 w-full"
+                style={{
+                  borderRadius: 32,
+                  paddingVertical: 10,
+                  paddingHorizontal: 16,
+                  borderWidth: 1,
+                  borderColor: colors.gray,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <Text style={{ fontSize: 16, color: colors.gray, fontWeight: 'bold' }}>Voltar</Text>
+              </TouchableOpacity>
             </View>
           </View>
         </ModalTemplate>

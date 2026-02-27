@@ -13,6 +13,7 @@ import ButtonOutline from '../../../components/buttons/ButtonOutline'
 import ModalTemplateLogin from '../../../components/Modals/ModalTemplateLogin'
 import MainLayoutAutenticado from '../../../components/layout/MainLayoutAutenticado'
 import { FlatList, Platform, RefreshControl, ScrollView, Text, TouchableOpacity, View } from 'react-native'
+import Spacing from '@components/layout/Spacing'
 
 export default function HomeSemAuth() {
   const isFocused = useIsFocused()
@@ -115,9 +116,10 @@ export default function HomeSemAuth() {
   }, [isFocused])
 
   return (
-    <MainLayoutAutenticado marginTop={40} notScroll={true} loading={isRefreshing}>
+    <MainLayoutAutenticado notScroll={true} loading={isRefreshing}>
       <ModalTemplateLogin visible={modalVisible} onClose={() => setModalVisible(false)} />
-      <ScrollView horizontal={true} showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false} className='w-full h-14 pb-0 mt-12'>
+      <Spacing />
+      <ScrollView horizontal={true} showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false} className='w-full h-14 pb-0 mt-2'>
         <CardCategoria
           ativo={false}
           slug={'todas'}
@@ -141,10 +143,18 @@ export default function HomeSemAuth() {
         </TouchableOpacity>
       }
 
+      {!isRefreshing && listaprodutos.length <= 0 &&
+        <View className='w-full flex-1 justify-center items-center'>
+          <CardNotFound titulo='Não encontramos cupons no momento para você' />
+          <View className='mt-3 mx-8'>
+            <ButtonOutline title='Sugerir estabelecimentos' onPress={() => setModalVisible(true)} />
+          </View>
+        </View>
+      }
+
       {listaprodutos.length >= 1 &&
         <FlatList
           data={listaprodutos}
-          className='mb-32'
           renderItem={renderItem}
           refreshControl={
             <RefreshControl
@@ -155,14 +165,7 @@ export default function HomeSemAuth() {
           showsVerticalScrollIndicator={false}
         />}
 
-      {!isRefreshing && listaprodutos.length <= 0 &&
-        <View className='w-full '>
-          <CardNotFound titulo='Não encontramos cupons no momento para você' />
-          <View className='mt-3 mx-8'>
-            <ButtonOutline title='Sugerir estabelecimentos' onPress={() => setModalVisible(true)} />
-          </View>
-        </View>
-      }
+
     </MainLayoutAutenticado>
   );
 }
