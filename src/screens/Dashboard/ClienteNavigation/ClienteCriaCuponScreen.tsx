@@ -829,6 +829,7 @@ export default function ClienteCriaCuponScreen() {
         marginHorizontal={0}
         loading={loading}
       >
+        <View className='w-full mt-4' />
         <HeaderPrimary titulo="Criar anúncio" />
         <View className="mt-8 mx-7 pb-20">
           <View className="bg-white w-full rounded-xl">

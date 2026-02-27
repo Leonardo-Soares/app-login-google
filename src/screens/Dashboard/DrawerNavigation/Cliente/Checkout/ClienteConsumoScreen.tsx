@@ -13,6 +13,7 @@ import MainLayoutAutenticado from '../../../../../components/layout/MainLayoutAu
 import Paragrafo from '@components/typography/Paragrafo'
 import { createNumberMask } from 'react-native-mask-input'
 import { format } from 'date-fns'
+import React from 'react'
 
 interface PropsConsumo {
   total_gasto: string,
@@ -115,6 +116,7 @@ export default function ClienteConsumoScreen() {
 
   return (
     <MainLayoutAutenticado marginTop={0} marginHorizontal={0} loading={loading}>
+      <View className='w-full mt-6' />
       <HeaderPrimary titulo='Consumo' />
       <View className='mx-7 mt-5 min-h-full'>
         <View className='rounded-lg p-3' style={{ borderWidth: 3, borderColor: colors.tertiary20, backgroundColor: '#EEF0FF' }}>

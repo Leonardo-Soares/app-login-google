@@ -7,6 +7,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage'
 import CardNotificacao from '../../../../components/cards/CardNotificacao'
 import MainLayoutAutenticado from '../../../../components/layout/MainLayoutAutenticado'
 import React from 'react';
+import { View } from 'react-native'
 
 interface PropsNotificacao {
   id: string
@@ -47,6 +48,8 @@ export default function NotificacoesScreen() {
 
   return (
     <MainLayoutAutenticado>
+      <View className='w-full mt-20' />
+
       {listaNotificacao &&
         [...listaNotificacao]
           .sort((a: PropsNotificacao, b: PropsNotificacao) => {

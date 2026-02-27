@@ -13,6 +13,7 @@ import ButtonOutline from '../../../components/buttons/ButtonOutline'
 import MainLayoutAutenticado from '../../../components/layout/MainLayoutAutenticado'
 import ButtonClienteSwitch from '../../../components/buttons/Cliente/ButtonClienteSwitch'
 import ButtonsTecladoCamera from '../../../components/buttons/Cliente/ButtonsTecladoCamera'
+import React from 'react'
 
 export default function ClienteUtilizadosScreen({ route }: { route?: any }) {
   const isFocused = useIsFocused()
@@ -104,8 +105,9 @@ export default function ClienteUtilizadosScreen({ route }: { route?: any }) {
   return (
     <>
       <MainLayoutAutenticado marginTop={0} marginHorizontal={0} loading={loading}>
+        <View className='w-full mt-6' />
         <HeaderPrimary titulo='Utilizados' />
-        <View className='mx-7 mt-5 min-h-full'>
+        <View className='mx-7 mt-4 min-h-full'>
 
           <View className=''>
             <H5>Meus anúncios</H5>

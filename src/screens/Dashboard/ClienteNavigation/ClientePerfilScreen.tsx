@@ -20,6 +20,7 @@ export default function ClientePerfilScreen() {
       <View
         style={{
           paddingHorizontal: 12,
+          marginTop: 24,
         }}
       >
         <ButtonPerfil

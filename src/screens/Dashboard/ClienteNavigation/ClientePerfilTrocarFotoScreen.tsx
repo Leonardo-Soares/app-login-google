@@ -150,7 +150,7 @@ export default function ClientePerfilTrocarFotoScreen() {
       width: 500,
       height: 500,
       cropping: true,
-      cropperCircleOverlay: false,
+      cropperCircleOverlay: true,
       compressImageMaxWidth: 1000,
       compressImageMaxHeight: 1000,
       compressImageQuality: 1,
@@ -176,6 +176,7 @@ export default function ClientePerfilTrocarFotoScreen() {
       width: 500,
       height: 500,
       cropping: true,
+      cropperCircleOverlay: true,
       compressImageMaxWidth: 1000,
       compressImageMaxHeight: 1000,
       compressImageQuality: 1,
@@ -251,33 +252,52 @@ export default function ClientePerfilTrocarFotoScreen() {
 
   return (
     <MainLayoutAutenticado notScroll marginTop={20} marginHorizontal={16}>
+      <View className='w-full mt-4' />
       <ButtonPerfil
         mt={64}
-        title="Perfil - Trocar logo"
+        title="Perfil - Foto / Logomarca"
         fontsize={24}
         onPress={() => navigate('ClientePerfilScreen')}
         image={require('../../../../assets/img/icons/edit.png')}
       />
-      <View className="mt-6">
+
+      <View className="mt-8">
+        <Text className="text-base font-semibold text-[#111827] mb-2">
+          Sua foto / logomarca
+        </Text>
+        <Text className="text-sm text-[#6B7280] mb-4">
+          Escolha uma imagem nítida e centralizada. Ela será exibida em formato circular no app.
+        </Text>
+
         <TouchableOpacity
-          className="border rounded p-3"
           onPress={handlePickImage}
+          className="items-center justify-center rounded-2xl border border-[#E5E7EB] bg-white px-4 py-6"
         >
           {logomarca && !imagemSelecionada && (
             <Image
               source={{ uri: logomarca }}
-              className=" w-24 h-24 rounded-full mx-auto my-4"
+              className="w-28 h-28 rounded-full mb-4"
             />
           )}
 
           {imagemSelecionada && (
             <Image
               source={{ uri: imagemSelecionada }}
-              className=" w-24 h-24 rounded-full mx-auto my-4"
+              className="w-28 h-28 rounded-full mb-4"
             />
           )}
-          <Text className="font-semibold text-xl text-center">
+
+          {!logomarca && !imagemSelecionada && (
+            <View className="w-28 h-28 rounded-full bg-[#E5E7EB] mb-4 items-center justify-center">
+              <Text className="text-3xl text-[#9CA3AF]">+</Text>
+            </View>
+          )}
+
+          <Text className="font-semibold text-base text-center text-[#111827]">
             Toque para alterar logomarca
+          </Text>
+          <Text className="text-xs text-[#6B7280] mt-1 text-center">
+            Formato recomendado: quadrado, boa resolução.
           </Text>
         </TouchableOpacity>
       </View>

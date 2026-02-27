@@ -155,7 +155,7 @@ export default function HomeClienteScreen() {
   return (
     <MainLayoutAutenticado loading={loading}>
 
-      <View className='w-full'>
+      <View className='w-full mt-20'>
 
         <View className="flex-row">
           <Text className="text-[24px] font-semibold text-[#000] mb-3"> Boas-vindas, {primeiroNome ?? ''} 🎉</Text>

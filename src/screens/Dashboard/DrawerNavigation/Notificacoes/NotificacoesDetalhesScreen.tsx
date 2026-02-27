@@ -5,8 +5,7 @@ import { useNavigate } from '../../../../hooks/useNavigate'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import HeaderPrimary from '../../../../components/header/HeaderPrimary'
 import MainLayoutAutenticado from '../../../../components/layout/MainLayoutAutenticado'
-import CardDetalheNotificacao from '../../../../components/cards/CardDetalheNotificacao'
-import { View } from 'react-native'
+import { View, Text } from 'react-native'
 
 interface Notificacao {
   id: string
@@ -53,22 +52,30 @@ export default function NotificacoesDetalhesScreen() {
   }, [id, isFocused])
 
   return (
-    <MainLayoutAutenticado marginTop={16}>
+    <MainLayoutAutenticado>
+      <View className='w-full mt-4' />
       <HeaderPrimary
         titulo="Detalhes da notificação"
         voltarScreen={() => navigate('NotificacoesScreen')}
       />
-      <View className='mt-6'>
-        {notificacao && (
-          <CardDetalheNotificacao
-            id={Number(notificacao.id) || 0}
-            data={notificacao.data}
-            hora={notificacao.hora}
-            titulo={notificacao.titulo}
-            descricao={notificacao.descricao}
-          />
-        )}
-      </View>
+      {notificacao && (
+        <View className='mt-8 mx-4 rounded-2xl border border-[#E5E7EB] bg-white px-5 py-6'>
+          <Text className='text-xs text-[#6B7280] mb-1'>
+            {notificacao.data} • {notificacao.hora}
+          </Text>
+          <Text className='text-lg font-semibold text-[#111827] mb-3'>
+            {notificacao.titulo}
+          </Text>
+          {notificacao.descricao &&
+            <>
+              <View className='h-[1px] bg-[#E5E7EB] mb-3' />
+              <Text className='text-sm text-[#374151] leading-5'>
+                {notificacao.descricao}
+              </Text>
+            </>
+          }
+        </View>
+      )}
     </MainLayoutAutenticado>
   )
 }
