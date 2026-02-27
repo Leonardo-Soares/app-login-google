@@ -27,14 +27,14 @@ export default function ClientePerfilCategoriaScreen() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [listaCategorias, setListaCategorias] = useState([]);
   const [listaCategoriasPerfil, setListaCategoriasPerfil] = useState([]);
-  const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
-  const [categoriasSelecionadas, setCategoriasSelecionadas] = useState<any[]>(
-    []
+  const [selectedOptions, setSelectedOptions] = useState<any[]>([]);
+  const [originalSelectedOptions, setOriginalSelectedOptions] = useState<any[]>(
+    [],
   );
   const [needSave, setNeedSave] = useState(false);
 
-  const handleSelectOption = (option: string) => {
-    let updatedOptions: string[];
+  const handleSelectOption = (option: any) => {
+    let updatedOptions: any[];
     if (selectedOptions.includes(option)) {
       updatedOptions = selectedOptions.filter(
         (selectedOption) => selectedOption !== option
@@ -94,7 +94,26 @@ export default function ClientePerfilCategoriaScreen() {
       const newJson = JSON.parse(jsonValue);
       try {
         const response = await api.get(`/perfil/pessoa-juridica/${newJson.id}`);
-        setListaCategoriasPerfil(response.data.results.perfil_id);
+        const perfil = response.data.results.perfil_id || [];
+        setListaCategoriasPerfil(perfil);
+
+        const idsSelecionados = perfil
+          .map((categoria: any) => {
+            if (typeof categoria === 'number' || typeof categoria === 'string') {
+              return categoria;
+            }
+            if (categoria?.categoria_id != null) {
+              return categoria.categoria_id;
+            }
+            if (categoria?.id != null) {
+              return categoria.id;
+            }
+            return null;
+          })
+          .filter((id: any) => id != null);
+
+        setSelectedOptions(idsSelecionados);
+        setOriginalSelectedOptions(idsSelecionados);
       } catch (error: any) {
         console.log('Error GET Perfil: ', error.response.data);
       }
@@ -112,37 +131,51 @@ export default function ClientePerfilCategoriaScreen() {
         <LinearGradient
           style={[
             styles.block,
-            isSelected && { borderColor: '#775AFF', borderWidth: 4 },
+            isSelected && {
+              borderColor: '#4F46E5',
+              borderWidth: 3,
+              transform: [{ scale: 1.03 }],
+              shadowColor: '#4F46E5',
+              shadowOpacity: 0.25,
+              shadowRadius: 6,
+              shadowOffset: { width: 0, height: 3 },
+              elevation: 4,
+            },
           ]}
           start={{ x: 0, y: 0 }}
           end={{ x: 0, y: 1.2 }}
           colors={[
-            isSelected ? '#C9BFFF' : '#775AFF',
-            isSelected ? '#C9BFFF' : '#B2C5FF',
+            isSelected ? '#EEF2FF' : '#775AFF',
+            isSelected ? '#E0E7FF' : '#B2C5FF',
           ]}
         >
           <TouchableOpacity
-            className="flex-1 items-center justify-center"
+            className="flex-1 items-center justify-center px-2"
             onPress={() => handleSelectOption(item.id)}
           >
-            {item.categorias !== '' ? (
-              <View className="mb-3">
-                {item.icon ? (
-                  item.icon
-                ) : (
-                  <Image className="w-14 h-14" source={{ uri: item.icone }} />
-                )}
-              </View>
-            ) : item.icon ? (
-              item.icon
-            ) : (
-              <Image className="w-14 h-14" source={{ uri: item.icone }} />
-            )}
-            {item.categorias !== '' && (
-              <View className="absolute bottom-1">
-                <Paragrafo color={'#2F009C'} title={item.categorias} />
+            {isSelected && (
+              <View className="absolute top-1 right-1 px-2 py-[2px] rounded-full bg-[#4F46E5]">
+                <Text className="text-[10px] font-semibold text-white">
+                  Selecionado
+                </Text>
               </View>
             )}
+            <View className="items-center justify-center">
+              {item.icon ? (
+                item.icon
+              ) : (
+                <Image className="w-12 h-12 mb-2" source={{ uri: item.icone }} />
+              )}
+              {item.categorias !== '' && (
+                <Text
+                  className="text-[11px] font-medium text-center"
+                  style={{ color: isSelected ? '#111827' : '#2F009C' }}
+                  numberOfLines={2}
+                >
+                  {item.categorias}
+                </Text>
+              )}
+            </View>
           </TouchableOpacity>
         </LinearGradient>
       </View>
@@ -162,16 +195,20 @@ export default function ClientePerfilCategoriaScreen() {
   }, []);
 
   useEffect(() => {
-    if (categoriasSelecionadas) {
-      setSelectedOptions(selectedOptions.sort((a, b) => a - b));
-      const categorias = categoriasSelecionadas
-        .map((categoria: any) => categoria.categoria_id)
-        .sort((a, b) => a - b);
-      if (JSON.stringify(selectedOptions) !== JSON.stringify(categorias)) {
-        setNeedSave(true);
-      }
-    }
-  }, [selectedOptions]);
+    const atual = [...selectedOptions].sort((a, b) => a - b);
+    const original = [...originalSelectedOptions].sort((a, b) => a - b);
+    setNeedSave(JSON.stringify(atual) !== JSON.stringify(original));
+  }, [selectedOptions, originalSelectedOptions]);
+
+  const categoriasSelecionadasNomes =
+    listaCategorias
+      .filter((cat: any) => selectedOptions.includes(cat.id))
+      .map((cat: any) => cat.categorias) || [];
+
+  const categoriasOriginaisNomes =
+    listaCategorias
+      .filter((cat: any) => originalSelectedOptions.includes(cat.id))
+      .map((cat: any) => cat.categorias) || [];
 
   return (
     <MainLayoutAutenticado notScroll marginTop={20}>
@@ -186,12 +223,51 @@ export default function ClientePerfilCategoriaScreen() {
             : require('../../../../assets/img/icons/save-mark.png')
         }
       />
-      <View style={{ width: '100%', height: 100, display: 'flex', justifyContent: 'center', position: 'absolute', bottom: 180, zIndex: 100, backgroundColor: colors.white }}>
-        <ButtonOutline
-          title='Atualizar'
-          onPress={() => savePerfil()}
-        />
+
+      <View className="mt-4 px-4">
+        {categoriasOriginaisNomes.length > 0 && (
+          <View className="mb-3">
+            <Text className="text-xs font-semibold text-[#6B7280]">
+              Categorias já salvas
+            </Text>
+            <View className="flex-row flex-wrap mt-1">
+              {categoriasOriginaisNomes.map((nome: string, index: number) => (
+                <View
+                  key={`orig-${nome}-${index}`}
+                  className="px-3 py-1 mr-2 mb-2 rounded-full bg-[#E5E7EB]"
+                >
+                  <Text className="text-xs font-medium text-[#374151]">
+                    {nome}
+                  </Text>
+                </View>
+              ))}
+            </View>
+          </View>
+        )}
+
+        <Text className="text-sm font-semibold text-[#111827]">
+          Categorias selecionadas agora ({selectedOptions.length}/3)
+        </Text>
+        {categoriasSelecionadasNomes.length > 0 ? (
+          <View className="flex-row flex-wrap mt-2">
+            {categoriasSelecionadasNomes.map((nome: string, index: number) => (
+              <View
+                key={`${nome}-${index}`}
+                className="px-3 py-1 mr-2 mb-2 rounded-full bg-[#EEF2FF]"
+              >
+                <Text className="text-xs font-medium text-[#3730A3]">
+                  {nome}
+                </Text>
+              </View>
+            ))}
+          </View>
+        ) : (
+          <Text className="text-xs text-[#6B7280] mt-1">
+            Nenhuma categoria selecionada ainda. Toque em uma categoria abaixo para escolher.
+          </Text>
+        )}
       </View>
+
       <FlatList
         data={listaCategorias}
         renderItem={renderItemSegundo}
@@ -199,7 +275,16 @@ export default function ClientePerfilCategoriaScreen() {
         refreshControl={
           <RefreshControl refreshing={isRefreshing} onRefresh={handleRefresh} />
         }
-        contentContainerStyle={{ paddingBottom: 200 }}
+        contentContainerStyle={{ paddingBottom: 32, paddingHorizontal: 8 }}
+        ListFooterComponent={
+          <View className="mt-4 mb-8 px-4">
+            <ButtonOutline
+              title="Atualizar categorias"
+              onPress={savePerfil}
+              disabled={!needSave}
+            />
+          </View>
+        }
       />
 
     </MainLayoutAutenticado>
@@ -210,8 +295,8 @@ const screenWidth = Dimensions.get('window').width;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 4,
-    maxWidth: screenWidth > 375 ? '30%' : '100%',
+    padding: 6,
+    maxWidth: '50%',
     flexDirection: 'row',
     alignItems: 'stretch',
     justifyContent: 'space-between',
@@ -221,10 +306,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   block: {
-    height: 100,
+    height: 140,
     width: '100%',
-    borderRadius: 8,
-    marginVertical: 5,
+    borderRadius: 14,
+    marginVertical: 6,
     backgroundColor: 'blue',
   },
 });
