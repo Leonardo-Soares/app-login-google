@@ -14,6 +14,7 @@ import HeaderPrimary from '../../components/header/HeaderPrimary'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import MainLayoutAutenticado from '../../components/layout/MainLayoutAutenticado'
 import ButtonOutline from '@components/buttons/ButtonOutline'
+import Spacing from '@components/layout/Spacing'
 
 export default function OfertaDetalhesScreen(props: any) {
   const isFocused = useIsFocused()
@@ -140,6 +141,7 @@ export default function OfertaDetalhesScreen(props: any) {
         </View>
       </ModalTemplate>
       <MainLayoutAutenticado marginHorizontal={0} marginTop={0} loading={loading}>
+        <View className='w-full h-[4%] ' />
         {propsOferta && propsOferta.slice(0, 1).map((item: any) => (
           <View className='flex-1' key={item}>
             <View className='mr-4'>

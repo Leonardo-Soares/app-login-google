@@ -11,6 +11,7 @@ import ButtonOutline from '../../components/buttons/ButtonOutline'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import MainLayoutAutenticado from '../../components/layout/MainLayoutAutenticado'
 import { FlatList, RefreshControl, ScrollView, Text, TouchableOpacity, View } from 'react-native'
+import Spacing from '@components/layout/Spacing'
 
 export default function HomeScreen() {
   const isFocused = useIsFocused()
@@ -128,6 +129,14 @@ export default function HomeScreen() {
       />
   )
 
+  const limparFiltroCidadeEstado = async () => {
+    await AsyncStorage.removeItem('cidade')
+    await AsyncStorage.removeItem('estado')
+    setEstado(null)
+    setCidade(null)
+    getProdutos()
+  }
+
   useEffect(() => {
     getCategorias()
     getProdutos()
@@ -141,37 +150,50 @@ export default function HomeScreen() {
 
   return (
     <MainLayoutAutenticado notScroll={true} loading={isRefreshing}>
-      <ScrollView horizontal={true} showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false} className='w-full h-14 pb-0 -mt-4'>
-        <CardCategoria
-          ativo={false}
-          titulo={"Discontoken"}
-          slug={"discontoken-teste"}
-          onPress={() => navigate('Discontoken')}
-        />
-        {listacategorias && listacategorias.map((categoria: any) => (
+      <Spacing />
+      {estadoSelecionado && cidadeSelecionada && listaprodutos.length > 0 &&
+        <ScrollView horizontal={true} showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false} className='w-full h-14 pb-0'>
           <CardCategoria
             ativo={false}
-            key={categoria.id}
-            slug={categoria.id}
-            titulo={categoria.categorias}
-            onPress={() => navigate('Categorias', { idCategoria: categoria.id })}
+            titulo={"Discontoken"}
+            slug={"discontoken-teste"}
+            onPress={() => navigate('Discontoken')}
           />
-        ))}
-      </ScrollView >
+          {listacategorias && listacategorias.map((categoria: any) => (
+            <CardCategoria
+              ativo={false}
+              key={categoria.id}
+              slug={categoria.id}
+              titulo={categoria.categorias}
+              onPress={() => navigate('Categorias', { idCategoria: categoria.id })}
+            />
+          ))}
+        </ScrollView >
+      }
 
       <View className="flex-row">
         <Text className="text-[24px] font-semibold text-[#000] mb-3"> Boas-vindas, {primeiroNome ?? ''} 🎉</Text>
       </View>
 
       {estadoSelecionado && cidadeSelecionada &&
-        <TouchableOpacity onPress={() => navigate('FiltroCidadeScreen')} className=' ml-2'>
-          <Caption fontSize={14} fontWeight={"700"} >Filtrado para {cidadeSelecionada.nome} - {estadoSelecionado.sigla}</Caption>
+        <TouchableOpacity
+          onPress={() => navigate('FiltroCidadeScreen')}
+          className='ml-2 mt-2 px-4 py-3 rounded-2xl bg-[#E6F3FF] border border-[#1E90FF] flex-row items-center'
+        >
+          <Text className="text-[18px] mr-2">📍</Text>
+          <View>
+            <Caption fontSize={12} fontWeight={'400'} color="#1E4B79">
+              Ofertas filtradas para
+            </Caption>
+            <Caption fontSize={14} fontWeight={'700'} color="#0B2340">
+              {cidadeSelecionada.nome} - {estadoSelecionado.sigla}
+            </Caption>
+          </View>
         </TouchableOpacity>
       }
       {listaprodutos.length >= 1 &&
         <FlatList
           data={listaprodutos}
-          className='mb-16'
           renderItem={renderItem}
           refreshControl={
             <RefreshControl
@@ -182,8 +204,13 @@ export default function HomeScreen() {
           showsVerticalScrollIndicator={false}
         />}
       {!isRefreshing && listaprodutos.length <= 0 &&
-        <View className='w-full '>
+        <View className='w-full items-center'>
           <CardNotFound titulo='Não encontramos cupons no momento para você' />
+          {estadoSelecionado && cidadeSelecionada && (
+            <View className='mt-3 w-full px-8'>
+              <ButtonOutline title='Limpar filtro de cidade e estado' onPress={limparFiltroCidadeEstado} />
+            </View>
+          )}
           <View className='mt-3 mx-8'>
             <ButtonOutline title='Sugerir estabelecimentos' onPress={() => navigate('SugerirEstabelecimentosScreen')} />
           </View>

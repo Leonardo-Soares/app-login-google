@@ -14,6 +14,7 @@ import ButtonSecondary from '../../components/buttons/ButtonSecondary'
 import ButtonPrimary from '../../components/buttons/ButtonPrimary'
 import FilledButton from '../../components/buttons/FilledButton'
 import { colors } from '../../styles/colors'
+import Spacing from '@components/layout/Spacing'
 
 export default function FavoritosScreen() {
   const isFocused = useIsFocused()
@@ -88,6 +89,7 @@ export default function FavoritosScreen() {
 
   return (
     <MainLayoutAutenticado loading={isRefreshing} notScroll={true}>
+      <Spacing />
       {listaprodutos.length >= 1 &&
         <FlatList
           data={listaprodutos}

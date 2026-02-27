@@ -11,6 +11,7 @@ import MainLayoutAutenticado from '../../components/layout/MainLayoutAutenticado
 import H3 from '../../components/typography/H3'
 import { useGlobal } from '../../context/GlobalContextProvider'
 import FilledButton from '../../components/buttons/FilledButton'
+import Spacing from '@components/layout/Spacing'
 
 export default function UtilizadosScreen() {
   const isFocused = useIsFocused()
@@ -62,6 +63,7 @@ export default function UtilizadosScreen() {
   return (
     <>
       <MainLayoutAutenticado loading={loading} notScroll={true}>
+        <Spacing />
         {usuarioLogado &&
           <View>
             <View className='flex-row mb-4'>

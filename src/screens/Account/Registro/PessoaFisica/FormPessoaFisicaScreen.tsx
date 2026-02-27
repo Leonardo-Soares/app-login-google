@@ -739,7 +739,7 @@ export default function FormPessoaFisicaScreen({
             </Text>
           </TouchableOpacity>
         </View>
-        <View className="mt-4">
+        <View className="mt-8">
           <FilledButton
             title="Cadastrar"
             onPress={() => postPessoaFisica()}

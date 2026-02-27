@@ -37,6 +37,7 @@ import {
 import InputOutlinedCadastro from '@components/forms/InputOutlinedCadastro';
 import InputOutlined from '@components/forms/InputOutlined';
 import LogoUpload from '@components/LogoUpload';
+import Spacing from '@components/layout/Spacing';
 
 interface ILocalizacao {
   latitude: number;

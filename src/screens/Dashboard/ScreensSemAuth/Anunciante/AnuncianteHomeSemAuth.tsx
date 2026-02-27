@@ -2,13 +2,15 @@ import React from "react"
 import { Text, Image, View } from "react-native"
 import { useNavigate } from "../../../../hooks/useNavigate"
 import MainLayoutAutenticado from "../../../../components/layout/MainLayoutAutenticado"
+import Spacing from "@components/layout/Spacing"
 
 export default function HomeClienteScreen() {
   const { navigate } = useNavigate()
 
   return (
     <MainLayoutAutenticado >
-      <View className='w-full'>
+      <Spacing />
+      <View className='w-full mt-8'>
         <View className="flex-row">
           <Text className="text-[24px] font-semibold text-[#000] mb-3"> Boas-vindas, visitante 🎉</Text>
         </View>

@@ -153,6 +153,36 @@ export default function FiltroDetalheLocalizacaoScreen({ route }: { route?: any 
           </TouchableOpacity>
         )}
 
+
+        {(!loading && cupons.length === 0 && temContato) || item.cnpj ? (
+          <View style={styles.secao}>
+            <H5 color={colors.primary20}>Informações</H5>
+            <View style={styles.infoBox}>
+              {item.cnpj ? (
+                <View style={styles.infoRow}>
+                  <Caption fontSize={14} color={colors.blackdark}>CNPJ: {item.cnpj}</Caption>
+                </View>
+              ) : null}
+              {item.telefone ? (
+                <View style={styles.infoRow}>
+                  <Caption fontSize={14} color={colors.blackdark}>Telefone: {item.telefone}</Caption>
+                </View>
+              ) : null}
+              {item.email ? (
+                <View style={styles.infoRow}>
+                  <Caption fontSize={14} color={colors.blackdark}>E-mail: {item.email}</Caption>
+                </View>
+              ) : null}
+              {item.endereco ? (
+                <View style={styles.infoRow}>
+                  <Caption fontSize={14} color={colors.blackdark}>Endereço: {item.endereco}</Caption>
+                </View>
+              ) : null}
+            </View>
+          </View>
+        ) : null}
+
+
         <View style={styles.secao}>
           <H5 color={colors.primary20}>Cupons ativos</H5>
           {loading ? (
@@ -194,34 +224,6 @@ export default function FiltroDetalheLocalizacaoScreen({ route }: { route?: any 
             </View>
           )}
         </View>
-
-        {(!loading && cupons.length === 0 && temContato) || item.cnpj ? (
-          <View style={styles.secao}>
-            <H5 color={colors.primary20}>Informações</H5>
-            <View style={styles.infoBox}>
-              {item.cnpj ? (
-                <View style={styles.infoRow}>
-                  <Caption fontSize={14} color={colors.blackdark}>CNPJ: {item.cnpj}</Caption>
-                </View>
-              ) : null}
-              {item.telefone ? (
-                <View style={styles.infoRow}>
-                  <Caption fontSize={14} color={colors.blackdark}>Telefone: {item.telefone}</Caption>
-                </View>
-              ) : null}
-              {item.email ? (
-                <View style={styles.infoRow}>
-                  <Caption fontSize={14} color={colors.blackdark}>E-mail: {item.email}</Caption>
-                </View>
-              ) : null}
-              {item.endereco ? (
-                <View style={styles.infoRow}>
-                  <Caption fontSize={14} color={colors.blackdark}>Endereço: {item.endereco}</Caption>
-                </View>
-              ) : null}
-            </View>
-          </View>
-        ) : null}
 
         <View style={styles.footer} />
       </ScrollView>
