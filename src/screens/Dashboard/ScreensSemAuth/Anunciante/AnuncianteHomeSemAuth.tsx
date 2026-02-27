@@ -10,7 +10,7 @@ export default function HomeClienteScreen() {
   return (
     <MainLayoutAutenticado >
       <Spacing />
-      <View className='w-full'>
+      <View className='w-full mt-6'>
         <View className="flex-row">
           <Text className="text-[24px] font-semibold text-[#000] mb-3"> Boas-vindas, visitante 🎉</Text>
         </View>
