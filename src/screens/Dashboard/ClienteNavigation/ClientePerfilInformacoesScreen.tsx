@@ -153,20 +153,18 @@ export default function ClientePerfilInformacoesScreen() {
             keyboardType={'default'}
             onChange={setNomeFantasia}
           />
-          <InputOutlined
+          <InputDisabled
             mt={8}
             label="Nome empresarial"
             value={nomeEmpresarial}
             keyboardType={'default'}
             onChange={setNomeEmpresarial}
           />
-          <InputMascaraPaper
+          <InputDisabled
             mt={8}
-            disabled
             label="CNPJ"
             value={cnpj}
             keyboardType={'number-pad'}
-            onChangeText={(text: any) => handleCNPJMask(text)}
           />
           <InputDisabled
             mt={8}
@@ -182,15 +180,15 @@ export default function ClientePerfilInformacoesScreen() {
             onChange={setEmail}
             keyboardType={'email-address'}
           />
-          <InputMascaraPaper
+          <InputOutlined
             mt={8}
             maxLength={15}
             label="Telefone (DDD)"
             value={telefone}
             keyboardType={'number-pad'}
-            onChangeText={(text: any) => handlePhoneMask(text)}
+            onChange={(text: string) => handlePhoneMask(text)}
           />
-          <InputOutlined
+          <InputDisabled
             mt={8}
             label="Nome representante da empresa"
             value={nomeCompleto}

@@ -1,6 +1,7 @@
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import ClienteUtilizadosScreen from './ClienteUtilizadosScreen';
+import React from 'react';
 
 
 const Stack = createNativeStackNavigator();

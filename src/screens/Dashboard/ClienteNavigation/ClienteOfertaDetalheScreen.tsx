@@ -83,9 +83,9 @@ export default function ClienteOfertaDetalheScreen({ route }: { route?: any }) {
 
   return (
     <MainLayoutAutenticado marginTop={0} marginHorizontal={0} loading={loading}>
-      <HeaderPrimary titulo='Detalhe do Anúncio' voltarScreen={() => navigate('ClienteUtilizadosScreen')} />
-      <View className='mx-7 mt-5 min-h-full'>
-
+      <View className='mx-7 mt-4 min-h-full'>
+        <HeaderPrimary titulo='Detalhe do Anúncio' voltarScreen={() => navigate('ClienteUtilizadosScreen')} />
+        <View className='w-full mt-4' />
         {oferta && oferta.map((item) => (
           <View key={item.id}>
             <CardProdutoDetalhes
