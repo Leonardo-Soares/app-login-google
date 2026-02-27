@@ -7,6 +7,7 @@ import H5 from '../../../components/typography/H5'
 import Caption from '../../../components/typography/Caption'
 import { Image, Linking, TouchableOpacity, View } from 'react-native'
 import MainLayoutAutenticado from '../../../components/layout/MainLayoutAutenticado'
+import React from 'react'
 
 export default function ContatosScreen() {
   const [loading, setLoading] = useState(true)
@@ -59,7 +60,7 @@ export default function ContatosScreen() {
 
   return (
     <MainLayoutAutenticado bottomDrawer loading={loading}>
-      <Image className='mx-auto' source={require('../../../../assets/img/ajuda/atendente-24h.png')} />
+      <Image className='mx-auto mt-16' source={require('../../../../assets/img/ajuda/atendente-24h.png')} />
       <View className='mb-4'>
         <H5>Precisa de ajuda?</H5>
         <Caption fontSize={14}>Qualquer dúvida ou problema relacionado a utilização do aplicativo entre em contato com o nosso time de suporte através de e-mail ou WhatsApp!</Caption>

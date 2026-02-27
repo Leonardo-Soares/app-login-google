@@ -9,6 +9,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage'
 import InputOutlined from '../../../../components/forms/InputOutlined'
 import FilledButton from '../../../../components/buttons/FilledButton'
 import MainLayoutAutenticado from '../../../../components/layout/MainLayoutAutenticado'
+import React from 'react'
 
 export default function AlterarSenhaScreen() {
   const { goBack } = useNavigate()
@@ -90,6 +91,7 @@ export default function AlterarSenhaScreen() {
 
   return (
     <MainLayoutAutenticado bottomDrawer loading={loading}>
+      <View className='w-full h-[15%]' />
       <H5>Alterar Senha</H5>
       <Caption>Altera a sua senha</Caption>
       <ScrollView contentContainerStyle={{ flexGrow: 1, paddingBottom: 220 }}>

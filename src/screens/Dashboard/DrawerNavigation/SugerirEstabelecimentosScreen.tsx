@@ -11,6 +11,7 @@ import InputMascaraPaper from '../../../components/forms/InputMascaraPaper'
 import { KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native'
 import MainLayoutAutenticadoSemScroll from '../../../components/layout/MainLayoutAutenticadoSemScroll'
 import React from 'react'
+import Spacing from '@components/layout/Spacing'
 
 export default function SugerirEstabelecimentosScreen() {
   const { navigate } = useNavigate()
@@ -87,6 +88,7 @@ export default function SugerirEstabelecimentosScreen() {
   return (
     <MainLayoutAutenticadoSemScroll marginTop={0} loadign={loading} marginHorizontal={0}>
       <ScrollView>
+        <View className='w-full mt-4' />
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         >

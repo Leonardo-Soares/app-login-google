@@ -3,6 +3,8 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from '../../../hooks/useNavigate'
 import ButtonFiltro from '../../../components/buttons/ButtonFiltro'
 import MainLayoutAutenticado from '../../../components/layout/MainLayoutAutenticado'
+import React from 'react'
+import { View } from 'react-native'
 
 export default function FaqScreen() {
   const { navigate } = useNavigate()
@@ -27,7 +29,7 @@ export default function FaqScreen() {
 
   return (
     <MainLayoutAutenticado bottomDrawer loading={loading}>
-
+      <View className='w-full h-20' />
       {faqs && faqs.map((item: any) => (
         <ButtonFiltro
           key={item.id}

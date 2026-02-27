@@ -38,7 +38,7 @@ export default function AvaliacaoScreen({ route }: { route?: any }) {
           Authorization: `Bearer ${newJson.token}`,
         }
         const formData = {
-          anunciante_id: route.params.id_anunciante, // está incorreto, deve ser o id do anunciante
+          anunciante_id: route.params.id_anunciante ?? route.params[0].anunciante_id, // está incorreto, deve ser o id do anunciante
           comentario: mensagem.length <= 1 ? 'Sem comentários' : mensagem,
           avaliacao: selecionaAvalaicao,
           permissao_contato: contato
@@ -76,7 +76,7 @@ export default function AvaliacaoScreen({ route }: { route?: any }) {
 
   return (
     <MainLayoutAutenticado loading={loading}>
-      <View className='mx-4 pb-20'>
+      <View className='mx-4 pb-20 pt-[20%]'>
         <ScrollView
           contentContainerStyle={{ flex: 1, paddingBottom: 320 }}
         >
@@ -126,7 +126,7 @@ export default function AvaliacaoScreen({ route }: { route?: any }) {
             </TouchableOpacity>
           </View>
 
-          <View className='mt-16 mb-4'>
+          <View className='mt-4 mb-4'>
             <Paragrafo title='Tem algo que você queira compartilhar com a gente sobre a sua experiência ?' />
             <InputArea
               mt={2}

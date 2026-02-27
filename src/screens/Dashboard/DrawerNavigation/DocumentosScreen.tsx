@@ -4,6 +4,7 @@ import { useIsFocused } from '@react-navigation/native'
 import { useNavigate } from '../../../hooks/useNavigate'
 import ButtonFiltro from '../../../components/buttons/ButtonFiltro'
 import MainLayoutAutenticado from '../../../components/layout/MainLayoutAutenticado'
+import { ScrollView, View } from 'react-native'
 import React from 'react'
 
 export default function DocumentosScreen() {
@@ -31,22 +32,24 @@ export default function DocumentosScreen() {
   return (
     <MainLayoutAutenticado
       notScroll={true}
-      marginTop={72}
       bottomDrawer
       loading={loading}>
-      {documentos && documentos.map((documento: any) => {
-        const titulo = documento.titulo
-          ? documento.titulo.charAt(0).toUpperCase() + documento.titulo.slice(1).toLowerCase()
-          : ''
-        return (
-          <ButtonFiltro
-            key={documento.id}
-            title={titulo}
-            isActive={documento.status}
-            onPress={() => navigate('TermoModeloScreen', { documento })}
-          />
-        )
-      })}
+      <ScrollView showsVerticalScrollIndicator={false}>
+        <View className='w-full h-20' />
+        {documentos && documentos.map((documento: any) => {
+          const titulo = documento.titulo
+            ? documento.titulo.charAt(0).toUpperCase() + documento.titulo.slice(1).toLowerCase()
+            : ''
+          return (
+            <ButtonFiltro
+              key={documento.id}
+              title={titulo}
+              isActive={documento.status}
+              onPress={() => navigate('TermoModeloScreen', { documento })}
+            />
+          )
+        })}
+      </ScrollView>
     </MainLayoutAutenticado>
   );
 }

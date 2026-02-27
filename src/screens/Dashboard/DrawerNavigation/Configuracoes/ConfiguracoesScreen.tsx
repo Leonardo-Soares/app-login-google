@@ -74,16 +74,11 @@ export default function ConfiguracoesScreen() {
         <FilledButton title="Voltar" onPress={handleCloseModal} />
       </ModalTemplate>
       <MainLayoutAutenticado marginTop={0} loading={loading}>
-        <View className='w-full h-[25%]' />
+        <View className='w-full h-16' />
         <ButtonFiltro
           isActive={1}
           title="Alterar senha"
           onPress={() => navigate('AlterarSenhaScreen')}
-        />
-        <ButtonFiltro
-          isActive={1}
-          title="Notificações"
-          onPress={() => navigate('NotificacoesScreen')}
         />
         <ButtonFiltro
           title="Excluir conta"
