@@ -18,7 +18,6 @@ interface LogoUploadProps {
 }
 
 const SIZE = 112;
-const BORDER_RADIUS = 12;
 
 export default function LogoUpload({
   imageUri,
@@ -29,6 +28,7 @@ export default function LogoUpload({
   style,
 }: LogoUploadProps) {
   const hasImage = Boolean(imageUri?.trim());
+  const borderRadius = size / 2;
 
   return (
     <TouchableOpacity
@@ -37,18 +37,18 @@ export default function LogoUpload({
       style={[styles.wrapper, style]}
     >
       <View style={styles.column}>
-        <View style={[styles.container, { width: size, height: size }]}>
+        <View style={[styles.container, { width: size, height: size, borderRadius }]}>
           {hasImage ? (
             <>
               <Image
                 source={{ uri: imageUri }}
-                style={[styles.image, { width: size, height: size, borderRadius: BORDER_RADIUS }]}
+                style={[styles.image, { width: size, height: size, borderRadius }]}
                 resizeMode="cover"
               />
-              <View style={[styles.overlay, { borderRadius: BORDER_RADIUS }]} />
+              <View style={[styles.overlay, { borderRadius }]} />
             </>
           ) : (
-            <View style={[styles.placeholder, { width: size, height: size, borderRadius: BORDER_RADIUS }]}>
+            <View style={[styles.placeholder, { width: size, height: size, borderRadius }]}>
               <View style={styles.iconCircle}>
                 <Image
                   source={require('../../assets/img/icons/camera-gray.png')}
@@ -70,7 +70,8 @@ export default function LogoUpload({
 const styles = StyleSheet.create({
   wrapper: {
     alignSelf: 'center',
-    marginVertical: 8,
+    marginTop: 24,
+    marginBottom: 24,
   },
   column: {
     alignItems: 'center',
@@ -117,6 +118,5 @@ const styles = StyleSheet.create({
   overlay: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: 'rgba(0,0,0,0.35)',
-    borderRadius: BORDER_RADIUS,
   },
 });

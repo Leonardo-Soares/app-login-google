@@ -17,11 +17,11 @@ import RadioButton from '../../../components/forms/RadioButton';
 import Paragrafo from '../../../components/typography/Paragrafo';
 import FilledButton from '../../../components/buttons/FilledButton';
 import InputOutlined from '../../../components/forms/InputOutlined';
+import InputOutlinedMoney from '../../../components/forms/InputOutlinedMoney';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import HeaderPrimary from '../../../components/header/HeaderPrimary';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import RemoveCaracteres from '../../../components/forms/RemoveCaracteres';
-import InputMascaraPaper from '../../../components/forms/InputMascaraPaper';
 import InputMascaraMoney from '../../../components/forms/InputMascaraMoney';
 import MainLayoutAutenticado from '../../../components/layout/MainLayoutAutenticado';
 import InputMascaraPorcentagem from '../../../components/forms/InputMascaraPorcentagem';
@@ -128,6 +128,11 @@ export default function ClienteCriaCuponScreen() {
 
   const handleTipoVantagem = (option: string) => {
     setTipoVantagem(option);
+    if (option === 'Vantagem Porcentagem') {
+      setValorReais('');
+    } else if (option === 'Vantagem em Reais') {
+      setValueVantagem('');
+    }
   };
 
   const showDatePicker = () => {
@@ -843,7 +848,6 @@ export default function ClienteCriaCuponScreen() {
 
   return (
     <>
-
       <Modal visible={modalCorretor} transparent={true}>
         <View
           className="flex-1 w-full justify-center items-center"
@@ -1098,18 +1102,18 @@ export default function ClienteCriaCuponScreen() {
         <HeaderPrimary titulo="Criar anúncio" />
 
         <View className="mt-4 mx-7 pb-20">
-          <InputMascaraPaper
+          <InputOutlined
             value={titulo}
             error={errorTitulo}
-            onChangeText={setTitulo}
+            onChange={setTitulo}
             label="Título da oferta"
             keyboardType={'default'}
           />
-          <InputMascaraPaper
+          <InputOutlined
             mt={12}
             label="Filial"
             value={filial}
-            onChangeText={setFilial}
+            onChange={setFilial}
             keyboardType={'default'}
           />
           {isDatePickerVisible && (
@@ -1235,22 +1239,20 @@ export default function ClienteCriaCuponScreen() {
               keyboardType={'number-pad'}
               clearInput={() => setValueVantagem('')}
               onChange={setValueVantagem}
+              height={50}
               label="Vantagem em porcentagem (%)"
               placeholder="Vantagem em porcentagem (%)"
             />
           )}
           {tipoVantagem === 'Vantagem em Reais' && (
-            <InputMascaraMoney
-              mt={12}
+            <InputOutlinedMoney
               label=""
+              height={50}
               value={valorReais}
-              mask={realmask}
-              keyboardType={'number-pad'}
+              clearInput={() => setValorReais('')}
               error={errorValueVantagem}
               placeholder="Vantagem em reais (R$)"
-              onChangeText={(unmasked: any) => {
-                setValorReais(unmasked);
-              }}
+              onChange={setValorReais}
             />
           )}
 
@@ -1265,17 +1267,14 @@ export default function ClienteCriaCuponScreen() {
             onChange={setCodigoCupom}
           />
 
-          <InputMascaraMoney
+          <InputOutlinedMoney
             mt={12}
-            label=""
+            height={50}
             value={valorItem}
             error={errorValorItem}
-            mask={realmask}
-            keyboardType={'number-pad'}
+            clearInput={() => setValorItem('')}
+            onChange={setValorItem}
             placeholder="Valor do Item (R$)"
-            onChangeText={(unmasked: any) => {
-              setValorItem(unmasked);
-            }}
           />
 
           <Text className="mt-4 mb-2 font-medium">

@@ -167,10 +167,6 @@ export default function CameraScreen() {
       <Modal visible={modalVisible} animationType='slide'>
         <View className='flex-1 items-center justify-center bg-black'>
           <View className='relative rounded-lg bg-white mx-6 px-4 py-24'>
-            <TouchableOpacity onPress={closeModal} className='absolute right-4 top-4'>
-              <Image source={require('../../../../assets/img/icons/close.png')} />
-            </TouchableOpacity>
-
             <View className='my-4'>
               <View className='mx-8 mb-4 items-center'>
                 <H3 align={'center'}>Código validado com sucesso!</H3>
