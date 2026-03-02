@@ -1,4 +1,4 @@
-import { View } from 'react-native'
+import { View, StyleSheet } from 'react-native'
 import { useEffect, useState } from 'react'
 import LottieView from 'lottie-react-native'
 import { api } from '../../../../../service/api'
@@ -6,6 +6,7 @@ import { colors } from '../../../../../styles/colors'
 import H3 from '../../../../../components/typography/H3'
 import { useNavigate } from '../../../../../hooks/useNavigate'
 import Caption from '../../../../../components/typography/Caption'
+import Paragrafo from '../../../../../components/typography/Paragrafo'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import FilledButton from '../../../../../components/buttons/FilledButton'
 import { useDadosPagamento } from '../../../../../stores/useDadosPagamento'
@@ -21,8 +22,24 @@ export default function ClienteSucessoPagamentoScreen() {
   const { dadosPagamento } = useDadosPagamento()
   const [messageErro, setMessageErro] = useState('')
 
+  function getErrorMessage(error: any): string {
+    const data = error?.response?.data
+    if (!data) return ''
+    if (typeof data === 'object' && typeof data.message === 'string') return data.message
+    if (typeof data === 'string') {
+      try {
+        const parsed = JSON.parse(data)
+        return parsed?.message && typeof parsed.message === 'string' ? parsed.message : ''
+      } catch {
+        return ''
+      }
+    }
+    return ''
+  }
+
   async function onSubmitPagamentoRecorrente() {
     setLoading(true)
+    setMessageErro('')
     const jsonValue = await AsyncStorage.getItem('infos-user')
     if (jsonValue) {
       const newJson = JSON.parse(jsonValue)
@@ -50,8 +67,7 @@ export default function ClienteSucessoPagamentoScreen() {
         const response = await api.post(`/pagamento/assinatura`, formData, { headers })
         setSucesso(true)
       } catch (error: any) {
-        console.log(error.response.data)
-        setMessageErro(error.response.data.message)
+        setMessageErro(getErrorMessage(error))
       }
     }
     setLoading(false)
@@ -59,6 +75,7 @@ export default function ClienteSucessoPagamentoScreen() {
 
   async function onSubmitPagamentoAvulso() {
     setLoading(true)
+    setMessageErro('')
     const jsonValue = await AsyncStorage.getItem('infos-user')
     const jsonPerfil = await AsyncStorage.getItem('dados-perfil')
     if (jsonValue && jsonPerfil) {
@@ -89,8 +106,7 @@ export default function ClienteSucessoPagamentoScreen() {
         const response = await api.post(`/pagamento/avulso/cartao`, formData, { headers })
         setSucesso(true)
       } catch (error: any) {
-        console.log(error.response.data)
-        setMessageErro(error.response.data.message)
+        setMessageErro(getErrorMessage(error))
       }
     }
     setLoading(false)
@@ -118,43 +134,82 @@ export default function ClienteSucessoPagamentoScreen() {
     <MainLayoutSecondary loading={loading}>
       {!loading &&
         <>
-          {sucesso ?
-            <View className='mx-7 mt-5 justify-between flex-1' >
-              <View></View>
-              <View className='items-center'>
-                <View className='mb-4  mt-4'>
-                  <LottieView style={{ width: 280, height: 280 }} source={require('../../../../../animations/pacote-comprado.json')} autoPlay loop />
+          {sucesso ? (
+            <View className='mx-7 mt-5 flex-1'>
+              <View className='flex-1 justify-center items-center mb-4'>
+                <View style={styles.animationWrap}>
+                  <LottieView style={styles.animation} source={require('../../../../../animations/pacote-comprado.json')} autoPlay loop />
                 </View>
-                <View className='my-4 mt-2'>
-                  <H3 align={'center'}>
-                    Pagamento realizado com sucesso !
+                <View style={styles.messageCardSuccess}>
+                  <H3 align='center' color={colors.primary20}>
+                    Pagamento realizado com sucesso!
                   </H3>
+                  <Caption align='center' color={colors.neutralvariant50} margintop={8}>
+                    Seu plano foi confirmado. Aproveite!
+                  </Caption>
                 </View>
               </View>
               <FilledButton
                 onPress={() => navigate('ClienteTabNavigation', { screen: 'HomeClienteScreen' })}
-                title='Continuar' />
+                title='Continuar'
+              />
             </View>
-            :
-            <View className='mx-7 mt-5 justify-between flex-1' >
-              <View></View>
-              <View className='items-center'>
-                <View className='mb-4  mt-4'>
-                  <LottieView style={{ width: 280, height: 280 }} source={require('../../../../../animations/pagamento-falhou.json')} autoPlay loop />
+          ) : (
+            <View className='mx-7 mt-5 flex-1'>
+              <View className='flex-1 justify-center items-center mb-4'>
+                <View style={styles.animationWrap}>
+                  <LottieView style={styles.animation} source={require('../../../../../animations/pagamento-falhou.json')} autoPlay loop />
                 </View>
-                <View className='my-4 mt-2'>
-                  <H3 align={'center'}>
-                    Ocorreu um erro ao finalizar seu pagamento, volte e tente novamente.
+                <View style={styles.messageCardError}>
+                  <H3 align='center' color={colors.error20}>
+                    Algo deu errado
                   </H3>
+                  <Paragrafo
+                    title={messageErro || 'Ocorreu um erro ao finalizar seu pagamento. Verifique os dados e tente novamente.'}
+                    color={colors.neutral10}
+                    align='center'
+                  />
                 </View>
               </View>
               <FilledButton
                 onPress={() => navigate('ClientePagamentoEndereco', { screen: 'HomeClienteScreen' })}
-                title='Voltar e tentar novamente' />
+                title='Voltar e tentar novamente'
+              />
             </View>
-          }
+          )}
         </>
       }
     </MainLayoutSecondary>
-  );
+  )
 }
+
+const styles = StyleSheet.create({
+  animationWrap: {
+    marginBottom: 24,
+  },
+  animation: {
+    width: 260,
+    height: 260,
+  },
+  messageCardSuccess: {
+    width: '100%',
+    maxWidth: 320,
+    backgroundColor: colors.primary90,
+    borderRadius: 16,
+    paddingVertical: 20,
+    paddingHorizontal: 20,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: colors.primary80,
+  },
+  messageCardError: {
+    width: '100%',
+    backgroundColor: colors.error90,
+    borderRadius: 16,
+    paddingVertical: 20,
+    paddingHorizontal: 20,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: colors.error80,
+  },
+})

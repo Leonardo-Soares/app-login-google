@@ -13,6 +13,7 @@ import InputMascaraPaper from '../../../../../components/forms/InputMascaraPaper
 import { Image, KeyboardAvoidingView, StyleSheet, Platform, Text, View } from 'react-native'
 import MainLayoutAutenticadoSemScroll from '../../../../../components/layout/MainLayoutAutenticadoSemScroll'
 import AsyncStorage from '@react-native-async-storage/async-storage'
+import React from 'react'
 
 export default function ClientePagamentoCartaoScreen() {
   const { navigate } = useNavigate()
@@ -149,41 +150,41 @@ export default function ClientePagamentoCartaoScreen() {
 
           </View>
           <View className='mt-4 mb-6'>
-            <InputMascaraPaper
+            <InputOutlined
               maxLength={19}
               value={numeroCartao}
               label='Número do cartão'
-              keyboardType={'number-pad'}
-              onChangeText={(text: any) => handleNumeroCartao(text)}
+              keyboardType='number-pad'
+              onChange={handleNumeroCartao}
             />
             <InputOutlined
               mt={8}
               label='CVC'
               maxLength={3}
               onChange={setCvc}
-              keyboardType={'number-pad'}
-            />
-            <InputMascaraPaper
-              mt={8}
-              value={data}
-              maxLength={5}
-              keyboardType={'number-pad'}
-              label='Data de validade (MM/AA)'
-              onChangeText={(text: any) => handleDataMask(text)}
+              keyboardType='number-pad'
             />
             <InputOutlined
               mt={8}
-              keyboardType={''}
+              value={data}
+              maxLength={5}
+              keyboardType='number-pad'
+              label='Data de validade (MM/AA)'
+              onChange={handleDataMask}
+            />
+            <InputOutlined
+              mt={8}
+              keyboardType='default'
               onChange={setNome}
               label='Nome no cartão'
             />
-            <InputMascaraPaper
+            <InputOutlined
               mt={8}
               maxLength={18}
               value={cpfTitular}
-              keyboardType={'number-pad'}
+              keyboardType='number-pad'
               label='CPF/CNPJ do titular do cartão'
-              onChangeText={(text: any) => handleCPFMask(text)}
+              onChange={handleCPFMask}
             />
           </View>
           <FilledButton

@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { useEffect, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import Toast from 'react-native-toast-message'
 import { colors } from '../../../../../styles/colors'
 import H5 from '../../../../../components/typography/H5'
@@ -11,9 +11,16 @@ import InputOutlined from '../../../../../components/forms/InputOutlined'
 import HeaderPrimary from '../../../../../components/header/HeaderPrimary'
 import { useDadosPagamento } from '../../../../../stores/useDadosPagamento'
 import ModalTemplate from '../../../../../components/Modals/ModalTemplate'
-import InputMascaraPaper from '../../../../../components/forms/InputMascaraPaper'
 import MainLayoutAutenticado from '../../../../../components/layout/MainLayoutAutenticado'
-import { Platform, ScrollView, Text, TouchableOpacity, View } from 'react-native'
+import {
+  FlatList,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native'
 
 
 export default function ClientePagamentoEndereco() {
@@ -31,38 +38,41 @@ export default function ClientePagamentoEndereco() {
   const [errorCidade, setErrorCidade] = useState(false)
   const [modalCidade, setModalCidade] = useState(false)
   const [loading, setLoading] = useState(false)
-  const [listaEstados, setListaEstados] = useState([])
+  const [listaEstados, setListaEstados] = useState<any[]>([])
   const [estadoSelecionado, setEstadoSelecionado] = useState('')
-  const estados = [
-    "Acre",
-    "Alagoas",
-    "Amapá",
-    "Amazonas",
-    "Bahia",
-    "Ceará",
-    "Distrito Federal",
-    "Espírito Santo",
-    "Goiás",
-    "Maranhão",
-    "Mato Grosso",
-    "Mato Grosso do Sul",
-    "Minas Gerais",
-    "Pará",
-    "Paraíba",
-    "Paraná",
-    "Pernambuco",
-    "Piauí",
-    "Rio de Janeiro",
-    "Rio Grande do Norte",
-    "Rio Grande do Sul",
-    "Rondônia",
-    "Roraima",
-    "Santa Catarina",
-    "São Paulo",
-    "Sergipe",
-    "Tocantins"
-  ]
+  const [buscaEstado, setBuscaEstado] = useState('')
+  const [buscaCidade, setBuscaCidade] = useState('')
   const { dadosPagamento, setDadosPagamento } = useDadosPagamento()
+
+  const estadosOrdenados = useMemo(
+    () => [...listaEstados].sort((a, b) => a.nome.localeCompare(b.nome)),
+    [listaEstados]
+  )
+  const estadosFiltrados = useMemo(
+    () =>
+      buscaEstado.trim()
+        ? estadosOrdenados.filter(
+          (e) =>
+            e.nome.toLowerCase().includes(buscaEstado.toLowerCase()) ||
+            e.sigla.toLowerCase().includes(buscaEstado.toLowerCase())
+        )
+        : estadosOrdenados,
+    [estadosOrdenados, buscaEstado]
+  )
+
+  const cidadesOrdenadas = useMemo(
+    () => [...listaCidades].sort((a: any, b: any) => a.nome.localeCompare(b.nome)),
+    [listaCidades]
+  )
+  const cidadesFiltradas = useMemo(
+    () =>
+      buscaCidade.trim()
+        ? cidadesOrdenadas.filter((c: any) =>
+          c.nome.toLowerCase().includes(buscaCidade.toLowerCase())
+        )
+        : cidadesOrdenadas,
+    [cidadesOrdenadas, buscaCidade]
+  )
 
   const handleCEPChange = (text: string) => {
     const cleanedText = text.replace(/\D/g, '');
@@ -198,15 +208,37 @@ export default function ClientePagamentoEndereco() {
 
   function openModalCidades() {
     if (uf) {
+      setBuscaCidade('')
       getCidades()
       setModalCidade(true)
     } else {
       Toast.show({
         type: 'error',
-        text1: 'Selecione o seu Estado(UF) !',
-      });
+        text1: 'Selecione o estado (UF) primeiro',
+      })
       setErrorEstado(true)
     }
+  }
+
+  function openModalUf() {
+    setBuscaEstado('')
+    setModalUf(true)
+  }
+
+  function selecionarEstado(item: { sigla: string; nome: string }) {
+    setEstado(item.nome)
+    setUf(item.sigla)
+    setEstadoSelecionado(item.sigla)
+    setCidade('')
+    setErrorEstado(false)
+    setModalUf(false)
+    getCidades()
+  }
+
+  function selecionarCidade(item: { nome: string }) {
+    setCidade(item.nome)
+    setErrorCidade(false)
+    setModalCidade(false)
   }
 
   useEffect(() => {
@@ -216,58 +248,118 @@ export default function ClientePagamentoEndereco() {
 
   return (
     <MainLayoutAutenticado loading={loading} marginTop={0} marginHorizontal={0}>
-      <ModalTemplate onClose={() => setModalUf(false)} visible={modalUf}>
-        <View className=''>
-          <Text className='text-xl font-bold mt-4'>Selecione o seu Estado(UF):</Text>
-          <ScrollView className='w-full h-40'>
-            {listaEstados && listaEstados
-              .sort((a: any, b: any) => a.nome.localeCompare(b.nome))
-              .map((item: any, index: any) => (
-                <TouchableOpacity
-                  className=' rounded-md my-1 px-2 py-2'
-                  style={{
-                    backgroundColor: colors.primary90
-                  }}
-                  key={index}
-                  onPress={() => {
-                    setEstado(item.nome)
-                    setCidade('')
-                    setErrorEstado(false)
-                    setUf(item.sigla)
-                    setModalUf(false)
-                    getCidades()
-                  }}
-                >
-                  <Text className='text-md font-semibold'>{item.nome} - ({item.sigla})</Text>
-                </TouchableOpacity>
-              ))
+      <ModalTemplate
+        onClose={() => { }}
+        closeSecondary={true}
+        visible={modalUf}
+        padding={16}
+      >
+        <View style={styles.modalBox}>
+          <View style={styles.modalTitle}>
+            <H5>Selecione o estado (UF)</H5>
+          </View>
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Buscar por estado ou sigla..."
+            placeholderTextColor={colors.neutralvariant60}
+            value={buscaEstado}
+            onChangeText={setBuscaEstado}
+          />
+          <FlatList
+            data={estadosFiltrados}
+            keyExtractor={(item) => item.id.toString()}
+            style={styles.list}
+            keyboardShouldPersistTaps="handled"
+            ListEmptyComponent={
+              <Text style={styles.emptyText}>Nenhum estado encontrado</Text>
             }
-          </ScrollView>
+            renderItem={({ item }) => (
+              <TouchableOpacity
+                style={[styles.item, uf === item.sigla && styles.itemSelected]}
+                onPress={() => selecionarEstado(item)}
+                activeOpacity={0.7}
+              >
+                <Text
+                  style={[
+                    styles.itemText,
+                    uf === item.sigla && styles.itemTextSelected,
+                  ]}
+                >
+                  {item.nome} ({item.sigla})
+                </Text>
+              </TouchableOpacity>
+            )}
+          />
+          <TouchableOpacity
+            style={styles.modalVoltarButton}
+            onPress={() => {
+              setModalUf(false)
+              setBuscaEstado('')
+            }}
+            activeOpacity={0.7}
+          >
+            <Text style={styles.modalVoltarText}>Voltar</Text>
+          </TouchableOpacity>
         </View>
       </ModalTemplate>
-      <ModalTemplate onClose={() => setModalCidade(false)} visible={modalCidade}>
-        <View className=''>
-          <Text className='text-xl font-bold mt-4'>Selecione o sua cidade:</Text>
-          <ScrollView className='w-full h-40'>
-            {listaCidades && listaCidades
-              .sort((a: any, b: any) => a.nome.localeCompare(b.nome))
-              .map((item: any, index: any) => (
-                <TouchableOpacity
-                  className=' rounded-md my-1 px-2 py-2'
-                  style={{
-                    backgroundColor: colors.primary90
-                  }}
-                  key={index}
-                  onPress={() => {
-                    setCidade(item.nome)
-                    setModalCidade(false)
-                  }}
-                >
-                  <Text className='text-md font-semibold'>{item.nome}</Text>
-                </TouchableOpacity>
-              ))
+      <ModalTemplate
+        closeSecondary={true}
+        onClose={() => {
+          setModalCidade(false)
+          setBuscaCidade('')
+        }}
+        visible={modalCidade}
+        padding={16}
+      >
+        <View style={styles.modalBox}>
+          <View style={styles.modalTitle}>
+            <H5>Selecione a cidade</H5>
+          </View>
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Buscar por cidade..."
+            placeholderTextColor={colors.neutralvariant60}
+            value={buscaCidade}
+            onChangeText={setBuscaCidade}
+          />
+          <FlatList
+            data={cidadesFiltradas}
+            keyExtractor={(item: any) => item.id.toString()}
+            style={styles.list}
+            keyboardShouldPersistTaps="handled"
+            ListEmptyComponent={
+              <Text style={styles.emptyText}>Nenhuma cidade encontrada</Text>
             }
-          </ScrollView>
+            renderItem={({ item }: { item: any }) => (
+              <TouchableOpacity
+                style={[
+                  styles.item,
+                  cidade === item.nome && styles.itemSelected,
+                ]}
+                onPress={() => selecionarCidade(item)}
+                activeOpacity={0.7}
+              >
+                <Text
+                  style={[
+                    styles.itemText,
+                    cidade === item.nome && styles.itemTextSelected,
+                  ]}
+                >
+                  {item.nome}
+                </Text>
+              </TouchableOpacity>
+            )}
+          />
+          <TouchableOpacity
+            style={styles.modalVoltarButton}
+            onPress={() => {
+              setModalCidade(false)
+              setBuscaCidade('')
+            }}
+            activeOpacity={0.7}
+          >
+            <Text style={styles.modalVoltarText}>Voltar</Text>
+          </TouchableOpacity>
         </View>
       </ModalTemplate>
       <ScrollView>
@@ -276,17 +368,18 @@ export default function ClientePagamentoEndereco() {
           <View>
             <H5>Endereço de cobrança</H5>
             <View className='my-4'>
-              <InputMascaraPaper
+              <InputOutlined
                 mt={8}
                 label='CEP'
                 required
                 value={cep}
-                keyboardType={'number-pad'}
-                onChangeText={handleCEPChange}
+                maxLength={9}
+                keyboardType='number-pad'
+                onChange={handleCEPChange}
                 onBlur={handleCep}
               />
               <View className='w-full mt-4'>
-                <TouchableOpacity onPress={() => setModalUf(true)}>
+                <TouchableOpacity onPress={openModalUf}>
                   <View
                     style={{ borderColor: errorEstado ? '#f01' : '#49454F' }}
                     className='bg-white text-base overflow-scroll justify-center border-solid border-[1px] rounded-md h-[52px] pl-2'>
@@ -340,5 +433,68 @@ export default function ClientePagamentoEndereco() {
         <View className='w-full h-[440px]' />
       </ScrollView>
     </MainLayoutAutenticado>
-  );
+  )
 }
+
+const styles = StyleSheet.create({
+  modalBox: {
+    minWidth: 280,
+    maxHeight: 420,
+  },
+  modalTitle: {
+    marginBottom: 12,
+  },
+  searchInput: {
+    borderWidth: 1,
+    borderColor: colors.neutralvariant80,
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontSize: 16,
+    color: colors.neutral10,
+    marginBottom: 12,
+  },
+  list: {
+    maxHeight: 300,
+  },
+  item: {
+    backgroundColor: colors.primary90,
+    borderRadius: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    marginBottom: 6,
+  },
+  itemSelected: {
+    backgroundColor: colors.primary80,
+    borderWidth: 1,
+    borderColor: colors.primary40,
+  },
+  itemText: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: colors.neutral10,
+  },
+  itemTextSelected: {
+    fontWeight: '600',
+    color: colors.primary20,
+  },
+  emptyText: {
+    fontSize: 15,
+    color: colors.neutralvariant60,
+    textAlign: 'center',
+    paddingVertical: 24,
+  },
+  modalVoltarButton: {
+    marginTop: 12,
+    paddingVertical: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.neutralvariant90,
+    borderRadius: 8,
+  },
+  modalVoltarText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: colors.neutral10,
+  },
+})
