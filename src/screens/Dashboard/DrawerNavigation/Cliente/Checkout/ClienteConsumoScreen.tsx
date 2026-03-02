@@ -1,4 +1,4 @@
-import { Text, View } from 'react-native'
+import { Text, View, StyleSheet } from 'react-native'
 import { useEffect, useState } from 'react'
 import { api } from '../../../../../service/api'
 import { colors } from '../../../../../styles/colors'
@@ -189,33 +189,23 @@ export default function ClienteConsumoScreen() {
         </View>
 
         <View className='mt-8'>
-          <H3 color={colors.tertiary20} >Extrato Completo</H3>
+          <H3 color={colors.tertiary20}>Extrato Completo</H3>
         </View>
-        <View className='mt-2'>
+        <View className='mt-3'>
           {dadosConsumo && (() => {
             const agrupado = agruparPorMes(dadosConsumo.extrato);
-
-            return Object.entries(agrupado).map(([mes, extratos]: any) => (
-              <View key={mes} className="mb-3">
-                <View className='w-full bg-gray-400 h-[1px]' />
-                <Text className="text-lg text-center font-bold">{mes}</Text>
-                <View className='w-full bg-gray-400 h-[1px]' />
-
-                {extratos.map((extrato: any, index: any) => (
-                  <View key={index} className="mt-3">
-                    <Paragrafo title={`Data: ${dataFormatada(extrato.data)}`} />
-                    <View
-                      className="mt-2 border-solid border-2 px-2 py-4 rounded-xl"
-                      style={{ borderColor: colors.secondary70 }}
-                    >
-                      <H3 color={colors.secondary20}>{formatarMoeda(extrato.total)}</H3>
-                      <View className='w-full h-2' />
-                      <H1 fontWeight={'bold'} fontsize={16} title={`Status:`} />
-                      <Paragrafo title={`${extrato.status}`} />
-                      <View className='w-full h-1' />
-                      <H1 fontWeight={'bold'} fontsize={16} title={`Forma de pagamento:`} />
-                      <Paragrafo title={`${extrato.forma_pagamento}`} />
+            return Object.entries(agrupado).map(([mes, extratos]) => (
+              <View key={mes} style={styles.mesBlock}>
+                <Text style={styles.mesLabel}>{mes}</Text>
+                {(extratos as any[]).map((extrato: any, index: number) => (
+                  <View key={`${extrato.id ?? index}-${extrato.data}`} style={styles.miniCard}>
+                    <View style={styles.miniCardRow}>
+                      <Text style={styles.miniCardData}>{dataFormatada(extrato.data)}</Text>
+                      <Text style={styles.miniCardValor}>{formatarMoeda(extrato.total)}</Text>
                     </View>
+                    <Text style={styles.miniCardDetalhe}>
+                      {extrato.status} • {extrato.forma_pagamento}
+                    </Text>
                   </View>
                 ))}
               </View>
@@ -225,5 +215,48 @@ export default function ClienteConsumoScreen() {
 
       </View>
     </MainLayoutAutenticado>
-  );
+  )
 }
+
+const styles = StyleSheet.create({
+  mesBlock: {
+    marginBottom: 20,
+  },
+  mesLabel: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: colors.neutralvariant60,
+    textTransform: 'capitalize',
+    marginBottom: 8,
+    paddingLeft: 2,
+  },
+  miniCard: {
+    backgroundColor: colors.neutral99,
+    borderRadius: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    marginBottom: 6,
+    borderWidth: 1,
+    borderColor: colors.neutralvariant90,
+  },
+  miniCardRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  miniCardData: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: colors.neutral10,
+  },
+  miniCardValor: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: colors.tertiary20,
+  },
+  miniCardDetalhe: {
+    fontSize: 12,
+    color: colors.neutralvariant60,
+    marginTop: 4,
+  },
+})
