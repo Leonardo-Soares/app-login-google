@@ -26,6 +26,7 @@ export default function ClientePerfilCategoriaScreen() {
   const screenWidth = Dimensions.get('window').width;
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [listaCategorias, setListaCategorias] = useState([]);
+  const [listaCategoriasSelecionadas, setListaCategoriasSelecionadas] = useState([]);
   const [listaCategoriasPerfil, setListaCategoriasPerfil] = useState([]);
   const [selectedOptions, setSelectedOptions] = useState<any[]>([]);
   const [originalSelectedOptions, setOriginalSelectedOptions] = useState<any[]>(
@@ -54,11 +55,50 @@ export default function ClientePerfilCategoriaScreen() {
   };
 
   async function getCategorias() {
+     const jsonValue = await AsyncStorage.getItem('infos-user');
+    if (jsonValue) {
+      const newJson = JSON.parse(jsonValue);
+      try {
+        const response = await api.get('/anunciante/categorias-selecionadas',
+        {
+          headers: {
+            Authorization: `Bearer ${newJson.token}`,
+          }
+        }
+        );
+        
+        setListaCategorias(response.data.results);
+      } catch (error: any) {
+        console.log('Erro ao buscar categorias', error.response.data);
+      }
+    }
+  }
+
+  async function getCategoriasSelecionadas() {
     try {
-      const response = await api.get('/categorias/cadastro');
-      setListaCategorias(response.data.results);
+      const jsonValue = await AsyncStorage.getItem('infos-user');
+      let headers = {};
+      if (jsonValue) {
+        const newJson = JSON.parse(jsonValue);
+        headers = { Authorization: `Bearer ${newJson.token}` };
+      }
+      const response = await api.get('/categorias', { headers });
+      const selecionadas = response.data.results || [];
+      setListaCategoriasSelecionadas(selecionadas);
+
+      const idsSelecionados = selecionadas
+        .map((cat: any) => {
+          if (typeof cat === 'number' || typeof cat === 'string') return cat;
+          if (cat?.categoria_id != null) return cat.categoria_id;
+          if (cat?.id != null) return cat.id;
+          return null;
+        })
+        .filter((id: any) => id != null);
+
+      setSelectedOptions(idsSelecionados);
+      setOriginalSelectedOptions(idsSelecionados);
     } catch (error: any) {
-      console.log('Erro ao buscar categorias', error.response.data);
+      console.log('Erro ao buscar categorias selecionadas', error.response?.data || error.message);
     }
   }
 
@@ -75,13 +115,15 @@ export default function ClientePerfilCategoriaScreen() {
           { categorias: selectedOptions },
           { headers }
         );
-        // navigate('ClientePerfilScreen')
+        console.log('Categorias Enviada', selectedOptions);
+        navigate('ClientePerfilScreen')
         Toast.show({
           type: 'success',
           text1: 'Categorias atualizadas!',
         });
         setNeedSave(false);
         getPerfil();
+        getCategoriasSelecionadas();
       } catch (error: any) {
         console.log('ERROR POST Atualizar Categorias', error.response.data);
       }
@@ -112,8 +154,10 @@ export default function ClientePerfilCategoriaScreen() {
           })
           .filter((id: any) => id != null);
 
-        setSelectedOptions(idsSelecionados);
-        setOriginalSelectedOptions(idsSelecionados);
+        // A população de selectedOptions e originalSelectedOptions
+        // agora é feita pelo método getCategoriasSelecionadas
+        // setSelectedOptions(idsSelecionados);
+        // setOriginalSelectedOptions(idsSelecionados);
       } catch (error: any) {
         console.log('Error GET Perfil: ', error.response.data);
       }
@@ -192,6 +236,7 @@ export default function ClientePerfilCategoriaScreen() {
   useEffect(() => {
     getPerfil();
     getCategorias();
+    getCategoriasSelecionadas()
   }, []);
 
   useEffect(() => {

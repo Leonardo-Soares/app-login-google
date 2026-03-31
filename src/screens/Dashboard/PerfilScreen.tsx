@@ -31,6 +31,8 @@ export default function PerfilScreen() {
       const newJson = JSON.parse(jsonValue)
       try {
         const response = await api.get(`/perfil/pessoa-fisica/${newJson.id}`)
+        console.log('response', response.data.results);
+
         setNomeCompleto(response.data.results.nome_completo)
         setEmail(response.data.results.email)
         setEndereco(response.data.results.endereco)
@@ -113,7 +115,7 @@ export default function PerfilScreen() {
         <View className="mb-4">
           <ButtonPerfil
             onPress={() => { }}
-            title={editar ? 'Editando perfil' : 'Perfil'}
+            title={editar ? 'Editando Perfil' : 'Perfil'}
             fontsize={24}
             image={require('../../../assets/img/icons/edit.png')}
           />

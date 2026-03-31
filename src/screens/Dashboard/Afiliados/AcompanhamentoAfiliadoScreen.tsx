@@ -15,7 +15,7 @@ import axios from 'axios'
 import { Ionicons } from '@expo/vector-icons'
 import ModalTemplate from '@components/Modals/ModalTemplate'
 
-const TERMOS_AFILIADO_URL = 'https://www.discontapp.com.br/termo-de-uso-de-afiliados.pdf'
+const TERMOS_AFILIADO_URL = 'https://discontapp.com.br/termo-de-uso-de-afiliados.pdf'
 
 export default function AcompanhamentoAfiliadoScreen() {
   const isFocused = useIsFocused()
@@ -36,7 +36,7 @@ export default function AcompanhamentoAfiliadoScreen() {
       }
 
       try {
-        const response = await axios.post('https://www.backend.discontapp.com.br/api/afiliados/verificar-status', formData, { headers })
+        const response = await axios.post('https://backend.discontapp.com.br/api/afiliados/verificar-status', formData, { headers })
 
         // Se o status for aprovado, salva os dados no estado
         if (response.data.data && response.data.data.status_aprovacao === 'aprovado') {
@@ -169,7 +169,7 @@ export default function AcompanhamentoAfiliadoScreen() {
 
   return (
     <MainLayoutAutenticado notScroll={false} loading={false} marginTop={24} marginHorizontal={16}>
-      <View className='flex-1 mt-12'>
+      <View className='flex-1 mt-24'>
         {dadosAfiliado ? (
           <>
             <View className='mb-6 items-center'>

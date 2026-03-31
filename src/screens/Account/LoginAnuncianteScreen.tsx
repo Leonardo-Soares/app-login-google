@@ -86,7 +86,7 @@ export default function LoginAnuncianteScreen() {
         type: 'error',
         text1: error?.response?.data?.message ?? 'Ocorreu um erro, tente novamente!',
       })
-      console.log('ERROR Login: ', error)
+      console.error('ERROR Login: ', error)
     }
     setLoading(false)
   }

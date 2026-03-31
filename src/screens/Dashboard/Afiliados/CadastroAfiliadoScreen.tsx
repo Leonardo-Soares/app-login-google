@@ -18,7 +18,7 @@ import Clipboard from '@react-native-clipboard/clipboard'
 import ModalTemplate from '@components/Modals/ModalTemplate'
 import { Ionicons } from '@expo/vector-icons'
 
-const TERMOS_AFILIADO_URL = 'https://www.discontapp.com.br/termo-de-uso-de-afiliados.pdf'
+const TERMOS_AFILIADO_URL = 'https://discontapp.com.br/termo-de-uso-de-afiliados.pdf'
 
 export default function CadastroAfiliadoScreen() {
   const isFocused = useIsFocused()

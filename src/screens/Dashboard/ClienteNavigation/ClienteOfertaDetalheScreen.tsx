@@ -60,8 +60,8 @@ export default function ClienteOfertaDetalheScreen({ route }: { route?: any }) {
     try {
       const options = {
         title: 'Compartilhar Link e Texto',
-        message: `Confira esse cupom que achei no app Discontapp: https://www.discontapp.com.br/desconto/${idOferta}`,
-        url: `https://www.discontapp.com.br/desconto/${idOferta}`,
+        message: `Confira esse cupom que achei no app Discontapp: https://discontapp.com.br/desconto/${idOferta}`,
+        url: `https://discontapp.com.br/desconto/${idOferta}`,
       };
 
       await Share.share(options);
