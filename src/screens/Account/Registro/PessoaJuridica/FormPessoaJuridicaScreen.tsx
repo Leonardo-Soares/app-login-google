@@ -112,6 +112,7 @@ export default function FormPessoaJuridicaScreen({
   const [errorLocalizacao, setErrorLocalizacao] = useState('');
   const [modalLocalizacao, setModalLocalizacao] = useState(false);
   const [modalAviso, setModalAviso] = useState(false);
+  const [codigoAfiliado, setCodigoAfiliado] = useState('');
 
   async function validaCampos() {
     setModalAviso(false);
@@ -347,6 +348,7 @@ export default function FormPessoaJuridicaScreen({
       cep: novoCep,
       cidade: cidade,
       estado: estado,
+      codigo_afiliado: codigoAfiliado,
     };
 
     navigate('FormPerfilScreen', dataForm);
@@ -824,6 +826,41 @@ export default function FormPessoaJuridicaScreen({
           label="Adicionar logomarca"
           labelWithImage="Toque para alterar"
         />
+        <View
+          style={{
+            marginTop: 16,
+            padding: 14,
+            borderRadius: 14,
+            borderWidth: 2,
+            borderColor: colors.primary40,
+            backgroundColor: colors.primary90,
+          }}
+        >
+          <Text
+            style={{
+              fontSize: 16,
+              fontWeight: '700',
+              color: colors.primary20,
+            }}
+          >
+            Código de afiliado
+          </Text>
+          <Caption color={colors.neutralvariant50} margintop={6} fontSize={13}>
+            Se você foi indicado por um afiliado, informe o código aqui. Campo opcional.
+          </Caption>
+          <InputOutlinedCadastro
+            mt={10}
+            label="Código"
+            value={codigoAfiliado}
+            maxLength={40}
+            placeholder="Ex.: ABC123"
+            keyboardType="default"
+            uppercase="characters"
+            onChange={(text: string) =>
+              setCodigoAfiliado(text.replace(/\s/g, '').toUpperCase())
+            }
+          />
+        </View>
         <InputOutlinedCadastro
           mt={8}
           required
