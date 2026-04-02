@@ -51,7 +51,7 @@ export default function FormPerfilScreen({ route }: { route: any }) {
     formdata.append('perfil_id', `${categoriaIdString}`)
     formdata.append('latitude', infoForm.latitude as any)
     formdata.append('longitude', infoForm.longitude as any)
-    formdata.append('codigo_afiliado', "AFCC6917ED")
+    formdata.append('codigo_afiliado', infoForm.codigo_afiliado as any)
 
     if (infoForm?.logomarca) {
       if (infoForm?.logomarca?.path != undefined && infoForm?.logomarca?.path != '') {

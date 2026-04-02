@@ -1,16 +1,17 @@
 import { api } from '../../../service/api'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import Toast from 'react-native-toast-message'
 import { colors } from '../../../styles/colors'
 import H5 from '../../../components/typography/H5'
 import H3 from '../../../components/typography/H3'
 import MapView, { Marker } from 'react-native-maps'
+import type { Region } from 'react-native-maps'
 import { useIsFocused } from '@react-navigation/native'
 import { useNavigate } from '../../../hooks/useNavigate'
 import Geolocation from '@react-native-community/geolocation'
 import { requestForegroundPermissionsAsync } from 'expo-location'
 import FilledButton from '../../../components/buttons/FilledButton'
-import { View, Platform, PermissionsAndroid } from 'react-native'
+import { View, Platform, PermissionsAndroid, StyleSheet } from 'react-native'
 import HeaderPrimary from '../../../components/header/HeaderPrimary'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import MainLayoutAutenticado from '../../../components/layout/MainLayoutAutenticado'
@@ -20,9 +21,27 @@ interface ILocalizacao {
   longitude: number
 }
 
+const DEFAULT_REGION: Region = {
+  latitude: -15.7942,
+  longitude: -47.8822,
+  latitudeDelta: 0.2,
+  longitudeDelta: 0.2,
+}
+
+function coordenadasValidas(lat: number, lng: number) {
+  return (
+    Number.isFinite(lat) &&
+    Number.isFinite(lng) &&
+    Math.abs(lat) <= 90 &&
+    Math.abs(lng) <= 180 &&
+    !(lat === 0 && lng === 0)
+  )
+}
+
 export default function ClienteAtualizaLocal() {
   const { goBack } = useNavigate()
   const isFocused = useIsFocused()
+  const mapRef = useRef<MapView>(null)
   const [regiao, setRegiao] = useState<any>()
   const [loading, setLoading] = useState(false)
   const [inputLatitude, setInputLatitude] = useState('')
@@ -156,6 +175,26 @@ export default function ClienteAtualizaLocal() {
 
   }
 
+  const regiaoMapa = useMemo((): Region => {
+    if (coordenadasValidas(localizacao.latitude, localizacao.longitude)) {
+      return {
+        latitude: localizacao.latitude,
+        longitude: localizacao.longitude,
+        latitudeDelta: 0.2,
+        longitudeDelta: 0.2,
+      }
+    }
+    if (localizacaoGPS) {
+      return {
+        latitude: localizacaoGPS.latitude,
+        longitude: localizacaoGPS.longitude,
+        latitudeDelta: 0.2,
+        longitudeDelta: 0.2,
+      }
+    }
+    return DEFAULT_REGION
+  }, [localizacao, localizacaoGPS])
+
   useEffect(() => {
     setInputLatitude(regiao?.latitude)
     setInputLongitude(regiao?.longitude)
@@ -175,6 +214,32 @@ export default function ClienteAtualizaLocal() {
     }
   }, [])
 
+  useEffect(() => {
+    if (coordenadasValidas(localizacao.latitude, localizacao.longitude)) {
+      setRegiao({
+        latitude: localizacao.latitude,
+        longitude: localizacao.longitude,
+      })
+    }
+  }, [localizacao])
+
+  useEffect(() => {
+    if (coordenadasValidas(localizacao.latitude, localizacao.longitude)) return
+    if (!localizacaoGPS) return
+    setRegiao((prev: any) => {
+      if (prev) return prev
+      return {
+        latitude: localizacaoGPS.latitude,
+        longitude: localizacaoGPS.longitude,
+      }
+    })
+  }, [localizacao, localizacaoGPS])
+
+  useEffect(() => {
+    if (!mapRef.current) return
+    mapRef.current.animateToRegion(regiaoMapa, 400)
+  }, [regiaoMapa.latitude, regiaoMapa.longitude])
+
   return (
     <MainLayoutAutenticado loading={loading} marginTop={0} marginHorizontal={0}>
       <HeaderPrimary titulo='Atualizar empreendimento' />
@@ -182,57 +247,62 @@ export default function ClienteAtualizaLocal() {
         <View className='my-4 mx-6'>
           <H5>Clique em qualquer parte do mapa e arraste para posição desejada</H5>
         </View>
-        {localizacaoGPS &&
+        <View style={styles.mapContainer}>
           <MapView
-            initialRegion={{
-              latitudeDelta: 0.200,
-              longitudeDelta: 0.200,
-              latitude: localizacaoGPS?.latitude,
-              longitude: localizacaoGPS?.longitude,
-            }}
+            ref={mapRef}
+            style={styles.map}
+            initialRegion={regiaoMapa}
             zoomEnabled
             loadingEnabled
             showsTraffic={false}
-            zoomTapEnabled={true}
+            zoomTapEnabled
             showsBuildings={false}
-            className='w-full h-full'
             onPress={(event) => setRegiao(event.nativeEvent.coordinate as any)}
           >
-            {regiao &&
+            {regiao && (
               <Marker
                 coordinate={{
                   latitude: regiao.latitude,
-                  longitude: regiao.longitude
+                  longitude: regiao.longitude,
                 }}
                 draggable
+                onDragEnd={(e) => setRegiao(e.nativeEvent.coordinate as any)}
                 pinColor={'#5D35F1'}
                 anchor={{ x: 0.69, y: 1 }}
                 title='Nova localização marcada'
                 centerOffset={{ x: -18, y: -60 }}
               />
-            }
+            )}
           </MapView>
-        }
-        {!localizacao &&
-          <View className='mx-4 mt-12'>
-            <H3 align={'center'} color={colors.error30}>Para visualizar o mapa, é preciso conceder acesso à sua localização. Por favor, vá para as configurações do dispositivo e habilite o acesso à localização.</H3>
-          </View>
-        }
-        {permission === false &&
-          <View className='mx-4 mt-12'>
-            <H3 align={'center'} color={colors.error30}>Para visualizar o mapa, é preciso conceder acesso à sua localização. Por favor, vá para as configurações do dispositivo e habilite o acesso à localização.</H3>
-          </View>
-        }
-      </View>
-      {localizacaoGPS &&
-        <View className='mt-6 mx-6'>
-          <FilledButton
-            title='Atualizar'
-            onPress={postPerfil}
-            disabled={inputLatitude?.length <= 4 || inputLatitude?.length <= 4 ? true : false}
-          />
         </View>
-      }
+        {permission === false && (
+          <View className='mx-4 mt-12'>
+            <H3 align={'center'} color={colors.error30}>
+              Para visualizar o mapa, é preciso conceder acesso à sua localização. Por favor, vá para as configurações do dispositivo e habilite o acesso à localização.
+            </H3>
+          </View>
+        )}
+      </View>
+      <View className='mt-6 mx-6'>
+        <FilledButton
+          title='Atualizar'
+          onPress={postPerfil}
+          disabled={inputLatitude?.length <= 4 || inputLatitude?.length <= 4 ? true : false}
+        />
+      </View>
     </MainLayoutAutenticado >
   );
 }
+
+const styles = StyleSheet.create({
+  mapContainer: {
+    flex: 1,
+    minHeight: 280,
+    width: '100%',
+  },
+  map: {
+    flex: 1,
+    width: '100%',
+    minHeight: 280,
+  },
+})
