@@ -32,7 +32,7 @@ import {
   PermissionsAndroid,
   Modal,
   ScrollView,
-  Linking
+  Linking,
 } from 'react-native';
 import InputOutlinedCadastro from '@components/forms/InputOutlinedCadastro';
 import InputOutlined from '@components/forms/InputOutlined';
@@ -42,6 +42,34 @@ import Spacing from '@components/layout/Spacing';
 interface ILocalizacao {
   latitude: number;
   longitude: number;
+}
+
+function coordenadasValidas(lat: number, lng: number) {
+  return (
+    Number.isFinite(lat) &&
+    Number.isFinite(lng) &&
+    Math.abs(lat) <= 90 &&
+    Math.abs(lng) <= 180 &&
+    !(lat === 0 && lng === 0)
+  );
+}
+
+/** Prioridade: ponto escolhido no mapa → região (ex.: CEP) → GPS */
+function coordenadasParaSalvar(
+  nova: ILocalizacao,
+  regiao: { latitude: number; longitude: number } | null,
+  loc: { latitude: number; longitude: number } | null
+): { latitude: number; longitude: number } | null {
+  if (coordenadasValidas(nova.latitude, nova.longitude)) {
+    return { latitude: nova.latitude, longitude: nova.longitude };
+  }
+  if (regiao && coordenadasValidas(regiao.latitude, regiao.longitude)) {
+    return { latitude: regiao.latitude, longitude: regiao.longitude };
+  }
+  if (loc && coordenadasValidas(loc.latitude, loc.longitude)) {
+    return { latitude: loc.latitude, longitude: loc.longitude };
+  }
+  return null;
 }
 
 export default function FormPessoaJuridicaScreen({
@@ -324,6 +352,20 @@ export default function FormPessoaJuridicaScreen({
     setModalAviso(false)
     setModalLocalizacao(false)
 
+    const coordsFinal = coordenadasParaSalvar(
+      novaLocalizacao,
+      regiao,
+      localizacao
+    );
+    if (!coordsFinal) {
+      Toast.show({
+        type: 'error',
+        text1: 'Selecione a localização do seu estabelecimento no mapa.',
+      });
+      setModalLocalizacao(true);
+      return;
+    }
+
     const novoCnpj = RemoveCaracteres({ text: cnpj });
     const novoTelefone = RemoveCaracteres({ text: telefone });
     const novoCpf = RemoveCaracteres({ text: cpfRepresetante });
@@ -342,8 +384,8 @@ export default function FormPessoaJuridicaScreen({
       rua: rua,
       bairro: bairro,
       numero: numero,
-      latitude: novaLocalizacao.latitude ?? '',
-      longitude: novaLocalizacao.longitude ?? '',
+      latitude: String(coordsFinal.latitude),
+      longitude: String(coordsFinal.longitude),
       logomarca: imagemEnvio,
       cep: novoCep,
       cidade: cidade,
@@ -410,10 +452,11 @@ export default function FormPessoaJuridicaScreen({
       setUf(response.data.state);
       setRua(response.data.street);
       setBairro(response.data.neighborhood);
-      setNovaLocalizacao({
-        latitude: parseFloat(response.data.location.coordinates.latitude),
-        longitude: parseFloat(response.data.location.coordinates.longitude),
-      });
+      const lat = parseFloat(response.data.location.coordinates.latitude);
+      const lng = parseFloat(response.data.location.coordinates.longitude);
+      if (coordenadasValidas(lat, lng)) {
+        setNovaLocalizacao({ latitude: lat, longitude: lng });
+      }
       // console.log('teste', {
       //   latitude: parseFloat(response.data.location.coordinates.latitude),
       //   longitude: parseFloat(response.data.location.coordinates.longitude),
@@ -706,7 +749,7 @@ export default function FormPessoaJuridicaScreen({
   }, []);
 
   useEffect(() => {
-    if (novaLocalizacao.latitude && novaLocalizacao.longitude) {
+    if (coordenadasValidas(novaLocalizacao.latitude, novaLocalizacao.longitude)) {
       setRegiao({
         latitude: novaLocalizacao.latitude,
         longitude: novaLocalizacao.longitude,
@@ -726,6 +769,21 @@ export default function FormPessoaJuridicaScreen({
     setModalLocalizacao(false);
     setModalAviso(true);
   }
+
+  const coordenadasPinMapa = coordenadasParaSalvar(
+    novaLocalizacao,
+    regiao,
+    localizacao
+  );
+  const coordenadasMarcador = coordenadasPinMapa ?? {
+    latitude: -1.445839,
+    longitude: -48.487557,
+  };
+
+  console.log('coordenadasMarcador', coordenadasMarcador);
+  console.log('novaLocalizacao', novaLocalizacao);
+  console.log('regiao', regiao);
+  console.log('localizacao', localizacao);
 
   return (
     <MainLayoutSecondary loading={loading}>
@@ -1091,18 +1149,15 @@ export default function FormPessoaJuridicaScreen({
                         })
                         : '';
                     }}
-                    // region={{
-                    //   latitude: regiao.latitude,
-                    //   longitude: regiao.longitude,
-                    //   latitudeDelta: 0.2,
-                    //   longitudeDelta: 0.2,
-                    // }}
                     initialRegion={{
                       latitude: regiao.latitude,
                       longitude: regiao.longitude,
                       latitudeDelta: 0.2,
                       longitudeDelta: 0.2,
                     }}
+                    onPress={(e) =>
+                      setNovaLocalizacao(e.nativeEvent.coordinate)
+                    }
                     style={{
                       height: 400,
                       width: '100%',
@@ -1113,15 +1168,8 @@ export default function FormPessoaJuridicaScreen({
                     showsTraffic={false}
                   >
                     <Marker
-                      coordinate={{
-                        latitude: novaLocalizacao.latitude ?? regiao.latitude,
-                        longitude: novaLocalizacao.longitude ?? regiao.longitude,
-                      }}
+                      coordinate={coordenadasMarcador}
                       onDragEnd={(event) => {
-                        // console.log(
-                        //   'Evento DragEnd:',
-                        //   event.nativeEvent.coordinate
-                        // );
                         setNovaLocalizacao(event.nativeEvent.coordinate);
                       }}
                       draggable
@@ -1153,18 +1201,15 @@ export default function FormPessoaJuridicaScreen({
                         })
                         : '';
                     }}
-                    region={{
-                      latitude: regiao.latitude,
-                      longitude: regiao.longitude,
-                      latitudeDelta: 0.2,
-                      longitudeDelta: 0.2,
-                    }}
                     initialRegion={{
                       latitude: regiao.latitude,
                       longitude: regiao.longitude,
                       latitudeDelta: 0.2,
                       longitudeDelta: 0.2,
                     }}
+                    onPress={(e) =>
+                      setNovaLocalizacao(e.nativeEvent.coordinate)
+                    }
                     zoomEnabled
                     style={{
                       height: 400,
@@ -1178,12 +1223,8 @@ export default function FormPessoaJuridicaScreen({
                     showsTraffic={false}
                   >
                     <Marker
-                      coordinate={{
-                        latitude: regiao.latitude,
-                        longitude: regiao.longitude,
-                      }}
+                      coordinate={coordenadasMarcador}
                       onDragEnd={(event) => {
-                        console.log(event.nativeEvent.coordinate);
                         setNovaLocalizacao(event.nativeEvent.coordinate);
                       }}
                       draggable
@@ -1276,6 +1317,9 @@ export default function FormPessoaJuridicaScreen({
                       latitudeDelta: 0.2,
                       longitudeDelta: 0.2,
                     }}
+                    onPress={(e) =>
+                      setNovaLocalizacao(e.nativeEvent.coordinate)
+                    }
                     style={{
                       height: 400,
                       width: '100%',
@@ -1286,15 +1330,8 @@ export default function FormPessoaJuridicaScreen({
                     showsTraffic={false}
                   >
                     <Marker
-                      coordinate={{
-                        latitude: localizacao.latitude,
-                        longitude: localizacao.longitude,
-                      }}
+                      coordinate={coordenadasMarcador}
                       onDragEnd={(event) => {
-                        // console.log(
-                        //   'Evento DragEnd:',
-                        //   event.nativeEvent.coordinate
-                        // );
                         setNovaLocalizacao(event.nativeEvent.coordinate);
                       }}
                       draggable
@@ -1326,13 +1363,14 @@ export default function FormPessoaJuridicaScreen({
                         })
                         : '';
                     }}
-                    initialRegion={
-                      {
-                        latitude: localizacao.latitude,
-                        longitude: localizacao.longitude,
-                        latitudeDelta: 0.2,
-                        longitudeDelta: 0.2,
-                      }
+                    initialRegion={{
+                      latitude: localizacao.latitude,
+                      longitude: localizacao.longitude,
+                      latitudeDelta: 0.2,
+                      longitudeDelta: 0.2,
+                    }}
+                    onPress={(e) =>
+                      setNovaLocalizacao(e.nativeEvent.coordinate)
                     }
                     zoomEnabled
                     style={{
@@ -1347,12 +1385,8 @@ export default function FormPessoaJuridicaScreen({
                     showsTraffic={false}
                   >
                     <Marker
-                      coordinate={{
-                        latitude: localizacao.latitude,
-                        longitude: localizacao.longitude,
-                      }}
+                      coordinate={coordenadasMarcador}
                       onDragEnd={(event) => {
-                        // console.log(event.nativeEvent.coordinate);
                         setNovaLocalizacao(event.nativeEvent.coordinate);
                       }}
                       draggable

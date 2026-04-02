@@ -103,6 +103,7 @@ export default function HomeClienteScreen() {
         }
         const response = await api.get(`/consumo`, { headers })
         setDadosConsumo(response.data.results)
+        console.log(response.data.results);
       }
     } catch (error: any) {
       console.log('ERROR GET - CONSUMO', error.response.data)

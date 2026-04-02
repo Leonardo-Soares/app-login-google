@@ -21,6 +21,19 @@ import CardProduto from '../../../../components/cards/CardProduto'
 import { api } from '../../../../service/api'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 
+/** Se o CNPJ tiver até 14 dígitos, aplica máscara XX.XXX.XXX/XXXX-XX; caso contrário exibe o valor original. */
+function formatarCnpjParaExibicao(valor: string | undefined): string {
+  if (valor == null || valor === '') return ''
+  const digits = String(valor).replace(/\D/g, '')
+  if (digits.length === 0) return String(valor).trim()
+  if (digits.length > 14) return String(valor).trim()
+  return digits
+    .replace(/(\d{2})(\d)/, '$1.$2')
+    .replace(/(\d{3})(\d)/, '$1.$2')
+    .replace(/(\d{3})(\d)/, '$1/$2')
+    .replace(/(\d{4})(\d{2})$/, '$1-$2')
+}
+
 interface AnuncianteItem {
   id?: number
   id_anunciante?: number
@@ -160,7 +173,9 @@ export default function FiltroDetalheLocalizacaoScreen({ route }: { route?: any 
             <View style={styles.infoBox}>
               {item.cnpj ? (
                 <View style={styles.infoRow}>
-                  <Caption fontSize={14} color={colors.blackdark}>CNPJ: {item.cnpj}</Caption>
+                  <Caption fontSize={14} color={colors.blackdark}>
+                    CNPJ: {formatarCnpjParaExibicao(item.cnpj)}
+                  </Caption>
                 </View>
               ) : null}
               {item.telefone ? (
