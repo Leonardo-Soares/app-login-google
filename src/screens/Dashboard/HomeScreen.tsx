@@ -11,7 +11,8 @@ import ButtonOutline from '../../components/buttons/ButtonOutline'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import MainLayoutAutenticado from '../../components/layout/MainLayoutAutenticado'
 import { FlatList, RefreshControl, ScrollView, Text, TouchableOpacity, View } from 'react-native'
-import Spacing from '@components/layout/Spacing'
+import { SafeAreaView } from 'react-native-safe-area-context'
+import { temDiscontokenNoPerfil } from '../../utils/discontokenPerfil'
 
 interface DadosPerfil {
   nome_completo?: string
@@ -25,33 +26,6 @@ interface DadosPerfil {
   mensagem?: string
   associacao_id?: number | string | null
   discotoken?: string | number | boolean | null
-}
-
-function associacaoIdHabilitaDiscontoken(assoc: unknown): boolean {
-  if (assoc == null) return false
-  if (typeof assoc === 'string') {
-    const t = assoc.trim()
-    if (t === '' || t === '-') return false
-    const n = Number(t)
-    return Number.isFinite(n) && n !== 0
-  }
-  const n = Number(assoc)
-  return Number.isFinite(n) && n !== 0
-}
-
-function discotokenHabilitaDiscontoken(disc: unknown): boolean {
-  if (disc == null || disc === false) return false
-  const s = String(disc).trim()
-  if (s === '' || s === '0') return false
-  return true
-}
-
-function temDiscontokenNoPerfil(perfil: DadosPerfil | null): boolean {
-  if (!perfil) return false
-  return (
-    associacaoIdHabilitaDiscontoken(perfil.associacao_id) ||
-    discotokenHabilitaDiscontoken(perfil.discotoken)
-  )
 }
 
 export default function HomeScreen() {
@@ -223,88 +197,91 @@ export default function HomeScreen() {
 
   useEffect(() => {
     if (!isFocused) return
-    ;(async () => {
-      await aplicarDadosPerfilDoStorage()
-      getCategorias()
-      getProdutos()
-      getDadosPerfil()
-    })()
+      ; (async () => {
+        await aplicarDadosPerfilDoStorage()
+        getCategorias()
+        getProdutos()
+        getDadosPerfil()
+      })()
   }, [isFocused])
 
   return (
     <MainLayoutAutenticado notScroll={true} loading={isRefreshing}>
-      <Spacing />
-      <ScrollView
-        horizontal
-        showsVerticalScrollIndicator={false}
-        showsHorizontalScrollIndicator={false}
-        className="w-full py-1 mb-1"
-        contentContainerStyle={{ alignItems: 'center', paddingRight: 8 }}
-      >
-        {temDiscontokenNoPerfil(dadosPerfil) && (
-          <CardCategoria
-            ativo={false}
-            titulo="Discontoken"
-            slug="discontoken-teste"
-            onPress={() => navigate('Discontoken')}
-          />
-        )}
-        {listacategorias.map((categoria: any) => (
-          <CardCategoria
-            ativo={false}
-            key={String(categoria.id)}
-            slug={String(categoria.id)}
-            titulo={categoria.categorias}
-            onPress={() => navigate('Categorias', { idCategoria: categoria.id })}
-          />
-        ))}
-      </ScrollView>
+      <SafeAreaView style={{ marginTop: 72 }}>
 
-      <View className="flex-row">
-        <Text className="text-[24px] font-semibold text-[#000] mb-3">Boas-vindas, {primeiroNome ?? ''} 🎉</Text>
-      </View>
-
-      {estadoSelecionado && cidadeSelecionada &&
-        <TouchableOpacity
-          onPress={() => navigate('FiltroCidadeScreen')}
-          className='ml-2 mt-2 px-4 py-3 rounded-2xl bg-[#E6F3FF] border border-[#1E90FF] flex-row items-center'
-        >
-          <Text className="text-[18px] mr-2">📍</Text>
-          <View>
-            <Caption fontSize={12} fontWeight={'400'} color="#1E4B79">
-              Ofertas filtradas para
-            </Caption>
-            <Caption fontSize={14} fontWeight={'700'} color="#0B2340">
-              {cidadeSelecionada.nome} - {estadoSelecionado.sigla}
-            </Caption>
-          </View>
-        </TouchableOpacity>
-      }
-      {listaprodutos.length >= 1 &&
-        <FlatList
-          data={listaprodutos}
-          renderItem={renderItem}
-          refreshControl={
-            <RefreshControl
-              refreshing={isRefreshing}
-              onRefresh={handleRefresh}
-            />
-          }
+        <ScrollView
+          horizontal
           showsVerticalScrollIndicator={false}
-        />}
-      {!isRefreshing && listaprodutos.length <= 0 &&
-        <View className='w-full items-center'>
-          <CardNotFound titulo='Não encontramos cupons no momento para você' />
-          {estadoSelecionado && cidadeSelecionada && (
-            <View className='mt-3 w-full px-8'>
-              <ButtonOutline title='Limpar filtro de cidade e estado' onPress={limparFiltroCidadeEstado} />
-            </View>
+          showsHorizontalScrollIndicator={false}
+          className="w-full mb-2"
+          style={{ marginTop: 4 }}
+          contentContainerStyle={{ alignItems: 'center', paddingRight: 8, paddingVertical: 4 }}
+        >
+          {temDiscontokenNoPerfil(dadosPerfil) && (
+            <CardCategoria
+              ativo={false}
+              titulo="Discontoken"
+              slug="discontoken-teste"
+              onPress={() => navigate('Discontoken')}
+            />
           )}
-          <View className='mt-3 mx-8'>
-            <ButtonOutline title='Sugerir estabelecimentos' onPress={() => navigate('SugerirEstabelecimentosScreen')} />
-          </View>
+          {listacategorias.map((categoria: any) => (
+            <CardCategoria
+              ativo={false}
+              key={String(categoria.id)}
+              slug={String(categoria.id)}
+              titulo={categoria.categorias}
+              onPress={() => navigate('Categorias', { idCategoria: categoria.id })}
+            />
+          ))}
+        </ScrollView>
+
+        <View className="flex-row">
+          <Text className="text-[24px] font-semibold text-[#000] mb-3">Boas-vindas, {primeiroNome ?? ''} 🎉</Text>
         </View>
-      }
+
+        {estadoSelecionado && cidadeSelecionada &&
+          <TouchableOpacity
+            onPress={() => navigate('FiltroCidadeScreen')}
+            className='ml-2 mt-2 px-4 py-3 rounded-2xl bg-[#E6F3FF] border border-[#1E90FF] flex-row items-center'
+          >
+            <Text className="text-[18px] mr-2">📍</Text>
+            <View>
+              <Caption fontSize={12} fontWeight={'400'} color="#1E4B79">
+                Ofertas filtradas para
+              </Caption>
+              <Caption fontSize={14} fontWeight={'700'} color="#0B2340">
+                {cidadeSelecionada.nome} - {estadoSelecionado.sigla}
+              </Caption>
+            </View>
+          </TouchableOpacity>
+        }
+        {listaprodutos.length >= 1 &&
+          <FlatList
+            data={listaprodutos}
+            renderItem={renderItem}
+            refreshControl={
+              <RefreshControl
+                refreshing={isRefreshing}
+                onRefresh={handleRefresh}
+              />
+            }
+            showsVerticalScrollIndicator={false}
+          />}
+        {!isRefreshing && listaprodutos.length <= 0 &&
+          <View className='w-full items-center'>
+            <CardNotFound titulo='Não encontramos cupons no momento para você' />
+            {estadoSelecionado && cidadeSelecionada && (
+              <View className='mt-3 w-full px-8'>
+                <ButtonOutline title='Limpar filtro de cidade e estado' onPress={limparFiltroCidadeEstado} />
+              </View>
+            )}
+            <View className='mt-3 mx-8'>
+              <ButtonOutline title='Sugerir estabelecimentos' onPress={() => navigate('SugerirEstabelecimentosScreen')} />
+            </View>
+          </View>
+        }
+      </SafeAreaView>
     </MainLayoutAutenticado>
   );
 }

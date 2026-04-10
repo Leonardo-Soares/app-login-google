@@ -174,7 +174,7 @@ export default function Main({ children }: { children: any }) {
       {token && usuarioLogado &&
         <TouchableOpacity
           onPress={() => setModalFeedback(true)}
-          className='bg-[#E8DEF8] w-12 h-12 shadow-2xl rounded-3xl items-center justify-center absolute bottom-[32px] right-6 z-[10000]'
+          className='bg-[#E8DEF8] border-2 border-[#775aff] w-12 h-12 shadow-2xl rounded-3xl items-center justify-center absolute bottom-[32px] right-6 z-[10000]'
         >
           <IcoAlertaSecondary />
         </TouchableOpacity>

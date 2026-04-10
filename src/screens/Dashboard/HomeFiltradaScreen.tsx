@@ -1,6 +1,7 @@
 import { api } from '../../service/api'
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from '../../hooks/useNavigate'
+import { useIsFocused } from '@react-navigation/native'
 import CardProduto from '../../components/cards/CardProduto'
 import CardNotFound from '../../components/cards/CardNotFound'
 import CardCategoria from '../../components/cards/CardCategoria'
@@ -8,14 +9,26 @@ import AsyncStorage from '@react-native-async-storage/async-storage'
 import { FlatList, RefreshControl, ScrollView, View, } from 'react-native'
 import MainLayoutAutenticado from '../../components/layout/MainLayoutAutenticado'
 import CardAnuncio from '../../components/cards/CardAnuncio'
-import { SafeAreaView } from 'react-native-safe-area-context'
+import {
+  obterAssociacaoEDiscotokenDoStorage,
+  temDiscontokenNoPerfil,
+  type DadosPerfilDiscontoken,
+} from '../../utils/discontokenPerfil'
 
 export default function HomeFiltradaScreen(route: any) {
+  const isFocused = useIsFocused()
   const { navigate } = useNavigate()
   const [listaprodutos, setProdutos] = useState([])
   const idCategoria = route.route.params.idCategoria
   const [listacategorias, setCategorias] = useState([])
   const [isRefreshing, setIsRefreshing] = useState(false)
+  const [perfilDiscontoken, setPerfilDiscontoken] =
+    useState<DadosPerfilDiscontoken | null>(null)
+
+  const carregarPerfilDiscontoken = useCallback(async () => {
+    const p = await obterAssociacaoEDiscotokenDoStorage()
+    setPerfilDiscontoken(p)
+  }, [])
 
   async function getProdutos() {
     setIsRefreshing(true)
@@ -87,22 +100,36 @@ export default function HomeFiltradaScreen(route: any) {
   useEffect(() => {
     getProdutos()
     getCategorias()
-  }, [])
-
-  useEffect(() => {
-    getProdutos()
-    getCategorias()
   }, [idCategoria])
 
+  useEffect(() => {
+    if (isFocused) {
+      void carregarPerfilDiscontoken()
+    }
+  }, [isFocused, carregarPerfilDiscontoken])
+
   return (
-    <MainLayoutAutenticado notScroll={true} marginTop={80} loading={isRefreshing}>
-      <ScrollView horizontal={true} showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false} className='w-full h-14 pb-2' >
-        <CardCategoria
-          ativo={false}
-          titulo={"Discontoken"}
-          slug={"discontoken-teste"}
-          onPress={() => navigate('Discontoken')}
-        />
+    <MainLayoutAutenticado notScroll={true} loading={isRefreshing}>
+      <ScrollView
+        horizontal
+        showsVerticalScrollIndicator={false}
+        showsHorizontalScrollIndicator={false}
+        className="w-full mb-2"
+        style={{ marginTop: 72, flexGrow: 0 }}
+        contentContainerStyle={{
+          alignItems: 'center',
+          paddingRight: 8,
+          paddingVertical: 4,
+        }}
+      >
+        {temDiscontokenNoPerfil(perfilDiscontoken) && (
+          <CardCategoria
+            ativo={false}
+            titulo={'Discontoken'}
+            slug={'discontoken-teste'}
+            onPress={() => navigate('Discontoken')}
+          />
+        )}
         {listacategorias && listacategorias.map((categoria: any) => (
           <CardCategoria
             ativo={idCategoria === categoria.id ? true : false} // Destacar a categoria selecionada
@@ -113,11 +140,10 @@ export default function HomeFiltradaScreen(route: any) {
           />
         ))}
       </ScrollView>
-
-      {listaprodutos && listaprodutos.length >= 1 &&
+      {listaprodutos && listaprodutos.length >= 1 && (
         <FlatList
           data={listaprodutos}
-          className='mb-60'
+          className="flex-1"
           renderItem={renderItem}
           refreshControl={
             <RefreshControl
@@ -125,9 +151,10 @@ export default function HomeFiltradaScreen(route: any) {
               onRefresh={handleRefresh}
             />
           }
-        />}
+        />
+      )}
       {!isRefreshing && listaprodutos.length <= 0 &&
-        <View className=''>
+        <View className='absolute top-[35%]'>
           <CardNotFound titulo='Não há cupons disponíveis para esta categoria no momento.' />
         </View>
       }

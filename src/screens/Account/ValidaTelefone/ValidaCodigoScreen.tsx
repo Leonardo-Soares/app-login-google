@@ -125,8 +125,6 @@ export default function ValidaCodigoScreen({ navigation }: { navigation: any }) 
     }
   }
 
-
-
   useEffect(() => {
     const interval = setInterval(() => {
       setSeconds((prevSeconds) => prevSeconds - 1)
