@@ -2,7 +2,7 @@ import QRCode from 'react-native-qrcode-svg'
 import Toast from 'react-native-toast-message'
 import IcoCopy from '../../../../../svg/IcoCopy'
 import { api } from '../../../../../service/api'
-import { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { colors } from '../../../../../styles/colors'
 import { useIsFocused } from '@react-navigation/native'
 import H3 from '../../../../../components/typography/H3'
@@ -16,7 +16,19 @@ import InputOutlined from '../../../../../components/forms/InputOutlined'
 import FilledButton from '../../../../../components/buttons/FilledButton'
 import HeaderPrimary from '../../../../../components/header/HeaderPrimary'
 import { useDadosPagamento } from '../../../../../stores/useDadosPagamento'
-import { Dimensions, Image, Animated, View, TouchableOpacity } from 'react-native'
+import ValidarCPF from '../../../../../components/forms/ValidarCPF'
+import {
+  Image,
+  Animated,
+  View,
+  TouchableOpacity,
+  Modal,
+  Text,
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  StyleSheet,
+} from 'react-native'
 import MainLayoutAutenticado from '../../../../../components/layout/MainLayoutAutenticado'
 import InputArea from '../../../../../components/forms/InputArea'
 import { usePaymentPix } from '../../../../../hooks/usePaymentPix'
@@ -41,6 +53,50 @@ interface IDadosUsuario {
   email: string,
 }
 
+function aplicarMascaraCpf(value: string) {
+  const v = value.replace(/\D/g, '').slice(0, 11)
+  return v
+    .replace(/(\d{3})(\d)/, '$1.$2')
+    .replace(/(\d{3})(\d)/, '$1.$2')
+    .replace(/(\d{3})(\d{1,2})$/, '$1-$2')
+}
+
+function extrairMensagemErro(error: any): string {
+  const d = error?.response?.data
+  if (!d) return ''
+  if (typeof d.message === 'string') return d.message
+  const err = d.errors
+  if (err && typeof err === 'object') {
+    const first =
+      err.cpf?.[0] ??
+      err.cpf_represetante?.[0] ??
+      err.cpf_representante?.[0]
+    if (first) return String(first)
+  }
+  if (typeof d.erro === 'string') return d.erro
+  return ''
+}
+
+function mensagemIndicaCpfInvalido(msg: string): boolean {
+  const m = (msg || '').toLowerCase()
+  if (!m.includes('cpf')) return false
+  return (
+    m.includes('inválido') ||
+    m.includes('invalido') ||
+    m.includes('invalid') ||
+    m.includes('incorreto') ||
+    m.includes('inválida') ||
+    m.includes('válido') ||
+    m.includes('valido')
+  )
+}
+
+function respostaApiIndicaErroCpf(error: any): boolean {
+  const err = error?.response?.data?.errors
+  if (!err || typeof err !== 'object') return false
+  return !!(err.cpf || err.cpf_represetante || err.cpf_representante)
+}
+
 export default function ClientePagamentoPixScreen() {
   const isFocused = useIsFocused()
   const { navigate } = useNavigate()
@@ -51,6 +107,10 @@ export default function ClientePagamentoPixScreen() {
   const { dadosPagamento } = useDadosPagamento()
   const [codigoPix, setCodigoPix] = useState('')
   const [dadosPix, setDadosPix] = useState<IDadosPix>()
+  const [mensagemErroPix, setMensagemErroPix] = useState<string | null>(null)
+  const [modalCpfVisivel, setModalCpfVisivel] = useState(false)
+  const [cpfModal, setCpfModal] = useState('')
+  const [salvandoCpf, setSalvandoCpf] = useState(false)
   const progressAnimation = useRef(new Animated.Value(0)).current
 
   useEffect(() => {
@@ -67,39 +127,156 @@ export default function ClientePagamentoPixScreen() {
 
   async function postPix() {
     setLoading(true)
+    setMensagemErroPix(null)
     const jsonValue = await AsyncStorage.getItem('infos-user')
     const jsonPerfil = await AsyncStorage.getItem('dados-perfil')
 
-    if (jsonValue && jsonPerfil) {
-      const newJson = JSON.parse(jsonValue)
-      const newJsonPerfil = JSON.parse(jsonPerfil)
-      const responseJuridico = await api.get(`/perfil/pessoa-juridica/${newJsonPerfil.id}`) as any
+    if (!jsonValue || !jsonPerfil) {
+      setMensagemErroPix(
+        'Não foi possível carregar seus dados. Verifique se está logado e tente novamente.',
+      )
+      setCodigoPix('')
+      setDadosPix(undefined)
+      setTimeOut(false)
+      setSeconds(300)
+      setLoading(false)
+      return
+    }
 
-      try {
-        const formData = {
-          // cep: "123",
-          // uf: "remove",
-          // numero: "remove",
-          // cidade: "remove",
-          // endereco: "remove",
-          plano_id: dadosPagamento.id_pacote,
-          email: responseJuridico.data.results.email,
-          telefone: responseJuridico.data.results.telefone,
-          cpf: responseJuridico.data.results.cpf_represetante,
-          nome: responseJuridico.data.results.nome_represetante,
-        }
-        const headers = {
-          Authorization: `Bearer ${newJson.token}`,
-        }
-        const response = await api.post(`/pagamento/avulso/pix`, formData, { headers })
+    const newJson = JSON.parse(jsonValue)
+    const newJsonPerfil = JSON.parse(jsonPerfil)
+
+    try {
+      console.log('newJsonPerfil', newJsonPerfil.id)
+      const responseJuridico = (await api.get(
+        `/perfil/pessoa-juridica/${newJsonPerfil.id}`,
+      )) as any
+
+      const perfil = responseJuridico.data.results
+      const cpfBruto = perfil?.cpf_represetante ?? ''
+      setCpfModal(aplicarMascaraCpf(String(cpfBruto)))
+
+      const cpfSoNumeros = String(cpfBruto).replace(/\D/g, '')
+      const cpfLocalValido =
+        cpfSoNumeros.length === 11 && ValidarCPF({ cpf: cpfSoNumeros })
+      if (!cpfLocalValido) {
+        setMensagemErroPix(
+          'O CPF do representante precisa ser válido para gerar o Pix. Atualize o CPF abaixo.',
+        )
+        setModalCpfVisivel(true)
+        setCodigoPix('')
+        setDadosPix(undefined)
         setTimeOut(false)
         setSeconds(300)
-        setDadosPix(response.data.results.transacao)
-        setCodigoPix(response.data.results.transacao.codigo_pix)
-      } catch (error: any) {
-        console.error('ERRO dados Pix Avulso: ', error)
+        return
       }
+
+      const formData = {
+        plano_id: dadosPagamento.id_pacote,
+        email: perfil.email,
+        telefone: perfil.telefone,
+        cpf: perfil.cpf_represetante,
+        nome: perfil.nome_represetante,
+      }
+      const headers = {
+        Authorization: `Bearer ${newJson.token}`,
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      }
+      const response = await api.post(`/pagamento/avulso/pix`, formData, { headers })
+      const transacao = response.data?.results?.transacao
+      const codigo = transacao?.codigo_pix
+
+      if (!transacao || !codigo || String(codigo).trim() === '') {
+        setMensagemErroPix(
+          'Não foi possível obter o QR Code Pix. Tente novamente em instantes.',
+        )
+        setCodigoPix('')
+        setDadosPix(undefined)
+        setTimeOut(false)
+        setSeconds(300)
+        return
+      }
+
+      setTimeOut(false)
+      setSeconds(300)
+      setDadosPix(transacao)
+      setCodigoPix(codigo)
+    } catch (error: any) {
+      console.error('ERRO dados Pix Avulso: ', error)
+      const apiMsg = extrairMensagemErro(error)
+      const textoExibir =
+        typeof apiMsg === 'string' && apiMsg.length > 0
+          ? apiMsg
+          : 'Não foi possível gerar o pagamento Pix. Verifique sua conexão e tente novamente.'
+      setMensagemErroPix(textoExibir)
+      const focoCpf =
+        mensagemIndicaCpfInvalido(textoExibir) || respostaApiIndicaErroCpf(error)
+      if (focoCpf) {
+        setModalCpfVisivel(true)
+      }
+      setCodigoPix('')
+      setDadosPix(undefined)
+      setTimeOut(false)
+      setSeconds(300)
+    } finally {
       setLoading(false)
+    }
+  }
+
+  async function salvarCpfRepresentante() {
+    const digitos = cpfModal.replace(/\D/g, '')
+    if (digitos.length !== 11 || !ValidarCPF({ cpf: digitos })) {
+      Toast.show({
+        type: 'error',
+        text1: 'Informe um CPF válido.',
+      })
+      return
+    }
+    setSalvandoCpf(true)
+    try {
+      const jsonValue = await AsyncStorage.getItem('infos-user')
+      if (!jsonValue) {
+        Toast.show({
+          type: 'error',
+          text1: 'Sessão expirada. Faça login novamente.',
+        })
+        return
+      }
+      const newJson = JSON.parse(jsonValue)
+      const headers = { Authorization: `Bearer ${newJson.token}` }
+      const response = await api.post(
+        `/altera/anunciante`,
+        {
+          cpf_represetante: digitos,
+          cpf_representante: digitos,
+        },
+        { headers },
+      )
+      if (response.data?.error) {
+        throw new Error(response.data?.message || 'Erro ao atualizar')
+      }
+      const jsonPerfil = await AsyncStorage.getItem('dados-perfil')
+      if (jsonPerfil) {
+        const p = JSON.parse(jsonPerfil)
+        p.cpf_represetante = digitos
+        await AsyncStorage.setItem('dados-perfil', JSON.stringify(p))
+      }
+      Toast.show({ type: 'success', text1: 'CPF atualizado!' })
+      setModalCpfVisivel(false)
+      setMensagemErroPix(null)
+      await postPix()
+    } catch (err: any) {
+      const m = extrairMensagemErro(err) || err?.message
+      Toast.show({
+        type: 'error',
+        text1:
+          typeof m === 'string' && m.length > 0
+            ? m
+            : 'Não foi possível atualizar o CPF.',
+      })
+    } finally {
+      setSalvandoCpf(false)
     }
   }
 
@@ -143,13 +320,13 @@ export default function ClientePagamentoPixScreen() {
     }
   }, [seconds, timeOut]);
 
+
   useEffect(() => {
     if (isFocused) {
       let checkPaymentInterval: any;
-
       if (!paymentPixStatus && dadosPix?.id) {
         checkPaymentInterval = setInterval(() => {
-          getPaymentPixStatus(dadosPix?.id);
+          getPaymentPixStatus(String(dadosPix?.id ?? ''));
         }, 5000);
       }
 
@@ -185,12 +362,32 @@ export default function ClientePagamentoPixScreen() {
           </View>
           <View>
             <View className='my-8 w-full'>
-              {dadosPix &&
+              {mensagemErroPix && !loading && (
+                <View className='mb-6 px-1'>
+                  <Caption align="center" color="#B45309">
+                    {mensagemErroPix}
+                  </Caption>
+                  <View className="mt-4">
+                    <FilledButton title="Tentar novamente" onPress={postPix} />
+                  </View>
+                  {(mensagemIndicaCpfInvalido(mensagemErroPix || '') ||
+                    (mensagemErroPix || '').toLowerCase().includes('representante')) && (
+                    <View className="mt-3">
+                      <Pressable onPress={() => setModalCpfVisivel(true)}>
+                        <Text className="text-center text-[#4F46E5] font-semibold">
+                          Atualizar CPF do representante
+                        </Text>
+                      </Pressable>
+                    </View>
+                  )}
+                </View>
+              )}
+              {dadosPix && !mensagemErroPix && (
                 <View className='mx-auto mb-4'>
                   <H3 color={colors.secondary70}>Valor total R$:{dadosPix.total}</H3>
                 </View>
-              }
-              {codigoPix && codigoPix.length > 0 && !timeOut &&
+              )}
+              {codigoPix && codigoPix.length > 0 && !timeOut && !mensagemErroPix && (
                 <View className='mx-auto'>
                   <QRCode
                     size={180}
@@ -199,8 +396,8 @@ export default function ClientePagamentoPixScreen() {
                     logoBackgroundColor='transparent'
                   />
                 </View>
-              }
-              {codigoPix && codigoPix.length > 0 && !timeOut &&
+              )}
+              {codigoPix && codigoPix.length > 0 && !timeOut && !mensagemErroPix && (
                 <View className='relative'>
                   <InputArea
                     mt={20}
@@ -215,28 +412,32 @@ export default function ClientePagamentoPixScreen() {
                     <IcoCopy color={colors.secondary70} />
                   </TouchableOpacity>
                 </View>
-              }
+              )}
             </View>
-            <Caption align={'center'}>
-              Você tem até 5 minutos para fazer o pagamento.
-            </Caption>
-            <View className='mt-4'>
-              <Caption color='#ADAAAF'>
-                O tempo para pagamento acaba em:
-              </Caption>
+            {!mensagemErroPix && (
+              <>
+                <Caption align={'center'}>
+                  Você tem até 5 minutos para fazer o pagamento.
+                </Caption>
+                <View className='mt-4'>
+                  <Caption color='#ADAAAF'>
+                    O tempo para pagamento acaba em:
+                  </Caption>
 
-              <H5 color='#2F009C'>{formatTime(seconds)}</H5>
+                  <H5 color='#2F009C'>{formatTime(seconds)}</H5>
 
-              <View style={{ width: '100%', height: 4, backgroundColor: colors.primary80 }}>
-                <Animated.View
-                  style={{
-                    width: widthInterpolation,
-                    height: '100%',
-                    backgroundColor: colors.primary20,
-                  }}
-                />
-              </View>
-            </View>
+                  <View style={{ width: '100%', height: 4, backgroundColor: colors.primary80 }}>
+                    <Animated.View
+                      style={{
+                        width: widthInterpolation,
+                        height: '100%',
+                        backgroundColor: colors.primary20,
+                      }}
+                    />
+                  </View>
+                </View>
+              </>
+            )}
           </View>
 
         </View>
@@ -254,6 +455,57 @@ export default function ClientePagamentoPixScreen() {
 
       </View>
 
+      <Modal
+        visible={modalCpfVisivel}
+        animationType="slide"
+        transparent
+        onRequestClose={() => setModalCpfVisivel(false)}
+      >
+        <View style={StyleSheet.absoluteFillObject}>
+          <View style={{ flex: 1 }}>
+            <Pressable
+              style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.45)' }}
+              onPress={() => setModalCpfVisivel(false)}
+            />
+            <KeyboardAvoidingView
+              behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+            >
+              <View className="rounded-t-3xl bg-white px-5 pt-6 pb-8">
+                <Text className="text-lg font-semibold text-[#111] mb-1">
+                  CPF do representante
+                </Text>
+                <Caption color="#6B7280">
+                  O pagamento Pix exige um CPF válido. Informe apenas o CPF do
+                  representante da empresa.
+                </Caption>
+                <View className="mt-4">
+                  <InputOutlined
+                    label="CPF"
+                    value={cpfModal}
+                    keyboardType="number-pad"
+                    maxLength={14}
+                    onChange={(text: string) =>
+                      setCpfModal(aplicarMascaraCpf(text))
+                    }
+                  />
+                </View>
+                <View className="mt-6">
+                  <FilledButton
+                    title={salvandoCpf ? 'Salvando...' : 'Salvar CPF'}
+                    onPress={salvarCpfRepresentante}
+                    disabled={salvandoCpf}
+                  />
+                </View>
+                <View className="mt-3">
+                  <Pressable onPress={() => setModalCpfVisivel(false)}>
+                    <Text className="text-center text-[#6B7280]">Cancelar</Text>
+                  </Pressable>
+                </View>
+              </View>
+            </KeyboardAvoidingView>
+          </View>
+        </View>
+      </Modal>
     </MainLayoutAutenticado>
   );
 }

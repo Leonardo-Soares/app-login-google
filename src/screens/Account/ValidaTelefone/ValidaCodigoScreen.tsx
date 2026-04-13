@@ -12,8 +12,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage'
 import { View, StyleSheet, TouchableOpacity, Text, TextInput, Keyboard } from 'react-native'
 
 
-export default function ValidaCodigoScreen({ navigation }: { navigation: any }) {
-  const { navigate } = useNavigate()
+export default function ValidaCodigoScreen() {
+  const navigation = useNavigate()
   const [input1, setInput1] = useState('')
   const [input2, setInput2] = useState('')
   const [input3, setInput3] = useState('')
@@ -93,9 +93,15 @@ export default function ValidaCodigoScreen({ navigation }: { navigation: any }) 
         })
         setSeconds(30)
         if (tipoUser === 'Anunciante') {
-          navigation.navigate('FormDefinirHorarioScreen')
+          navigation.reset({
+            index: 0,
+            routes: [{ name: 'FormDefinirHorarioScreen' }],
+          })
         } else {
-          navigation.navigate('CadastroSucessoScreen')
+          navigation.reset({
+            index: 0,
+            routes: [{ name: 'CadastroSucessoScreen' }],
+          })
         }
       } catch (error: any) {
         console.error('Validar Código POST: ', error)
@@ -119,9 +125,15 @@ export default function ValidaCodigoScreen({ navigation }: { navigation: any }) 
 
   function skipValidacao() {
     if (tipoUser === 'Anunciante') {
-      navigation.navigate('FormDefinirHorarioScreen')
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'FormDefinirHorarioScreen' }],
+      })
     } else {
-      navigation.navigate('CadastroSucessoScreen')
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'CadastroSucessoScreen' }],
+      })
     }
   }
 
