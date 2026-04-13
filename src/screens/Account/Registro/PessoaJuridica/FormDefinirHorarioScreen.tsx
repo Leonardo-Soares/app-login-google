@@ -23,7 +23,13 @@ const diasDaSemana = [
 ];
 
 export default function FormDefinirHorarioScreen({ route }: { route: any }) {
-  const { navigate } = useNavigate()
+  const navigation = useNavigate()
+  const irParaSucessoCadastroAnunciante = () => {
+    navigation.reset({
+      index: 0,
+      routes: [{ name: 'CadastroSucessoAnuncianteScreen' }],
+    })
+  }
   const isFocused = useIsFocused()
   const [loading, setLoading] = useState(false)
   const { setSenhaUser, senhaUser, setTelefoneDigitado, setTipoUser } = useGlobal()
@@ -176,7 +182,7 @@ export default function FormDefinirHorarioScreen({ route }: { route: any }) {
 
       if (response.status === 200) {
         Toast.show({ type: 'success', text1: 'Horários salvos com sucesso!' });
-        navigate('CadastroSucessoAnuncianteScreen')
+        irParaSucessoCadastroAnunciante()
       } else {
         Toast.show({ type: 'error', text1: 'Erro ao salvar horários' });
       }
@@ -275,7 +281,7 @@ export default function FormDefinirHorarioScreen({ route }: { route: any }) {
           <FilledButton title='Salvar Horários' onPress={postSalvaHorarios} />
         </View>
         <View style={{ marginBottom: 16 }}>
-          <FilledButton backgroundColor={colors.gray} title='Pular' onPress={() => { navigate('CadastroSucessoAnuncianteScreen') }} />
+          <FilledButton backgroundColor={colors.gray} title='Pular' onPress={irParaSucessoCadastroAnunciante} />
         </View>
       </ScrollView>
 

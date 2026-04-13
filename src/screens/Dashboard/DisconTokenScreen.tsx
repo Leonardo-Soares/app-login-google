@@ -136,7 +136,7 @@ export default function DisconTokenScreen() {
               title='O Discontoken é uma novidade exclusiva para associações e parceiros do discontapp, em breve estará disponível para qualquer usuário cupom.'
             />
             <View className='h-4'></View>
-            <FilledButton title='Quero ser um cliente discontoken' onPress={() => Linking.openURL('https://www.discontapp.info/')} />
+            <FilledButton title='Quero ser um cliente discontoken' onPress={() => Linking.openURL('https://discontapp.info/')} />
           </View>
         }
       </KeyboardAvoidingView>

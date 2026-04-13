@@ -10,8 +10,8 @@ import { useGlobal } from '../../../../context/GlobalContextProvider'
 import FilledButton from '../../../../components/buttons/FilledButton'
 import { OneSignal } from 'react-native-onesignal'
 
-export default function CadastroSucessoAnuncianteScreen({ navigation }: { navigation: any }) {
-  const { navigate } = useNavigate()
+export default function CadastroSucessoAnuncianteScreen() {
+  const navigation = useNavigate()
   const [loading, setLoading] = useState(false)
   const { senhaUser, setTipoUser } = useGlobal()
   const [emailStorage, setEmailStorage] = useState('')
@@ -56,9 +56,15 @@ export default function CadastroSucessoAnuncianteScreen({ navigation }: { naviga
         const storageEmail = await AsyncStorage.setItem('user-email', emailStorage)
         submitStorageLogin(response.data.results)
         setTipoUser('Anunciante')
-        navigate('HomeDrawerNavigation')
+        navigation.reset({
+          index: 0,
+          routes: [{ name: 'HomeDrawerNavigation' }],
+        })
       } else {
-        navigate('LoginScreen')
+        navigation.reset({
+          index: 0,
+          routes: [{ name: 'LoginScreen' }],
+        })
       }
     } catch (error: any) {
       console.error('Error Login: ', error)

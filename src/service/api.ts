@@ -5,7 +5,7 @@ export const api_contrato = axios.create({
 });
 
 export const api = axios.create({
-  baseURL: 'https://www.backend.discontapp.com.br/api',
+  baseURL: 'https://backend.discontapp.com.br/api',
   // baseURL: 'https://discont.sitebeta.com.br/api',
 });
 

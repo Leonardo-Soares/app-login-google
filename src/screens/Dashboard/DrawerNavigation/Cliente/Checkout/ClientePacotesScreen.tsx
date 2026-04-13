@@ -1,5 +1,5 @@
-import { View } from 'react-native'
-import { useEffect, useState } from 'react'
+import { View, ScrollView, RefreshControl } from 'react-native'
+import React, { useCallback, useEffect, useState } from 'react'
 import { api } from '../../../../../service/api'
 import { useIsFocused } from '@react-navigation/native'
 import H3 from '../../../../../components/typography/H3'
@@ -12,99 +12,112 @@ import MainLayoutAutenticado from '../../../../../components/layout/MainLayoutAu
 export default function ClientePacotesScreen() {
   const isFocused = useIsFocused()
   const [loading, setLoading] = useState(true)
+  const [refreshing, setRefreshing] = useState(false)
   const [listaplanos, setListaPlanos] = useState([])
   const [pacoteGratis, setPacoteGratis] = useState(null)
   const { statusTesteGratis, setStatusTesteGratis } = useGlobal()
 
-  async function getPacotes() {
-    setLoading(true)
+  const carregarPacotes = useCallback(async (opts?: { pull?: boolean }) => {
+    const pull = opts?.pull === true
+    if (pull) setRefreshing(true)
+    else setLoading(true)
+
     const jsonValue = await AsyncStorage.getItem('infos-user')
-
-    if (jsonValue) {
-      const newJson = JSON.parse(jsonValue)
-      try {
-        const headers = {
-          Authorization: `Bearer ${newJson.token}`,
-          'Content-Type': 'multipart/form-data'
-        }
-        const response = await api.get(`/pacotes`, { headers })
-        setListaPlanos(response.data.results)
-      } catch (error: any) {
-        console.log('ERROR Lista Pacotes: ', error)
-      }
+    if (!jsonValue) {
+      if (pull) setRefreshing(false)
+      else setLoading(false)
+      return
     }
-    setLoading(false)
-  }
 
-  async function getPacoteGratis() {
-    setLoading(true)
-    const jsonValue = await AsyncStorage.getItem('infos-user')
-    if (jsonValue) {
-      const newJson = JSON.parse(jsonValue)
-      const headers = {
-        Authorization: `Bearer ${newJson.token}`
-      }
-      try {
-        const response = await api.post(`/verifiaca-teste-gratis`, {}, {
-          headers: headers
-        })
-        setPacoteGratis(response.data.results.pacote_disponivel)
-        setStatusTesteGratis(response.data.results.pacote_disponivel)
-
-      } catch (error: any) {
-        console.log('ERROR Pacote Gratuito: ', error.response.data.message)
-      }
+    const newJson = JSON.parse(jsonValue)
+    const headersAuth = { Authorization: `Bearer ${newJson.token}` }
+    const headersPacotes = {
+      ...headersAuth,
+      'Content-Type': 'multipart/form-data',
     }
-    setLoading(false)
-  }
 
+    try {
+      const response = await api.get(`/pacotes`, { headers: headersPacotes })
+      setListaPlanos(response.data.results ?? [])
+    } catch (error: any) {
+      console.log('ERROR Lista Pacotes: ', error)
+    }
+    try {
+      const response = await api.post(`/verifiaca-teste-gratis`, {}, {
+        headers: headersAuth,
+      })
+      const disponivel = response.data.results?.pacote_disponivel
+      setPacoteGratis(disponivel)
+      setStatusTesteGratis(disponivel)
+    } catch (error: any) {
+      console.log('ERROR Pacote Gratuito: ', error?.response?.data?.message)
+    }
+    if (pull) setRefreshing(false)
+    else setLoading(false)
+  }, [setStatusTesteGratis])
+
+  const onRefresh = useCallback(() => {
+    void carregarPacotes({ pull: true })
+  }, [carregarPacotes])
 
   useEffect(() => {
-    getPacotes()
-    getPacoteGratis()
+    void carregarPacotes()
   }, [statusTesteGratis])
 
   useEffect(() => {
-    getPacotes()
-    getPacoteGratis()
+    void carregarPacotes()
   }, [isFocused])
 
   return (
-    <MainLayoutAutenticado marginTop={0} marginHorizontal={0} loading={loading}>
+    <MainLayoutAutenticado
+      notScroll
+      marginTop={0}
+      marginHorizontal={0}
+      loading={loading}
+    >
       <HeaderPrimary titulo='Selecionar pacotes' />
-      <View className='mx-7 mt-5 min-h-full'>
-        {listaplanos && [...listaplanos]
-          .sort((a: any, b: any) => (a.valor === '0.00' ? -1 : 1) - (b.valor === '0.00' ? -1 : 1))
-          .map((item: any, index: any) => (
-          <View key={index}>
-            {item.status != 0 &&
-              <>{item.id === 4
-                ? pacoteGratis ?
-                  <CardPacote
+      <ScrollView
+        className="flex-1"
+        contentContainerStyle={{ paddingBottom: 32 }}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+      >
+        <View className='mx-7 mt-5 min-h-full'>
+          {listaplanos && [...listaplanos]
+            .sort((a: any, b: any) => (a.valor === '0.00' ? -1 : 1) - (b.valor === '0.00' ? -1 : 1))
+            .map((item: any, index: any) => (
+            <View key={index}>
+              {item.status != 0 &&
+                <>{item.id === 4
+                  ? pacoteGratis ?
+                    <CardPacote
+                      props={item}
+                      valor={item.valor}
+                      titulo={item.titulo}
+                      beneficios={item.inclusoes_plano}
+                      observacao={item.descricao_completa}
+                      plano_free_usado={item.utilizou_plano_gratuito}
+                    /> : <></>
+                  : <CardPacote
                     props={item}
                     valor={item.valor}
                     titulo={item.titulo}
                     beneficios={item.inclusoes_plano}
                     observacao={item.descricao_completa}
                     plano_free_usado={item.utilizou_plano_gratuito}
-                  /> : <></>
-                : <CardPacote
-                  props={item}
-                  valor={item.valor}
-                  titulo={item.titulo}
-                  beneficios={item.inclusoes_plano}
-                  observacao={item.descricao_completa}
-                  plano_free_usado={item.utilizou_plano_gratuito}
-                />
+                  />
+                }
+                </>
               }
-              </>
-            }
-          </View>
-        ))}
-        {!loading && listaplanos.length <= 0 &&
-          <H3>Nenhum pacote encontrado, em breve teremos novidades !</H3>
-        }
-      </View>
+            </View>
+          ))}
+          {!loading && listaplanos.length <= 0 &&
+            <H3>Nenhum pacote encontrado, em breve teremos novidades !</H3>
+          }
+        </View>
+      </ScrollView>
     </MainLayoutAutenticado>
   );
 }

@@ -19,7 +19,7 @@ export default function ClienteCupomSucessoScreen(props: any) {
     try {
       const options = {
         title: 'Compartilhar Link e Texto',
-        message: `Confira esse cupom que achei no app Discontapp: https://www.discontapp.com.br/desconto/${idOferta}`,
+        message: `Confira esse cupom que achei no app Discontapp: https://discontapp.com.br/desconto/${idOferta}`,
       };
 
       await Share.share(options);
@@ -29,7 +29,7 @@ export default function ClienteCupomSucessoScreen(props: any) {
   }
 
   const copyToClipboard = () => {
-    Clipboard.setString(`https://www.discontapp.com.br/desconto/${idOferta}`)
+    Clipboard.setString(`https://discontapp.com.br/desconto/${idOferta}`)
     Toast.show({
       type: 'success',
       text1: 'Código copiado com sucesso!',

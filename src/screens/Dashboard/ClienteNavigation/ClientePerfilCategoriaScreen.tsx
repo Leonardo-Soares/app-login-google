@@ -3,7 +3,6 @@ import Toast from 'react-native-toast-message';
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from '../../../hooks/useNavigate';
 import LinearGradient from 'react-native-linear-gradient';
-import Paragrafo from '../../../components/typography/Paragrafo';
 import ButtonPerfil from '../../../components/buttons/ButtonPerfil';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import MainLayoutAutenticado from '../../../components/layout/MainLayoutAutenticado';
@@ -18,15 +17,51 @@ import {
   Text,
 } from 'react-native';
 import ButtonOutline from '@components/buttons/ButtonOutline';
-import { colors } from 'src/styles/colors';
+
+/** Normaliza vários formatos comuns de resposta da API de categorias. */
+function normalizarListaCategoriasApi(data: any): any[] {
+  if (data == null) return []
+  const raw = data?.results ?? data?.data ?? data
+  if (Array.isArray(raw)) return raw
+  if (raw && typeof raw === 'object') {
+    if (Array.isArray(raw.categorias)) return raw.categorias
+    if (Array.isArray(raw.results)) return raw.results
+    if (Array.isArray(raw.items)) return raw.items
+  }
+  return []
+}
+
+/** Extrai ids da resposta de categorias já escolhidas pelo anunciante. */
+function extrairIdsSelecionadas(data: any): any[] {
+  const root = data?.results ?? data?.data ?? data
+  let arr: any[] = []
+  if (Array.isArray(root)) {
+    arr = root
+  } else if (root && Array.isArray(root.categorias)) {
+    arr = root.categorias
+  } else if (root && Array.isArray(root.ids)) {
+    arr = root.ids
+  }
+  return arr
+    .map((cat: any) => {
+      if (typeof cat === 'number' || typeof cat === 'string') return cat
+      if (cat?.categoria_id != null) return cat.categoria_id
+      if (cat?.id != null) return cat.id
+      return null
+    })
+    .filter((id: any) => id != null)
+}
+
+function idsIguais(a: any, b: any): boolean {
+  return String(a) === String(b)
+}
 
 export default function ClientePerfilCategoriaScreen() {
   const { navigate } = useNavigate();
-  const [loading, setLoading] = useState(false);
   const screenWidth = Dimensions.get('window').width;
+  const numCols = screenWidth > 375 ? 3 : 2;
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [listaCategorias, setListaCategorias] = useState([]);
-  const [listaCategoriasPerfil, setListaCategoriasPerfil] = useState([]);
+  const [listaCategorias, setListaCategorias] = useState<any[]>([]);
   const [selectedOptions, setSelectedOptions] = useState<any[]>([]);
   const [originalSelectedOptions, setOriginalSelectedOptions] = useState<any[]>(
     [],
@@ -35,10 +70,8 @@ export default function ClientePerfilCategoriaScreen() {
 
   const handleSelectOption = (option: any) => {
     let updatedOptions: any[];
-    if (selectedOptions.includes(option)) {
-      updatedOptions = selectedOptions.filter(
-        (selectedOption) => selectedOption !== option
-      );
+    if (selectedOptions.some((o) => idsIguais(o, option))) {
+      updatedOptions = selectedOptions.filter((o) => !idsIguais(o, option));
     } else {
       if (selectedOptions.length < 3) {
         updatedOptions = [...selectedOptions, option];
@@ -53,12 +86,59 @@ export default function ClientePerfilCategoriaScreen() {
     setSelectedOptions(updatedOptions);
   };
 
+  /**
+   * Catálogo completo para escolha de perfil: `/categorias/cadastro` (igual ao
+   * cadastro em RadioSimples). Se vier vazio ou falhar, usa `/categorias` como na Home.
+   */
   async function getCategorias() {
+    const jsonValue = await AsyncStorage.getItem('infos-user')
+    if (!jsonValue) {
+      setListaCategorias([])
+      return
+    }
+    const newJson = JSON.parse(jsonValue)
+    const headers = { Authorization: `Bearer ${newJson.token}` }
     try {
-      const response = await api.get('/categorias/cadastro');
-      setListaCategorias(response.data.results);
+      const resCadastro = await api.get('/categorias/cadastro', { headers })
+      console.log('Resposta da API de categorias (cadastro)', resCadastro.data)
+      let list = normalizarListaCategoriasApi(resCadastro.data)
+      if (list.length === 0) {
+        const resHome = await api.get('/categorias', { headers })
+        console.log('Resposta da API de categorias (home)', resHome.data)
+        list = normalizarListaCategoriasApi(resHome.data)
+      }
+      setListaCategorias(list)
     } catch (error: any) {
-      console.log('Erro ao buscar categorias', error.response.data);
+      console.log('Erro ao buscar categorias (cadastro), tentando /categorias', error.response?.data)
+      try {
+        const response = await api.get('/categorias', { headers })
+        setListaCategorias(normalizarListaCategoriasApi(response.data))
+      } catch (e2: any) {
+        console.log('Erro ao buscar /categorias', e2.response?.data)
+        setListaCategorias([])
+      }
+    }
+  }
+
+  /** Apenas os ids que o anunciante já marcou. */
+  async function getCategoriasSelecionadas() {
+    const jsonValue = await AsyncStorage.getItem('infos-user')
+    if (!jsonValue) return
+    const newJson = JSON.parse(jsonValue)
+    try {
+      const response = await api.get('/anunciante/categorias-selecionadas', {
+        headers: { Authorization: `Bearer ${newJson.token}` },
+      })
+      const idsSelecionados = extrairIdsSelecionadas(response.data)
+      setSelectedOptions(idsSelecionados)
+      setOriginalSelectedOptions(idsSelecionados)
+    } catch (error: any) {
+      console.log(
+        'Erro ao buscar categorias selecionadas',
+        error.response?.data || error.message,
+      )
+      setSelectedOptions([])
+      setOriginalSelectedOptions([])
     }
   }
 
@@ -75,13 +155,15 @@ export default function ClientePerfilCategoriaScreen() {
           { categorias: selectedOptions },
           { headers }
         );
-        // navigate('ClientePerfilScreen')
+        console.log('Categorias Enviada', selectedOptions);
+        navigate('ClientePerfilScreen')
         Toast.show({
           type: 'success',
           text1: 'Categorias atualizadas!',
         });
         setNeedSave(false);
         getPerfil();
+        getCategoriasSelecionadas();
       } catch (error: any) {
         console.log('ERROR POST Atualizar Categorias', error.response.data);
       }
@@ -95,7 +177,6 @@ export default function ClientePerfilCategoriaScreen() {
       try {
         const response = await api.get(`/perfil/pessoa-juridica/${newJson.id}`);
         const perfil = response.data.results.perfil_id || [];
-        setListaCategoriasPerfil(perfil);
 
         const idsSelecionados = perfil
           .map((categoria: any) => {
@@ -112,8 +193,10 @@ export default function ClientePerfilCategoriaScreen() {
           })
           .filter((id: any) => id != null);
 
-        setSelectedOptions(idsSelecionados);
-        setOriginalSelectedOptions(idsSelecionados);
+        // A população de selectedOptions e originalSelectedOptions
+        // agora é feita pelo método getCategoriasSelecionadas
+        // setSelectedOptions(idsSelecionados);
+        // setOriginalSelectedOptions(idsSelecionados);
       } catch (error: any) {
         console.log('Error GET Perfil: ', error.response.data);
       }
@@ -121,12 +204,10 @@ export default function ClientePerfilCategoriaScreen() {
   }
 
   const renderItemSegundo = ({ item }: any) => {
-    const isSelected = selectedOptions.some(
-      (categoria: any) => categoria === item.id
-    );
+    const isSelected = selectedOptions.some((id: any) => idsIguais(id, item.id))
 
     return (
-      <View style={styles.container}>
+      <View style={[styles.container, { width: `${100 / numCols}%` }]}>
         <View style={styles.column}></View>
         <LinearGradient
           style={[
@@ -154,7 +235,7 @@ export default function ClientePerfilCategoriaScreen() {
             onPress={() => handleSelectOption(item.id)}
           >
             {isSelected && (
-              <View className="absolute top-1 right-1 px-2 py-[2px] rounded-full bg-[#4F46E5]">
+              <View className="absolute top-1 right-4 px-2 py-[2px] rounded-full bg-[#4F46E5]">
                 <Text className="text-[10px] font-semibold text-white">
                   Selecionado
                 </Text>
@@ -182,16 +263,21 @@ export default function ClientePerfilCategoriaScreen() {
     );
   };
 
-  const handleRefresh = () => {
+  const handleRefresh = async () => {
     setIsRefreshing(true);
-    setTimeout(() => {
+    try {
+      await getPerfil();
+      await getCategorias();
+      await getCategoriasSelecionadas();
+    } finally {
       setIsRefreshing(false);
-    }, 2000);
+    }
   };
 
   useEffect(() => {
     getPerfil();
     getCategorias();
+    getCategoriasSelecionadas()
   }, []);
 
   useEffect(() => {
@@ -200,15 +286,19 @@ export default function ClientePerfilCategoriaScreen() {
     setNeedSave(JSON.stringify(atual) !== JSON.stringify(original));
   }, [selectedOptions, originalSelectedOptions]);
 
-  const categoriasSelecionadasNomes =
-    listaCategorias
-      .filter((cat: any) => selectedOptions.includes(cat.id))
-      .map((cat: any) => cat.categorias) || [];
+  const lista = Array.isArray(listaCategorias) ? listaCategorias : [];
 
-  const categoriasOriginaisNomes =
-    listaCategorias
-      .filter((cat: any) => originalSelectedOptions.includes(cat.id))
-      .map((cat: any) => cat.categorias) || [];
+  const categoriasSelecionadasNomes = lista
+    .filter((cat: any) =>
+      selectedOptions.some((id: any) => idsIguais(id, cat.id)),
+    )
+    .map((cat: any) => cat.categorias);
+
+  const categoriasOriginaisNomes = lista
+    .filter((cat: any) =>
+      originalSelectedOptions.some((id: any) => idsIguais(id, cat.id)),
+    )
+    .map((cat: any) => cat.categorias);
 
   return (
     <MainLayoutAutenticado notScroll marginTop={20}>
@@ -269,9 +359,10 @@ export default function ClientePerfilCategoriaScreen() {
       </View>
 
       <FlatList
-        data={listaCategorias}
+        data={lista}
+        keyExtractor={(item) => String(item?.id ?? item?.categoria_id)}
         renderItem={renderItemSegundo}
-        numColumns={screenWidth > 375 ? 3 : 2}
+        numColumns={numCols}
         refreshControl={
           <RefreshControl refreshing={isRefreshing} onRefresh={handleRefresh} />
         }
@@ -291,12 +382,9 @@ export default function ClientePerfilCategoriaScreen() {
   );
 }
 
-const screenWidth = Dimensions.get('window').width;
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
     padding: 6,
-    maxWidth: '50%',
     flexDirection: 'row',
     alignItems: 'stretch',
     justifyContent: 'space-between',

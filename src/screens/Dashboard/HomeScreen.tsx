@@ -11,24 +11,39 @@ import ButtonOutline from '../../components/buttons/ButtonOutline'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import MainLayoutAutenticado from '../../components/layout/MainLayoutAutenticado'
 import { FlatList, RefreshControl, ScrollView, Text, TouchableOpacity, View } from 'react-native'
-import Spacing from '@components/layout/Spacing'
+import { SafeAreaView } from 'react-native-safe-area-context'
+import { temDiscontokenNoPerfil } from '../../utils/discontokenPerfil'
+
+interface DadosPerfil {
+  nome_completo?: string
+  nome?: string
+  sobrenome?: string
+  tipo_usuario?: string
+  email?: string
+  id?: number
+  token?: string
+  cod_status?: number
+  mensagem?: string
+  associacao_id?: number | string | null
+  discotoken?: string | number | boolean | null
+}
 
 export default function HomeScreen() {
   const isFocused = useIsFocused()
   const { navigate } = useNavigate()
   const [primeiroNome, setPrimeiroNome] = useState('')
   const [listaprodutos, setProdutos] = useState([])
-  const [listacategorias, setCategorias] = useState([])
+  const [listacategorias, setCategorias] = useState<any[]>([])
   const [isRefreshing, setIsRefreshing] = useState(true)
   const [estadoSelecionado, setEstado] = useState<any>(null)
   const [cidadeSelecionada, setCidade] = useState<any>(null)
+  const [dadosPerfil, setDadosPerfil] = useState<DadosPerfil | null>(null)
 
 
   async function getProdutos() {
     setProdutos([])
     setIsRefreshing(true)
     const jsonValue = await AsyncStorage.getItem('infos-user')
-    console.log(jsonValue)
     if (jsonValue) {
       const newJson = JSON.parse(jsonValue)
       try {
@@ -65,11 +80,37 @@ export default function HomeScreen() {
     setIsRefreshing(true)
     try {
       const response = await api.get(`/categorias`)
-      setCategorias(response.data.results)
+      const raw = response.data?.results ?? response.data
+      setCategorias(Array.isArray(raw) ? raw : [])
     } catch (error: any) {
-      console.log('ERROR Categorias: ', error.response.data)
+      console.log('ERROR Categorias: ', error?.response?.data)
+      setCategorias([])
     }
     setIsRefreshing(false)
+  }
+
+  /** Lê `dados-perfil` + `infos-user` para atualizar chip Discontoken sem esperar a API. */
+  async function aplicarDadosPerfilDoStorage() {
+    try {
+      const dp = await AsyncStorage.getItem('dados-perfil')
+      const iu = await AsyncStorage.getItem('infos-user')
+      const u = iu ? JSON.parse(iu) : {}
+      if (dp) {
+        const p = JSON.parse(dp) as DadosPerfil
+        setDadosPerfil({
+          ...p,
+          associacao_id: p.associacao_id ?? u.associacao_id ?? null,
+          discotoken: p.discotoken ?? u.discotoken ?? null,
+        })
+      } else if (iu) {
+        setDadosPerfil({
+          associacao_id: u.associacao_id ?? null,
+          discotoken: u.discotoken ?? null,
+        })
+      }
+    } catch {
+      /* ignore */
+    }
   }
 
   async function getDadosPerfil() {
@@ -78,14 +119,31 @@ export default function HomeScreen() {
 
     if (jsonValue) {
       const newJson = JSON.parse(jsonValue)
-
       try {
         const response = await api.get(`/perfil/pessoa-fisica/${newJson?.id}`)
-        setPrimeiroNome(response.data.results.nome_completo.split(' ')[0])
-        const novoJson = JSON.stringify(response.data.results)
-        await AsyncStorage.setItem('dados-perfil', novoJson)
+        const results = response.data.results as DadosPerfil & { nome_completo?: string }
+        setPrimeiroNome(
+          (results.nome_completo ?? results.nome ?? '').split(' ')[0] ?? ''
+        )
+        const merged: DadosPerfil = {
+          ...results,
+          associacao_id:
+            results.associacao_id ?? newJson.associacao_id ?? null,
+          discotoken: results.discotoken ?? newJson.discotoken ?? null,
+        }
+        setDadosPerfil(merged)
+        await AsyncStorage.setItem('dados-perfil', JSON.stringify(merged))
       } catch (error: any) {
         console.error('GET Dados Perfil (Cliente): ', error.response.data.message)
+        const dp = await AsyncStorage.getItem('dados-perfil')
+        if (dp) {
+          setDadosPerfil(JSON.parse(dp))
+        } else {
+          setDadosPerfil({
+            associacao_id: newJson.associacao_id ?? null,
+            discotoken: newJson.discotoken ?? null,
+          })
+        }
       }
     }
     setIsRefreshing(false)
@@ -138,84 +196,92 @@ export default function HomeScreen() {
   }
 
   useEffect(() => {
-    getCategorias()
-    getProdutos()
-    getDadosPerfil()
-  }, [])
-
-  useEffect(() => {
-    getCategorias()
-    getProdutos()
+    if (!isFocused) return
+      ; (async () => {
+        await aplicarDadosPerfilDoStorage()
+        getCategorias()
+        getProdutos()
+        getDadosPerfil()
+      })()
   }, [isFocused])
 
   return (
     <MainLayoutAutenticado notScroll={true} loading={isRefreshing}>
-      <Spacing />
-      {estadoSelecionado && cidadeSelecionada && listaprodutos.length > 0 &&
-        <ScrollView horizontal={true} showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false} className='w-full h-14 pb-0'>
-          <CardCategoria
-            ativo={false}
-            titulo={"Discontoken"}
-            slug={"discontoken-teste"}
-            onPress={() => navigate('Discontoken')}
-          />
-          {listacategorias && listacategorias.map((categoria: any) => (
+      <SafeAreaView style={{ marginTop: 72 }}>
+
+        <ScrollView
+          horizontal
+          showsVerticalScrollIndicator={false}
+          showsHorizontalScrollIndicator={false}
+          className="w-full mb-2"
+          style={{ marginTop: 4 }}
+          contentContainerStyle={{ alignItems: 'center', paddingRight: 8, paddingVertical: 4 }}
+        >
+          {temDiscontokenNoPerfil(dadosPerfil) && (
             <CardCategoria
               ativo={false}
-              key={categoria.id}
-              slug={categoria.id}
+              titulo="Discontoken"
+              slug="discontoken-teste"
+              onPress={() => navigate('Discontoken')}
+            />
+          )}
+          {listacategorias.map((categoria: any) => (
+            <CardCategoria
+              ativo={false}
+              key={String(categoria.id)}
+              slug={String(categoria.id)}
               titulo={categoria.categorias}
               onPress={() => navigate('Categorias', { idCategoria: categoria.id })}
             />
           ))}
-        </ScrollView >
-      }
+        </ScrollView>
 
-      <View className="flex-row">
-        <Text className="text-[24px] font-semibold text-[#000] mb-3"> Boas-vindas, {primeiroNome ?? ''} 🎉</Text>
-      </View>
-
-      {estadoSelecionado && cidadeSelecionada &&
-        <TouchableOpacity
-          onPress={() => navigate('FiltroCidadeScreen')}
-          className='ml-2 mt-2 px-4 py-3 rounded-2xl bg-[#E6F3FF] border border-[#1E90FF] flex-row items-center'
-        >
-          <Text className="text-[18px] mr-2">📍</Text>
-          <View>
-            <Caption fontSize={12} fontWeight={'400'} color="#1E4B79">
-              Ofertas filtradas para
-            </Caption>
-            <Caption fontSize={14} fontWeight={'700'} color="#0B2340">
-              {cidadeSelecionada.nome} - {estadoSelecionado.sigla}
-            </Caption>
-          </View>
-        </TouchableOpacity>
-      }
-      {listaprodutos.length >= 1 &&
-        <FlatList
-          data={listaprodutos}
-          renderItem={renderItem}
-          refreshControl={
-            <RefreshControl
-              refreshing={isRefreshing}
-              onRefresh={handleRefresh}
-            />
-          }
-          showsVerticalScrollIndicator={false}
-        />}
-      {!isRefreshing && listaprodutos.length <= 0 &&
-        <View className='w-full items-center'>
-          <CardNotFound titulo='Não encontramos cupons no momento para você' />
-          {estadoSelecionado && cidadeSelecionada && (
-            <View className='mt-3 w-full px-8'>
-              <ButtonOutline title='Limpar filtro de cidade e estado' onPress={limparFiltroCidadeEstado} />
-            </View>
-          )}
-          <View className='mt-3 mx-8'>
-            <ButtonOutline title='Sugerir estabelecimentos' onPress={() => navigate('SugerirEstabelecimentosScreen')} />
-          </View>
+        <View className="flex-row">
+          <Text className="text-[24px] font-semibold text-[#000] mb-3">Boas-vindas, {primeiroNome ?? ''} 🎉</Text>
         </View>
-      }
+
+        {estadoSelecionado && cidadeSelecionada &&
+          <TouchableOpacity
+            onPress={() => navigate('FiltroCidadeScreen')}
+            className='ml-2 mt-2 px-4 py-3 rounded-2xl bg-[#E6F3FF] border border-[#1E90FF] flex-row items-center'
+          >
+            <Text className="text-[18px] mr-2">📍</Text>
+            <View>
+              <Caption fontSize={12} fontWeight={'400'} color="#1E4B79">
+                Ofertas filtradas para
+              </Caption>
+              <Caption fontSize={14} fontWeight={'700'} color="#0B2340">
+                {cidadeSelecionada.nome} - {estadoSelecionado.sigla}
+              </Caption>
+            </View>
+          </TouchableOpacity>
+        }
+        {listaprodutos.length >= 1 &&
+          <FlatList
+            data={listaprodutos}
+            renderItem={renderItem}
+            refreshControl={
+              <RefreshControl
+                refreshing={isRefreshing}
+                onRefresh={handleRefresh}
+              />
+            }
+            showsVerticalScrollIndicator={false}
+          />}
+        {!isRefreshing && listaprodutos.length <= 0 &&
+          <View className='w-full items-center'>
+            <CardNotFound titulo='Não encontramos cupons no momento para você' />
+            {estadoSelecionado && cidadeSelecionada && (
+              <View className='mt-3 w-full px-8'>
+                <ButtonOutline title='Limpar filtro de cidade e estado' onPress={limparFiltroCidadeEstado} />
+              </View>
+            )}
+            <View className='mt-3 mx-8'>
+              <ButtonOutline title='Sugerir estabelecimentos' onPress={() => navigate('SugerirEstabelecimentosScreen')} />
+            </View>
+          </View>
+        }
+      </SafeAreaView>
     </MainLayoutAutenticado>
   );
 }

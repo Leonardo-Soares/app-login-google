@@ -119,7 +119,7 @@ export default function HomeSemAuth() {
     <MainLayoutAutenticado notScroll={true} loading={isRefreshing}>
       <ModalTemplateLogin visible={modalVisible} onClose={() => setModalVisible(false)} />
       <Spacing />
-      <ScrollView horizontal={true} showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false} className='w-full h-14 pb-0 mt-2'>
+      <ScrollView horizontal={true} showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false} className='w-full h-0 pb-0 mt-2'>
         <CardCategoria
           ativo={false}
           slug={'todas'}
@@ -136,6 +136,10 @@ export default function HomeSemAuth() {
           />
         ))}
       </ScrollView >
+
+      <View className="flex-row">
+        <Text className="text-[24px] font-semibold text-[#000] mb-3"> Boas-vindas, Visitante 🎉</Text>
+      </View>
 
       {estadoSelecionado && cidadeSelecionada &&
         <TouchableOpacity onPress={() => navigate('FiltroCidadeScreen')} className=' ml-2'>

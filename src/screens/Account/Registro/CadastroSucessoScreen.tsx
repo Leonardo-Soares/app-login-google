@@ -11,7 +11,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage'
 import { OneSignal } from 'react-native-onesignal'
 
 export default function CadastroSucessoScreen() {
-  const { navigate } = useNavigate()
+  const navigation = useNavigate()
   const [loading, setLoading] = useState(false)
   const { senhaUser, setTipoUser, setUsuarioLogado } = useGlobal()
   const [emailStorage, setEmailStorage] = useState('')
@@ -56,10 +56,16 @@ export default function CadastroSucessoScreen() {
         const storageEmail = await AsyncStorage.setItem('dados-user', emailStorage)
         setTipoUser('Cliente')
         submitStorageLogin(response.data.results)
-        navigate('OnBoardingScreen')
         setUsuarioLogado(true)
+        navigation.reset({
+          index: 0,
+          routes: [{ name: 'OnBoardingScreen' }],
+        })
       } else {
-        navigate('LoginScreen')
+        navigation.reset({
+          index: 0,
+          routes: [{ name: 'LoginScreen' }],
+        })
       }
     } catch (error: any) {
       console.error('Error Login: ', error)
