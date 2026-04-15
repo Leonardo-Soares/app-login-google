@@ -2,6 +2,7 @@ import { api } from '../../../service/api';
 import Toast from 'react-native-toast-message';
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from '../../../hooks/useNavigate';
+import { useIsFocused } from '@react-navigation/native';
 import LinearGradient from 'react-native-linear-gradient';
 import ButtonPerfil from '../../../components/buttons/ButtonPerfil';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -31,32 +32,27 @@ function normalizarListaCategoriasApi(data: any): any[] {
   return []
 }
 
-/** Extrai ids da resposta de categorias já escolhidas pelo anunciante. */
-function extrairIdsSelecionadas(data: any): any[] {
-  const root = data?.results ?? data?.data ?? data
-  let arr: any[] = []
-  if (Array.isArray(root)) {
-    arr = root
-  } else if (root && Array.isArray(root.categorias)) {
-    arr = root.categorias
-  } else if (root && Array.isArray(root.ids)) {
-    arr = root.ids
-  }
-  return arr
-    .map((cat: any) => {
-      if (typeof cat === 'number' || typeof cat === 'string') return cat
-      if (cat?.categoria_id != null) return cat.categoria_id
-      if (cat?.id != null) return cat.id
+function idsIguais(a: any, b: any): boolean {
+  return String(a) === String(b)
+}
+
+/** Mesma lógica do que vinha de perfil_id — ids persistidos no perfil após salvar. */
+function extrairIdsDoPerfil(perfilId: any): any[] {
+  const perfil = Array.isArray(perfilId) ? perfilId : []
+  return perfil
+    .map((categoria: any) => {
+      if (typeof categoria === 'number' || typeof categoria === 'string') {
+        return categoria
+      }
+      if (categoria?.categoria_id != null) return categoria.categoria_id
+      if (categoria?.id != null) return categoria.id
       return null
     })
     .filter((id: any) => id != null)
 }
 
-function idsIguais(a: any, b: any): boolean {
-  return String(a) === String(b)
-}
-
 export default function ClientePerfilCategoriaScreen() {
+  const isFocused = useIsFocused()
   const { navigate } = useNavigate();
   const screenWidth = Dimensions.get('window').width;
   const numCols = screenWidth > 375 ? 3 : 2;
@@ -100,45 +96,21 @@ export default function ClientePerfilCategoriaScreen() {
     const headers = { Authorization: `Bearer ${newJson.token}` }
     try {
       const resCadastro = await api.get('/categorias/cadastro', { headers })
-      console.log('Resposta da API de categorias (cadastro)', resCadastro.data)
       let list = normalizarListaCategoriasApi(resCadastro.data)
       if (list.length === 0) {
         const resHome = await api.get('/categorias', { headers })
-        console.log('Resposta da API de categorias (home)', resHome.data)
         list = normalizarListaCategoriasApi(resHome.data)
       }
       setListaCategorias(list)
     } catch (error: any) {
-      console.log('Erro ao buscar categorias (cadastro), tentando /categorias', error.response?.data)
+      console.error('Erro ao buscar categorias (cadastro), tentando /categorias', error.response?.data)
       try {
         const response = await api.get('/categorias', { headers })
         setListaCategorias(normalizarListaCategoriasApi(response.data))
       } catch (e2: any) {
-        console.log('Erro ao buscar /categorias', e2.response?.data)
+        console.error('Erro ao buscar /categorias', e2.response?.data)
         setListaCategorias([])
       }
-    }
-  }
-
-  /** Apenas os ids que o anunciante já marcou. */
-  async function getCategoriasSelecionadas() {
-    const jsonValue = await AsyncStorage.getItem('infos-user')
-    if (!jsonValue) return
-    const newJson = JSON.parse(jsonValue)
-    try {
-      const response = await api.get('/anunciante/categorias-selecionadas', {
-        headers: { Authorization: `Bearer ${newJson.token}` },
-      })
-      const idsSelecionados = extrairIdsSelecionadas(response.data)
-      setSelectedOptions(idsSelecionados)
-      setOriginalSelectedOptions(idsSelecionados)
-    } catch (error: any) {
-      console.log(
-        'Erro ao buscar categorias selecionadas',
-        error.response?.data || error.message,
-      )
-      setSelectedOptions([])
-      setOriginalSelectedOptions([])
     }
   }
 
@@ -155,51 +127,37 @@ export default function ClientePerfilCategoriaScreen() {
           { categorias: selectedOptions },
           { headers }
         );
-        console.log('Categorias Enviada', selectedOptions);
         navigate('ClientePerfilScreen')
         Toast.show({
           type: 'success',
           text1: 'Categorias atualizadas!',
         });
         setNeedSave(false);
-        getPerfil();
-        getCategoriasSelecionadas();
+        await getPerfil();
       } catch (error: any) {
-        console.log('ERROR POST Atualizar Categorias', error.response.data);
+        console.error('ERROR POST Atualizar Categorias', error.response.data);
       }
     }
   }
 
+  /**
+   * Seleção salva vem de `perfil_id` no perfil (o mesmo persistido por `/atualiza-categorias`).
+   * Não usar `/anunciante/categorias-selecionadas` para preencher chips: esse endpoint pode
+   * devolver lista ampla ou formato distinto e dessincronizar da tela.
+   */
   async function getPerfil() {
     const jsonValue = await AsyncStorage.getItem('infos-user');
-    if (jsonValue) {
-      const newJson = JSON.parse(jsonValue);
-      try {
-        const response = await api.get(`/perfil/pessoa-juridica/${newJson.id}`);
-        const perfil = response.data.results.perfil_id || [];
-
-        const idsSelecionados = perfil
-          .map((categoria: any) => {
-            if (typeof categoria === 'number' || typeof categoria === 'string') {
-              return categoria;
-            }
-            if (categoria?.categoria_id != null) {
-              return categoria.categoria_id;
-            }
-            if (categoria?.id != null) {
-              return categoria.id;
-            }
-            return null;
-          })
-          .filter((id: any) => id != null);
-
-        // A população de selectedOptions e originalSelectedOptions
-        // agora é feita pelo método getCategoriasSelecionadas
-        // setSelectedOptions(idsSelecionados);
-        // setOriginalSelectedOptions(idsSelecionados);
-      } catch (error: any) {
-        console.log('Error GET Perfil: ', error.response.data);
-      }
+    if (!jsonValue) return;
+    const newJson = JSON.parse(jsonValue);
+    try {
+      const response = await api.get(`/perfil/pessoa-juridica/${newJson.id}`);
+      console.log('response', response.data.results);
+      const perfil = response.data.results.perfil_id || [];
+      const idsSelecionados = extrairIdsDoPerfil(perfil);
+      setSelectedOptions(idsSelecionados);
+      setOriginalSelectedOptions(idsSelecionados);
+    } catch (error: any) {
+      console.error('Error GET Perfil: ', error.response?.data);
     }
   }
 
@@ -266,19 +224,20 @@ export default function ClientePerfilCategoriaScreen() {
   const handleRefresh = async () => {
     setIsRefreshing(true);
     try {
-      await getPerfil();
       await getCategorias();
-      await getCategoriasSelecionadas();
+      await getPerfil();
     } finally {
       setIsRefreshing(false);
     }
   };
 
   useEffect(() => {
-    getPerfil();
-    getCategorias();
-    getCategoriasSelecionadas()
-  }, []);
+    if (!isFocused) return;
+    void (async () => {
+      await getCategorias();
+      await getPerfil();
+    })();
+  }, [isFocused]);
 
   useEffect(() => {
     const atual = [...selectedOptions].sort((a, b) => a - b);
