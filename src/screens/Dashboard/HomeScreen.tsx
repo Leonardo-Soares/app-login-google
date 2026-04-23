@@ -237,7 +237,7 @@ export default function HomeScreen() {
         </ScrollView>
 
         <View className="flex-row">
-          <Text className="text-[24px] font-semibold text-[#000] mb-3">Boas-vindas, {primeiroNome ?? ''} 🎉</Text>
+          <Text className="text-[24px] font-semibold text-[#000] mb-3"> Boas-vindas, {primeiroNome ?? ''} 🎉</Text>
         </View>
 
         {estadoSelecionado && cidadeSelecionada &&

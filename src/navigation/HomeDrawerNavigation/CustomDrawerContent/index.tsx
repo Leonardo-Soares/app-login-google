@@ -114,15 +114,18 @@ export function CustomDrawerContent(props: any) {
             </>
             :
             <>
-              {/* {associado && associado !== '-' && */}
-              <View className=' rounded-2xl' style={{ backgroundColor: colors.secondary80 }}>
-                <MenuItem
-                  titulo='Discontoken'
-                  onPress={() => navigate('DisconTokenScreen')}
-                  icon={require('../../../../assets/img/icons/star-discontoken.png')}
-                />
-              </View>
-              {/* } */}
+              {associado && associado !== '-' &&
+                <View className=' rounded-2xl' style={{ backgroundColor: colors.secondary80 }}>
+                  <MenuItem
+                    titulo='Discontoken'
+                    onPress={() => {
+                      drawerNavigation.closeDrawer()
+                      drawerNavigation.navigate('HomeTabNavigation', { screen: 'Discontoken' })
+                    }}
+                    icon={require('../../../../assets/img/icons/star-discontoken.png')}
+                  />
+                </View>
+              }
               <MenuItem
                 onPress={() => { drawerNavigation.closeDrawer(); drawerNavigation.navigate('SugerirEstabelecimentosScreen') }}
                 titulo='Sugerir Estabelecimentos'
