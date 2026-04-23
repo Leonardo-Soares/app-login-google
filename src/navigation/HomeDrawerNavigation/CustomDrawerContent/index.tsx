@@ -42,6 +42,16 @@ export function CustomDrawerContent(props: any) {
 
   useEffect(() => {
     getStorage()
+    const unsubscribeDrawerOpen = drawerNavigation.addListener('drawerOpen', () => {
+      getStorage()
+    })
+
+    return unsubscribeDrawerOpen
+  }, [drawerNavigation])
+
+
+  useEffect(() => {
+    getStorage()
   }, [])
 
   return (
