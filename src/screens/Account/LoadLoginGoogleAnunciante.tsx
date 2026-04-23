@@ -168,7 +168,7 @@ export default function LoadLoginGoogleAnunciante() {
             <>
               <View className="mt-2"></View>
               <FilledButton
-                onPress={() => Linking.openURL('https://www.backend.discontapp.com.br/api/auth/google?tipo=anunciante')}
+                onPress={() => Linking.openURL('https://backend.discontapp.com.br/api/auth/google?tipo=anunciante')}
                 title='Login Google'
                 backgroundColor={colors.primary10}
               />

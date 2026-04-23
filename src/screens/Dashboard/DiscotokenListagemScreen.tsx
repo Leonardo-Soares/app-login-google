@@ -1,4 +1,4 @@
-import { View, Text, Image, TouchableOpacity, Modal, Platform, PermissionsAndroid, Linking, StyleSheet, StyleProp, ImageStyle, ScrollView } from 'react-native'
+import { View, Text, Image, TouchableOpacity, Modal, Platform, PermissionsAndroid, Linking, StyleSheet, StyleProp, ImageStyle, ScrollView, useWindowDimensions } from 'react-native'
 import React, { useEffect, useState } from 'react'
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -65,6 +65,34 @@ function LinhaDadoModal({
     )
 }
 
+function parseNumero(valor: unknown) {
+    if (typeof valor === 'number') {
+        return Number.isFinite(valor) ? valor : null
+    }
+    if (typeof valor !== 'string') return null
+    const valorNormalizado = valor.trim().replace(',', '.')
+    if (!valorNormalizado) return null
+    const numero = parseFloat(valorNormalizado)
+    return Number.isFinite(numero) ? numero : null
+}
+
+function getVantagemDiscontoken(anunciante: any) {
+    const porcentagem = parseNumero(anunciante?.vantagem_porcentagem_discotoken)
+    if (porcentagem != null) {
+        return `${porcentagem}%`
+    }
+
+    const reais = parseNumero(anunciante?.vantagem_reais_discotoken)
+    if (reais != null) {
+        return new Intl.NumberFormat('pt-BR', {
+            style: 'currency',
+            currency: 'BRL',
+        }).format(reais)
+    }
+
+    return null
+}
+
 const modalStyles = StyleSheet.create({
     linhaDado: {
         marginTop: 12,
@@ -87,6 +115,12 @@ const modalStyles = StyleSheet.create({
         borderWidth: 1,
         borderColor: colors.neutralvariant90,
     },
+    modalLogoBoxSmall: {
+        width: 68,
+        height: 68,
+        borderRadius: 12,
+        marginRight: 10,
+    },
     modalLogoImg: {
         width: '100%',
         height: '100%',
@@ -98,9 +132,12 @@ const modalStyles = StyleSheet.create({
         color: colors.neutral10,
         lineHeight: 24,
     },
+    modalTituloSmall: {
+        fontSize: 16,
+        lineHeight: 22,
+    },
     modalPercent: {
         fontFamily: 'Poppins_600SemiBold',
-        fontSize: 32,
         color: colors.primary40,
         marginTop: 4,
     },
@@ -110,6 +147,9 @@ const modalStyles = StyleSheet.create({
 })
 
 export default function DiscotokenListagemScreen() {
+    const { width, height } = useWindowDimensions()
+    const isSmallScreen = width < 360
+    const isShortScreen = height < 700
 
     const [cupons, setCupons] = useState([])
     const [cupomAtual, setCupomAtual] = useState({} as any)
@@ -127,6 +167,7 @@ export default function DiscotokenListagemScreen() {
                 }
                 const response = await api.get(`/discotoken/anunciantes`, { headers })
                 setCupons(response.data.results.anunciantes)
+                console.log('response.data.results.anunciantes', response.data.results.anunciantes)
             } catch (error: any) {
                 console.log('ERROR GET CUPONS ', error)
             }
@@ -192,6 +233,16 @@ export default function DiscotokenListagemScreen() {
     const coordsModalOk =
         Number.isFinite(latModal) &&
         Number.isFinite(lngModal)
+    const descontoFontSize = isSmallScreen ? 32 : 40
+    const descontoLineHeight = isSmallScreen ? 40 : 48
+    const modalPercentFontSize = isSmallScreen ? 26 : 32
+    const modalPercentLineHeight = isSmallScreen ? 32 : 38
+    const modalMapHeight = isShortScreen ? 160 : 200
+    const modalMaxHeight = isShortScreen ? '92%' : '88%'
+    const couponLogoSize = isSmallScreen ? 60 : 72
+    const couponMinHeight = isSmallScreen ? 100 : 120
+    const couponDashHeight = isSmallScreen ? 72 : 88
+    const vantagemModal = getVantagemDiscontoken(anuncianteModal)
 
     return (
         <MainLayoutAutenticado marginTop={64} marginHorizontal={16}>
@@ -226,22 +277,22 @@ export default function DiscotokenListagemScreen() {
                 >
                     <View style={styles.couponCard}>
                         <View style={styles.couponStripe} />
-                        <View style={styles.couponInner}>
-                            <View style={styles.logoWrap}>
+                        <View style={[styles.couponInner, { minHeight: couponMinHeight }, isSmallScreen && styles.couponInnerSmall]}>
+                            <View style={[styles.logoWrap, { width: couponLogoSize, height: couponLogoSize }]}>
                                 <CupomLogo uri={cupom?.photo} style={styles.logo} />
                             </View>
-                            <View style={styles.perforation}>
-                                <View style={styles.lineDash} />
+                            <View style={[styles.perforation, isSmallScreen && styles.perforationSmall]}>
+                                <View style={[styles.lineDash, { height: couponDashHeight }]} />
                             </View>
                             <View style={styles.couponTextBlock}>
                                 <Text
-                                    style={styles.nomeFantasia}
+                                    style={[styles.nomeFantasia, isSmallScreen && styles.nomeFantasiaSmall]}
                                     numberOfLines={2}
                                 >
                                     {cupom?.anunciante?.nome_fantasia}
                                 </Text>
-                                <Text style={styles.desconto}>
-                                    {cupom?.anunciante?.vantagem_porcentagem_discotoken}%
+                                <Text style={[styles.desconto, { fontSize: descontoFontSize, lineHeight: descontoLineHeight }]}>
+                                    {getVantagemDiscontoken(cupom?.anunciante) ?? '-'}
                                 </Text>
                                 <Text style={styles.descontoLabel}>Discontoken</Text>
                             </View>
@@ -251,7 +302,7 @@ export default function DiscotokenListagemScreen() {
             ))}
             <Modal animationType="slide" transparent visible={isModal}>
                 <View style={styles.modalOverlay}>
-                    <View style={styles.modalCard}>
+                    <View style={[styles.modalCard, { maxHeight: modalMaxHeight }]}>
                         <View style={styles.modalHeader}>
                             <Text style={styles.modalHeaderTitle}>Discontoken</Text>
                             <TouchableOpacity onPress={() => setIsModal(false)} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
@@ -264,16 +315,16 @@ export default function DiscotokenListagemScreen() {
                             contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 16 }}
                         >
                             <View style={modalStyles.modalHero}>
-                                <View style={modalStyles.modalLogoBox}>
+                                <View style={[modalStyles.modalLogoBox, isSmallScreen && modalStyles.modalLogoBoxSmall]}>
                                     <CupomLogo uri={cupomAtual?.photo} style={modalStyles.modalLogoImg} />
                                 </View>
                                 <View style={{ flex: 1 }}>
-                                    <Text style={modalStyles.modalTitulo} numberOfLines={3}>
+                                    <Text style={[modalStyles.modalTitulo, isSmallScreen && modalStyles.modalTituloSmall]} numberOfLines={3}>
                                         {anuncianteModal.nome_fantasia ?? 'Estabelecimento'}
                                     </Text>
-                                    {anuncianteModal.vantagem_porcentagem_discotoken != null && (
-                                        <Text style={modalStyles.modalPercent}>
-                                            {anuncianteModal.vantagem_porcentagem_discotoken}%
+                                    {vantagemModal != null && (
+                                        <Text style={[modalStyles.modalPercent, { fontSize: modalPercentFontSize, lineHeight: modalPercentLineHeight }]}>
+                                            {vantagemModal}
                                         </Text>
                                     )}
                                 </View>
@@ -312,7 +363,7 @@ export default function DiscotokenListagemScreen() {
                                         Localização
                                     </Caption>
                                     <MapView
-                                        style={styles.modalMap}
+                                        style={[styles.modalMap, { height: modalMapHeight }]}
                                         region={{
                                             latitude: latModal,
                                             longitude: lngModal,
@@ -335,16 +386,9 @@ export default function DiscotokenListagemScreen() {
                                                     `https://www.google.com/maps?q=${latModal},${lngModal}`
                                                 )
                                             }
-                                            style={{
-                                                backgroundColor: colors.secondary50,
-                                                borderRadius: 999,
-                                                paddingVertical: 10,
-                                                paddingHorizontal: 20,
-                                                flexDirection: 'row',
-                                                alignItems: 'center',
-                                            }}
+                                            style={[styles.locationButton, isSmallScreen && styles.locationButtonSmall]}
                                         >
-                                            <Text style={{ fontFamily: 'Poppins_500Medium', color: '#fff', fontSize: 16, marginRight: 6 }}>
+                                            <Text style={[styles.locationButtonText, isSmallScreen && styles.locationButtonTextSmall]}>
                                                 Ver local
                                             </Text>
                                             <Image source={require('../../../assets/img/icons/local-cidade.png')} />
@@ -375,7 +419,6 @@ const styles = StyleSheet.create({
     modalCard: {
         width: '100%',
         maxWidth: 400,
-        maxHeight: '88%',
         backgroundColor: colors.neutral99,
         borderRadius: 16,
         borderWidth: 1,
@@ -398,7 +441,6 @@ const styles = StyleSheet.create({
     },
     modalMap: {
         width: '100%',
-        height: 200,
         borderRadius: 12,
         marginTop: 8,
         overflow: 'hidden',
@@ -438,7 +480,10 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         paddingVertical: 14,
         paddingHorizontal: 14,
-        minHeight: 120,
+    },
+    couponInnerSmall: {
+        paddingVertical: 12,
+        paddingHorizontal: 12,
     },
     logoWrap: {
         width: 72,
@@ -458,6 +503,9 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
     },
+    perforationSmall: {
+        paddingHorizontal: 8,
+    },
     lineDash: {
         width: 1,
         height: 88,
@@ -476,12 +524,14 @@ const styles = StyleSheet.create({
         color: colors.neutral10,
         lineHeight: 20,
     },
+    nomeFantasiaSmall: {
+        fontSize: 14,
+        lineHeight: 18,
+    },
     desconto: {
         fontFamily: 'Poppins_600SemiBold',
-        fontSize: 40,
         fontWeight: '600',
         color: colors.primary40,
-        lineHeight: 48,
         marginTop: 4,
     },
     descontoLabel: {
@@ -489,5 +539,26 @@ const styles = StyleSheet.create({
         fontSize: 12,
         color: colors.neutralvariant60,
         marginTop: 2,
+    },
+    locationButton: {
+        backgroundColor: colors.secondary50,
+        borderRadius: 999,
+        paddingVertical: 10,
+        paddingHorizontal: 20,
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    locationButtonSmall: {
+        paddingVertical: 8,
+        paddingHorizontal: 16,
+    },
+    locationButtonText: {
+        fontFamily: 'Poppins_500Medium',
+        color: '#fff',
+        fontSize: 16,
+        marginRight: 6,
+    },
+    locationButtonTextSmall: {
+        fontSize: 14,
     },
 })

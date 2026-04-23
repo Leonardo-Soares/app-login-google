@@ -331,11 +331,6 @@ export default function FormPessoaJuridicaScreen({
       const results = data?.results ?? {};
       const message = data?.message ?? 'Não foi possível validar os dados.';
 
-      if (results?.cnpjusado) {
-        Toast.show({ type: 'error', text1: 'CNPJ já cadastrado!' });
-        setErrorCnpj(true);
-        return;
-      }
       if (results?.emailusado) {
         Toast.show({ type: 'error', text1: 'E-mail já cadastrado!' });
         setErrorEmail(true);
@@ -457,10 +452,10 @@ export default function FormPessoaJuridicaScreen({
       if (coordenadasValidas(lat, lng)) {
         setNovaLocalizacao({ latitude: lat, longitude: lng });
       }
-      // console.log('teste', {
-      //   latitude: parseFloat(response.data.location.coordinates.latitude),
-      //   longitude: parseFloat(response.data.location.coordinates.longitude),
-      // });
+      console.log('teste', {
+        latitude: parseFloat(response.data),
+        longitude: parseFloat(response.data),
+      });
     } catch (error: any) {
       console.error('Error GET CEP', error);
       setEndereco('');
@@ -780,10 +775,6 @@ export default function FormPessoaJuridicaScreen({
     longitude: -48.487557,
   };
 
-  console.log('coordenadasMarcador', coordenadasMarcador);
-  console.log('novaLocalizacao', novaLocalizacao);
-  console.log('regiao', regiao);
-  console.log('localizacao', localizacao);
 
   return (
     <MainLayoutSecondary loading={loading}>

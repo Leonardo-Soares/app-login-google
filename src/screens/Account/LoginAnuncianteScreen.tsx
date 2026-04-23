@@ -190,7 +190,7 @@ export default function LoginAnuncianteScreen() {
                 <View className="flex-1 h-px bg-gray-300"></View>
               </View>
               <GoogleLoginButton
-                onPress={() => Linking.openURL('https://www.backend.discontapp.com.br/api/auth/google?tipo=anunciante')}
+                onPress={() => Linking.openURL('https://backend.discontapp.com.br/api/auth/google?tipo=anunciante')}
                 title='Continuar com Google'
               />
             </>

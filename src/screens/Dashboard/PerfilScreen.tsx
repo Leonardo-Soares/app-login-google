@@ -61,6 +61,7 @@ export default function PerfilScreen() {
           name: nomeCompleto,
           email: email,
           telefone: novoTelefone,
+          cpf: cpf,
           endereco: endereco,
           complemento: complemento
         }, {
@@ -157,19 +158,20 @@ export default function PerfilScreen() {
                 onChange={setEndereco}
                 keyboardType={'default'}
               /> */}
-              <InputOutlined
+              {/* <InputOutlined
                 mt={8}
                 label='Complemento'
                 value={complemento}
                 keyboardType={'default'}
                 onChange={setComplemento}
-              />
-              <InputDisabled
+              /> */}
+              <InputOutlined
                 mt={8}
-                onChange={setTelefone}
+                onChange={handleCPFMask}
                 label='CPF'
-                keyboardType={'default'}
+                keyboardType={'number-pad'}
                 value={cpf}
+                maxLength={14}
               />
             </>
             :

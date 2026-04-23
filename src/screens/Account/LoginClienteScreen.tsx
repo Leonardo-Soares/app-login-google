@@ -160,7 +160,7 @@ export default function LoginClienteScreen() {
                   <View className="flex-1 h-px bg-gray-300"></View>
                 </View>
                 <GoogleLoginButton
-                  onPress={() => Linking.openURL('https://www.backend.discontapp.com.br/api/auth/google?tipo=cliente')}
+                  onPress={() => Linking.openURL('https://backend.discontapp.com.br/api/auth/google?tipo=cliente')}
                   title='Continuar com Google'
                 />
               </>
