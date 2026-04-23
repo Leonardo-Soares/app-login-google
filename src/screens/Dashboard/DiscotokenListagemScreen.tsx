@@ -65,6 +65,54 @@ function LinhaDadoModal({
     )
 }
 
+function LinhaDadoApi({
+    label,
+    valor,
+}: {
+    label: string
+    valor: unknown
+}) {
+    return (
+        <View style={modalStyles.linhaDado}>
+            <Caption fontSize={12} color={colors.neutralvariant60}>
+                {label}
+            </Caption>
+            <Caption fontSize={14} margintop={4} color={colors.neutral10}>
+                {formatValorApi(valor)}
+            </Caption>
+        </View>
+    )
+}
+
+function formatLabelApi(chave: string) {
+    return chave
+        .replace(/_/g, ' ')
+        .replace(/\b\w/g, (letra) => letra.toUpperCase())
+}
+
+function formatValorApi(valor: unknown) {
+    if (valor == null) return 'Não informado'
+    if (typeof valor === 'boolean') return valor ? 'Sim' : 'Não'
+    if (typeof valor === 'string') {
+        const valorLimpo = valor.trim()
+        if (!valorLimpo || valorLimpo.toLowerCase() === 'null') {
+            return 'Não informado'
+        }
+        return valor
+    }
+    if (typeof valor === 'number') {
+        return Number.isFinite(valor) ? String(valor) : 'Não informado'
+    }
+    if (typeof valor === 'object') {
+        try {
+            return JSON.stringify(valor)
+        } catch {
+            return 'Não informado'
+        }
+    }
+    return String(valor)
+}
+
 function parseNumero(valor: unknown) {
     if (typeof valor === 'number') {
         return Number.isFinite(valor) ? valor : null
@@ -243,6 +291,10 @@ export default function DiscotokenListagemScreen() {
     const couponMinHeight = isSmallScreen ? 100 : 120
     const couponDashHeight = isSmallScreen ? 72 : 88
     const vantagemModal = getVantagemDiscontoken(anuncianteModal)
+    const dadosAnunciante = Object.entries(anuncianteModal ?? {}).sort(([a], [b]) => a.localeCompare(b))
+    const dadosComplementares = Object.entries(cupomAtual ?? {})
+        .filter(([chave]) => chave !== 'anunciante')
+        .sort(([a], [b]) => a.localeCompare(b))
 
     return (
         <MainLayoutAutenticado marginTop={64} marginHorizontal={16}>
@@ -348,6 +400,32 @@ export default function DiscotokenListagemScreen() {
                             <LinhaDadoModal label="CNPJ" valor={anuncianteModal.cnpj} />
                             <LinhaDadoModal label="Cidade" valor={anuncianteModal.cidade} />
                             <LinhaDadoModal label="Estado" valor={anuncianteModal.estado ?? anuncianteModal.uf} />
+
+                            <View style={styles.apiSectionHeader}>
+                                <Caption fontSize={12} color={colors.neutralvariant60}>
+                                    Todos os dados do anunciante (API)
+                                </Caption>
+                            </View>
+                            {dadosAnunciante.map(([chave, valor]) => (
+                                <LinhaDadoApi
+                                    key={`anunciante-${chave}`}
+                                    label={formatLabelApi(chave)}
+                                    valor={valor}
+                                />
+                            ))}
+
+                            <View style={styles.apiSectionHeader}>
+                                <Caption fontSize={12} color={colors.neutralvariant60}>
+                                    Dados complementares do registro (API)
+                                </Caption>
+                            </View>
+                            {dadosComplementares.map(([chave, valor]) => (
+                                <LinhaDadoApi
+                                    key={`registro-${chave}`}
+                                    label={formatLabelApi(chave)}
+                                    valor={valor}
+                                />
+                            ))}
 
                             {!permissaoLocal ? (
                                 <View style={{ marginTop: 16, paddingTop: 12 }}>
@@ -560,5 +638,9 @@ const styles = StyleSheet.create({
     },
     locationButtonTextSmall: {
         fontSize: 14,
+    },
+    apiSectionHeader: {
+        marginTop: 16,
+        marginBottom: 2,
     },
 })
