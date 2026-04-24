@@ -614,7 +614,7 @@ export default function CadastroAfiliadoScreen() {
 
   return (
     <MainLayoutAutenticado notScroll={false} loading={loading} marginTop={24} marginHorizontal={16}>
-      <View className='mb-6 mt-12'>
+      <View className='mb-6 mt-20'>
         <H3>Solicitação de Afiliado</H3>
         <Caption fontSize={14} color={colors.gray} margintop={8}>
           Preencha todos os campos para cadastrar um novo afiliado

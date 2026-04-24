@@ -14,6 +14,7 @@ import {
   temDiscontokenNoPerfil,
   type DadosPerfilDiscontoken,
 } from '../../utils/discontokenPerfil'
+import CardCategoriaDiscontoken from '@components/cards/CardCategoriaDiscontoken'
 
 export default function HomeFiltradaScreen(route: any) {
   const isFocused = useIsFocused()
@@ -123,10 +124,8 @@ export default function HomeFiltradaScreen(route: any) {
         }}
       >
         {temDiscontokenNoPerfil(perfilDiscontoken) && (
-          <CardCategoria
-            ativo={false}
-            titulo={'Discontoken'}
-            slug={'discontoken-teste'}
+          <CardCategoriaDiscontoken
+            titulo="Discontoken"
             onPress={() => navigate('Discontoken')}
           />
         )}

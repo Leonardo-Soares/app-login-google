@@ -207,11 +207,11 @@ export default function DiscotokenListagemScreen() {
     const isSmallScreen = width < 360
     const isShortScreen = height < 700
 
-    const [cupons, setCupons] = useState([])
+    const [cupons, setCupons] = useState<any[]>([])
     const [cupomAtual, setCupomAtual] = useState({} as any)
     const [isModal, setIsModal] = useState(false)
     const [permissaoLocal, setPermissaoLocal] = useState(false)
-    const [introExpandido, setIntroExpandido] = useState(false)
+    const [isIntroModal, setIsIntroModal] = useState(false)
     const [usuarioCliente, setUsuarioCliente] = useState(0)
     const { navigate } = useNavigate()
 
@@ -226,7 +226,19 @@ export default function DiscotokenListagemScreen() {
                     Accept: 'application/json',
                 }
                 const response = await api.get(`/discotoken/anunciantes`, { headers })
-                setCupons(response.data.results.anunciantes)
+                const anunciantesOrdenados = [...(response.data.results.anunciantes ?? [])].sort((a: any, b: any) => {
+                    const dataA = Date.parse(String(a?.anunciante?.created_at ?? a?.created_at ?? ''))
+                    const dataB = Date.parse(String(b?.anunciante?.created_at ?? b?.created_at ?? ''))
+
+                    if (Number.isFinite(dataA) && Number.isFinite(dataB) && dataA !== dataB) {
+                        return dataB - dataA
+                    }
+
+                    const idA = Number(a?.anunciante?.id ?? a?.id ?? 0)
+                    const idB = Number(b?.anunciante?.id ?? b?.id ?? 0)
+                    return idB - idA
+                })
+                setCupons(anunciantesOrdenados)
             } catch (error: any) {
                 console.error('ERROR GET CUPONS ', error)
             }
@@ -322,38 +334,52 @@ export default function DiscotokenListagemScreen() {
             <Spacing />
             <TouchableOpacity
                 activeOpacity={0.9}
-                onPress={() => setIntroExpandido((valorAnterior) => !valorAnterior)}
+                onPress={() => setIsIntroModal(true)}
                 style={styles.introBox}
             >
                 <View style={styles.introHeader}>
                     <H5 color={colors.primary40}>Discontoken</H5>
                     <Text style={styles.introToggleText}>
-                        {introExpandido ? 'Ocultar' : 'Saiba mais'}
+                        Saiba mais
                     </Text>
                 </View>
-                {introExpandido && (
-                    <>
-                        <Caption fontSize={14} margintop={10} color={colors.neutral10}>
-                            O Discontoken é um identificador digital (QR Code) que dá acesso a descontos exclusivos em estabelecimentos parceiros.
-                        </Caption>
-                        <Caption fontSize={14} margintop={10} color={colors.neutral10}>
-                            Mais do que um cupom, ele funciona como uma ponte entre associações, associados e empresas, criando um ecossistema de vantagens:
-                        </Caption>
-                        <Caption fontSize={14} margintop={8} color={colors.neutral10}>
-                            • O associado economiza
-                        </Caption>
-                        <Caption fontSize={14} margintop={4} color={colors.neutral10}>
-                            • A empresa vende mais
-                        </Caption>
-                        <Caption fontSize={14} margintop={4} color={colors.neutral10}>
-                            • A associação entrega valor real
-                        </Caption>
-                        <Caption fontSize={14} margintop={10} color={colors.neutral10}>
-                            Tudo integrado dentro da plataforma Discontapp.
-                        </Caption>
-                    </>
-                )}
             </TouchableOpacity>
+            <Modal animationType="fade" transparent visible={isIntroModal}>
+                <View style={styles.modalOverlay}>
+                    <View style={[styles.modalCard, { maxHeight: modalMaxHeight }]}>
+                        <View style={styles.modalHeader}>
+                            <Text style={styles.modalHeaderTitle}>Sobre o Discontoken</Text>
+                            <TouchableOpacity onPress={() => setIsIntroModal(false)} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
+                                <Image source={require('../../../assets/img/closeButton.png')} style={{ width: 16, height: 16 }} resizeMode="contain" />
+                            </TouchableOpacity>
+                        </View>
+                        <ScrollView
+                            style={modalStyles.scrollModal}
+                            showsVerticalScrollIndicator={false}
+                            contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 16 }}
+                        >
+                            <Caption fontSize={14} margintop={10} color={colors.neutral10}>
+                                O Discontoken é um identificador digital (QR Code) que dá acesso a descontos exclusivos em estabelecimentos parceiros.
+                            </Caption>
+                            <Caption fontSize={14} margintop={10} color={colors.neutral10}>
+                                Mais do que um cupom, ele funciona como uma ponte entre associações, associados e empresas, criando um ecossistema de vantagens:
+                            </Caption>
+                            <Caption fontSize={14} margintop={8} color={colors.neutral10}>
+                                • O associado economiza
+                            </Caption>
+                            <Caption fontSize={14} margintop={4} color={colors.neutral10}>
+                                • A empresa vende mais
+                            </Caption>
+                            <Caption fontSize={14} margintop={4} color={colors.neutral10}>
+                                • A associação entrega valor real
+                            </Caption>
+                            <Caption fontSize={14} margintop={10} color={colors.neutral10}>
+                                Tudo integrado dentro da plataforma Discontapp.
+                            </Caption>
+                        </ScrollView>
+                    </View>
+                </View>
+            </Modal>
             {cupons.map((cupom: any) => {
                 const valorQrCodeCard = getValorQrAnunciante(cupom?.anunciante)
 
@@ -594,8 +620,8 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     introToggleText: {
-        fontFamily: 'Poppins_500Medium',
-        fontSize: 13,
+        fontFamily: 'Poppins_400Regular',
+        fontSize: 12,
         color: colors.primary40,
     },
     couponTouchable: {
@@ -632,7 +658,7 @@ const styles = StyleSheet.create({
     logoWrap: {
         width: 72,
         height: 72,
-        borderRadius: 12,
+        borderRadius: 999,
         overflow: 'hidden',
         backgroundColor: colors.neutral90,
         borderWidth: 1,
@@ -641,6 +667,7 @@ const styles = StyleSheet.create({
     logo: {
         width: '100%',
         height: '100%',
+        borderRadius: 999,
     },
     perforation: {
         paddingHorizontal: 12,
@@ -714,17 +741,18 @@ const styles = StyleSheet.create({
     },
     cardButtonsRow: {
         marginTop: 10,
-        flexDirection: 'row',
-        alignItems: 'center',
-        columnGap: 8,
-        flexWrap: 'wrap',
+        flexDirection: 'column',
+        alignItems: 'flex-start',
+        rowGap: 8,
+        width: '100%',
     },
     qrButtonInCard: {
         backgroundColor: colors.primary40,
         borderRadius: 999,
         paddingVertical: 7,
         paddingHorizontal: 12,
-        alignSelf: 'flex-start',
+        width: '100%',
+        alignItems: 'center',
     },
     qrButtonInCardText: {
         fontFamily: 'Poppins_500Medium',
@@ -736,7 +764,8 @@ const styles = StyleSheet.create({
         borderRadius: 999,
         paddingVertical: 7,
         paddingHorizontal: 12,
-        alignSelf: 'flex-start',
+        width: '100%',
+        alignItems: 'center',
     },
     detailsButtonInCardText: {
         fontFamily: 'Poppins_500Medium',

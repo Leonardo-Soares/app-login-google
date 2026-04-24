@@ -7,6 +7,7 @@ import CardProduto from '../../components/cards/CardProduto'
 import CardAnuncio from '../../components/cards/CardAnuncio'
 import CardNotFound from '../../components/cards/CardNotFound'
 import CardCategoria from '../../components/cards/CardCategoria'
+import CardCategoriaDiscontoken from '../../components/cards/CardCategoriaDiscontoken'
 import ButtonOutline from '../../components/buttons/ButtonOutline'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import MainLayoutAutenticado from '../../components/layout/MainLayoutAutenticado'
@@ -218,10 +219,8 @@ export default function HomeScreen() {
           contentContainerStyle={{ alignItems: 'center', paddingRight: 8, paddingVertical: 4 }}
         >
           {temDiscontokenNoPerfil(dadosPerfil) && (
-            <CardCategoria
-              ativo={false}
+            <CardCategoriaDiscontoken
               titulo="Discontoken"
-              slug="discontoken-teste"
               onPress={() => navigate('Discontoken')}
             />
           )}
