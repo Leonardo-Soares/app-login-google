@@ -16,6 +16,7 @@ import { Ionicons } from '@expo/vector-icons'
 import ModalTemplate from '@components/Modals/ModalTemplate'
 
 const TERMOS_AFILIADO_URL = 'https://discontapp.com.br/termo-de-uso-de-afiliados.pdf'
+const PAINEL_AFILIADO_URL = 'https://www.discontapp.com.br/usuario/login'
 
 export default function AcompanhamentoAfiliadoScreen() {
   const isFocused = useIsFocused()
@@ -208,34 +209,49 @@ export default function AcompanhamentoAfiliadoScreen() {
                     <H5>{dadosAfiliado.codigo_afiliado}</H5>
                   </View>
                   {dadosAfiliado.status?.toLowerCase().replace(/\s/g, '_') === 'aprovado' && (
-                    <View className='flex-row'>
+                    <>
+                      <View className='flex-row'>
+                        <TouchableOpacity
+                          onPress={compartilharCodigoAfiliado}
+                          className='flex-1 flex-row items-center justify-center px-4 py-3 rounded-lg mr-3'
+                          style={{ backgroundColor: colors.primary30 }}
+                          activeOpacity={0.8}
+                        >
+                          <Ionicons name="share-social-outline" size={20} color={colors.white} />
+                          <View style={{ marginLeft: 8 }}>
+                            <Caption fontSize={14} color={colors.white} fontWeight={'bold'}>
+                              Compartilhar código
+                            </Caption>
+                          </View>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                          onPress={copyCodigoAfiliado}
+                          className='flex-row items-center px-4 py-3 rounded-lg'
+                          style={{ backgroundColor: colors.primary90 }}
+                          activeOpacity={0.8}
+                        >
+                          <Ionicons name="copy-outline" size={18} color={colors.primary40} />
+                          <View style={{ marginLeft: 8 }}>
+                            <Caption fontSize={14} color={colors.primary40} fontWeight={'bold'}>
+                              Copiar
+                            </Caption>
+                          </View>
+                        </TouchableOpacity>
+                      </View>
                       <TouchableOpacity
-                        onPress={compartilharCodigoAfiliado}
-                        className='flex-1 flex-row items-center justify-center px-4 py-3 rounded-lg mr-3'
-                        style={{ backgroundColor: colors.primary30 }}
+                        onPress={() => Linking.openURL(PAINEL_AFILIADO_URL)}
+                        className='mt-3 flex-row items-center justify-center px-4 py-3 rounded-lg'
+                        style={{ backgroundColor: colors.secondary50 }}
                         activeOpacity={0.8}
                       >
-                        <Ionicons name="share-social-outline" size={20} color={colors.white} />
+                        <Ionicons name="open-outline" size={20} color={colors.white} />
                         <View style={{ marginLeft: 8 }}>
                           <Caption fontSize={14} color={colors.white} fontWeight={'bold'}>
-                            Compartilhar código
+                            Acessar painel do afiliado
                           </Caption>
                         </View>
                       </TouchableOpacity>
-                      <TouchableOpacity
-                        onPress={copyCodigoAfiliado}
-                        className='flex-row items-center px-4 py-3 rounded-lg'
-                        style={{ backgroundColor: colors.primary90 }}
-                        activeOpacity={0.8}
-                      >
-                        <Ionicons name="copy-outline" size={18} color={colors.primary40} />
-                        <View style={{ marginLeft: 8 }}>
-                          <Caption fontSize={14} color={colors.primary40} fontWeight={'bold'}>
-                            Copiar
-                          </Caption>
-                        </View>
-                      </TouchableOpacity>
-                    </View>
+                    </>
                   )}
                 </View>
               )}

@@ -162,7 +162,7 @@ export default function LoginClienteScreen() {
               title='Trocar perfil'
               backgroundColor={colors.secondary60}
             />
-            {Platform.OS !== 'ios' && (
+            {/* {Platform.OS !== 'ios' && (
               <>
                 <View className="mt-2"></View>
                 <View className="flex-row items-center justify-center my-2">
@@ -175,7 +175,7 @@ export default function LoginClienteScreen() {
                   title='Continuar com Google'
                 />
               </>
-            )}
+            )} */}
           </View>
           <View className='absolute bottom-0 right-0'>
             <Caption fontWeight={'bold'}>{versionName ?? ''}</Caption>

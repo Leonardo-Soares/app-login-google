@@ -11,7 +11,6 @@ import Caption from '../../components/typography/Caption'
 import { colors } from '../../styles/colors';
 import { requestForegroundPermissionsAsync } from 'expo-location';
 import FilledButton from '../../components/buttons/FilledButton';
-import Spacing from '@components/layout/Spacing'
 import { useNavigate } from '../../hooks/useNavigate'
 
 const LOGO_DISCONTOKEN_FALLBACK = require('../../../assets/img/logoHeader.png')
@@ -64,54 +63,6 @@ function LinhaDadoModal({
             </Caption>
         </View>
     )
-}
-
-function LinhaDadoApi({
-    label,
-    valor,
-}: {
-    label: string
-    valor: unknown
-}) {
-    return (
-        <View style={modalStyles.linhaDado}>
-            <Caption fontSize={12} color={colors.neutralvariant60}>
-                {label}
-            </Caption>
-            <Caption fontSize={14} margintop={4} color={colors.neutral10}>
-                {formatValorApi(valor)}
-            </Caption>
-        </View>
-    )
-}
-
-function formatLabelApi(chave: string) {
-    return chave
-        .replace(/_/g, ' ')
-        .replace(/\b\w/g, (letra) => letra.toUpperCase())
-}
-
-function formatValorApi(valor: unknown) {
-    if (valor == null) return 'Não informado'
-    if (typeof valor === 'boolean') return valor ? 'Sim' : 'Não'
-    if (typeof valor === 'string') {
-        const valorLimpo = valor.trim()
-        if (!valorLimpo || valorLimpo.toLowerCase() === 'null') {
-            return 'Não informado'
-        }
-        return valor
-    }
-    if (typeof valor === 'number') {
-        return Number.isFinite(valor) ? String(valor) : 'Não informado'
-    }
-    if (typeof valor === 'object') {
-        try {
-            return JSON.stringify(valor)
-        } catch {
-            return 'Não informado'
-        }
-    }
-    return String(valor)
 }
 
 function parseNumero(valor: unknown) {
@@ -330,8 +281,7 @@ export default function DiscotokenListagemScreen() {
         .sort(([a], [b]) => a.localeCompare(b))
 
     return (
-        <MainLayoutAutenticado marginTop={64} marginHorizontal={16}>
-            <Spacing />
+        <MainLayoutAutenticado marginTop={0} marginHorizontal={16}>
             <TouchableOpacity
                 activeOpacity={0.9}
                 onPress={() => setIsIntroModal(true)}
@@ -435,6 +385,8 @@ export default function DiscotokenListagemScreen() {
                     </TouchableOpacity>
                 )
             })}
+            <View style={{ height: 500, width: '100%' }} />
+
             <Modal animationType="slide" transparent visible={isModal}>
                 <View style={styles.modalOverlay}>
                     <View style={[styles.modalCard, { maxHeight: modalMaxHeight }]}>
@@ -606,9 +558,9 @@ const styles = StyleSheet.create({
         overflow: 'hidden',
     },
     introBox: {
+        marginTop: 16,
         marginBottom: 20,
         padding: 16,
-        marginTop: 20,
         borderRadius: 12,
         backgroundColor: colors.primary90,
         borderWidth: 1,
