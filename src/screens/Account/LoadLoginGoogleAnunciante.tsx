@@ -6,7 +6,7 @@ import H2 from '../../components/typography/H2'
 import DeviceInfo from 'react-native-device-info'
 import React, { useEffect, useState } from 'react'
 import { OneSignal } from 'react-native-onesignal'
-import { useRoute } from '@react-navigation/native'
+import { CommonActions, useRoute } from '@react-navigation/native'
 import { useNavigate } from '../../hooks/useNavigate'
 import IcoCelularLogin from '../../svg/IcoCelularLogin'
 import Caption from '../../components/typography/Caption'
@@ -20,7 +20,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage'
 
 export default function LoadLoginGoogleAnunciante() {
   const route = useRoute()
-  const { navigate } = useNavigate()
+  const { navigate, dispatch } = useNavigate()
   const versionName = DeviceInfo.getVersion()
   const [playerId, setPlayerId] = useState('')
   const [loadign, setLoading] = useState(true)
@@ -66,9 +66,19 @@ export default function LoadLoginGoogleAnunciante() {
       const response = await AsyncStorage.getItem('tutorial')
       if (response == null) {
         await AsyncStorage.setItem('tutorial', 'true')
-        return navigate('OnBoardingScreen')
+        return dispatch(
+          CommonActions.reset({
+            index: 0,
+            routes: [{ name: 'OnBoardingScreen' }],
+          })
+        )
       }
-      navigate('HomeDrawerNavigation')
+      dispatch(
+        CommonActions.reset({
+          index: 0,
+          routes: [{ name: 'HomeDrawerNavigation' }],
+        })
+      )
     } catch (error) {
       console.error(error)
     }

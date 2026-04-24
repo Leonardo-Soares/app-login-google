@@ -6,6 +6,7 @@ import DeviceInfo from 'react-native-device-info'
 import React, { useEffect, useState } from 'react'
 import { OneSignal } from 'react-native-onesignal'
 import { useNavigate } from '../../hooks/useNavigate'
+import { CommonActions } from '@react-navigation/native'
 import IcoCelularLogin from '../../svg/IcoCelularLogin'
 import Caption from '../../components/typography/Caption'
 import MainLayout from '../../components/layout/MainLayout'
@@ -21,7 +22,7 @@ import { useRoute } from '@react-navigation/native'
 
 export default function LoginAnuncianteScreen() {
   const route = useRoute()
-  const { navigate } = useNavigate()
+  const { navigate, dispatch } = useNavigate()
   const [email, setEmail] = useState('')
   const versionName = DeviceInfo.getVersion()
   const [playerId, setPlayerId] = useState('')
@@ -43,9 +44,19 @@ export default function LoginAnuncianteScreen() {
       const response = await AsyncStorage.getItem('tutorial')
       if (response == null) {
         await AsyncStorage.setItem('tutorial', 'true')
-        return navigate('OnBoardingScreen')
+        return dispatch(
+          CommonActions.reset({
+            index: 0,
+            routes: [{ name: 'OnBoardingScreen' }],
+          })
+        )
       }
-      navigate('HomeDrawerNavigation')
+      dispatch(
+        CommonActions.reset({
+          index: 0,
+          routes: [{ name: 'HomeDrawerNavigation' }],
+        })
+      )
     } catch (error) {
       console.log(error)
     }

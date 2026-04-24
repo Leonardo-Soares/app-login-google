@@ -22,9 +22,10 @@ import Toast from 'react-native-toast-message';
 import { OneSignal } from 'react-native-onesignal';
 import { api } from 'src/service/api';
 import Loading from '@components/Loading';
+import { CommonActions } from '@react-navigation/native'
 
 export default function LoginScreen() {
-  const { navigate } = useNavigate();
+  const { navigate, dispatch } = useNavigate();
   const [loading, setLoading] = useState(true);
   const { setTipoUser, setUsuarioLogado } = useGlobal();
   const versionName = DeviceInfo.getVersion();
@@ -88,7 +89,12 @@ export default function LoginScreen() {
           text1: 'Login realizado com sucesso!',
         })
         setUsuarioLogado(true)
-        navigate('HomeDrawerNavigation')
+        dispatch(
+          CommonActions.reset({
+            index: 0,
+            routes: [{ name: 'HomeDrawerNavigation' }],
+          })
+        )
       }
     } catch (error: any) {
       console.error('ERROR Login auto: ', error)
@@ -115,7 +121,12 @@ export default function LoginScreen() {
           text1: 'Login realizado com sucesso',
         })
         setUsuarioLogado(true)
-        navigate('HomeDrawerNavigation')
+        dispatch(
+          CommonActions.reset({
+            index: 0,
+            routes: [{ name: 'HomeDrawerNavigation' }],
+          })
+        )
       } else {
         Toast.show({
           type: 'error',
