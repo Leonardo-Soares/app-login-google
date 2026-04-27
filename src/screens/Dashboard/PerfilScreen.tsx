@@ -122,10 +122,6 @@ export default function PerfilScreen() {
           />
         </View>
 
-        <Caption>
-          Alteração de CPF deve ser realizada via suporte
-        </Caption>
-
         <View className="mt-2">
           {editar ?
             <>

@@ -177,19 +177,7 @@ export default function DiscotokenListagemScreen() {
                     Accept: 'application/json',
                 }
                 const response = await api.get(`/discotoken/anunciantes`, { headers })
-                const anunciantesOrdenados = [...(response.data.results.anunciantes ?? [])].sort((a: any, b: any) => {
-                    const dataA = Date.parse(String(a?.anunciante?.created_at ?? a?.created_at ?? ''))
-                    const dataB = Date.parse(String(b?.anunciante?.created_at ?? b?.created_at ?? ''))
-
-                    if (Number.isFinite(dataA) && Number.isFinite(dataB) && dataA !== dataB) {
-                        return dataB - dataA
-                    }
-
-                    const idA = Number(a?.anunciante?.id ?? a?.id ?? 0)
-                    const idB = Number(b?.anunciante?.id ?? b?.id ?? 0)
-                    return idB - idA
-                })
-                setCupons(anunciantesOrdenados)
+                setCupons(response.data.results.anunciantes.filter((item: any) => item.anunciante.associacao_id == newJson.associacao_id))
             } catch (error: any) {
                 console.error('ERROR GET CUPONS ', error)
             }
@@ -282,6 +270,7 @@ export default function DiscotokenListagemScreen() {
 
     return (
         <MainLayoutAutenticado marginTop={0} marginHorizontal={16}>
+            <View style={{ marginTop: 16, width: '100%', height: 40 }} />
             <TouchableOpacity
                 activeOpacity={0.9}
                 onPress={() => setIsIntroModal(true)}
@@ -330,6 +319,13 @@ export default function DiscotokenListagemScreen() {
                     </View>
                 </View>
             </Modal>
+            {cupons.length === 0 && (
+                <View style={styles.emptyFeedbackBox}>
+                    <Caption fontSize={14} color={colors.neutral10} align="center">
+                        Nenhuma Associação cadastrou cupons de desconto. Aguarde a liberação para acessar a funcionalidade.
+                    </Caption>
+                </View>
+            )}
             {cupons.map((cupom: any) => {
                 const valorQrCodeCard = getValorQrAnunciante(cupom?.anunciante)
 
@@ -723,5 +719,15 @@ const styles = StyleSheet.create({
         fontFamily: 'Poppins_500Medium',
         color: colors.neutral99,
         fontSize: 12,
+    },
+    emptyFeedbackBox: {
+        marginTop: 4,
+        marginBottom: 16,
+        paddingVertical: 14,
+        paddingHorizontal: 12,
+        borderRadius: 12,
+        backgroundColor: colors.neutral99,
+        borderWidth: 1,
+        borderColor: colors.neutralvariant90,
     },
 })
